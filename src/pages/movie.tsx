@@ -1,10 +1,16 @@
 import React from "react";
+import { useAuth } from "../contexts/authContext";
+import { Navigate } from "react-router";
 
 const MoviePage: React.FC = () => {
+  const { userLoggedIn, userLoading, currentUser } = useAuth();
   return (
     <div>
-      <h1>Movie Page</h1>
-      <p>Welcome to the movie page!</p>
+      {!userLoading && !userLoggedIn && (
+        <Navigate to={"/Perfect-Partners/login"} replace={true} />
+      )}
+      <h1>Trop fort</h1>
+      <p>{currentUser?.displayName}</p>
     </div>
   );
 };

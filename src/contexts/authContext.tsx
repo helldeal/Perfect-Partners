@@ -5,11 +5,11 @@ import { onAuthStateChanged, User } from "firebase/auth";
 const AuthContext = createContext<{
   currentUser: User | null;
   userLoggedIn: boolean;
-  loading: boolean;
+  userLoading: boolean;
 }>({
   currentUser: null,
   userLoggedIn: false,
-  loading: true,
+  userLoading: true,
 });
 
 export function useAuth() {
@@ -19,7 +19,7 @@ export function useAuth() {
 export function AuthProvider({ children }: any) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [userLoading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, initializeUser);
@@ -27,6 +27,8 @@ export function AuthProvider({ children }: any) {
   }, []);
 
   function initializeUser(user: any) {
+    console.log("User: ");
+    console.log(user);
     setCurrentUser(user);
     setUserLoggedIn(!!user);
     setLoading(false);
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: any) {
   const value = {
     currentUser,
     userLoggedIn,
-    loading,
+    userLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
