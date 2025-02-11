@@ -27,8 +27,6 @@ export function AuthProvider({ children }: any) {
   }, []);
 
   function initializeUser(user: any) {
-    console.log("User: ");
-    console.log(user);
     setCurrentUser(user);
     setUserLoggedIn(!!user);
     setLoading(false);
