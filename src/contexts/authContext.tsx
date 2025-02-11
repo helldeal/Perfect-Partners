@@ -27,6 +27,12 @@ export function AuthProvider({ children }: any) {
   }, []);
 
   function initializeUser(user: any) {
+    if (
+      user.email !== "mrhelldeal@gmail.com" &&
+      user.email !== "grandbardematthieu@gmail.com"
+    )
+      return;
+    console.log("valid user");
     setCurrentUser(user);
     setUserLoggedIn(!!user);
     setLoading(false);

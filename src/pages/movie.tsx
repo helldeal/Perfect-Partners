@@ -9,8 +9,12 @@ const MoviePage: React.FC = () => {
       {!userLoading && !userLoggedIn && (
         <Navigate to={"/Perfect-Partners/login"} replace={true} />
       )}
-      <h1>Trop fort</h1>
-      <p>{currentUser?.displayName}</p>
+      {currentUser && (
+        <>
+          <h1>Trop fort</h1>
+          <p>{currentUser?.displayName}</p>
+        </>
+      )}
     </div>
   );
 };
