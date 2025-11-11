@@ -1,12 +1,11 @@
-import React from "react";
 import { Route, Routes } from "react-router";
-import MoviePage from "../pages/movie";
 import LoginPage from "../pages/login";
+import { MoviesPage } from "../pages/movies";
 
-const AppRoutes: React.FC = () => {
+const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/Perfect-Partners/" Component={MoviePage} />
+      <Route path="/Perfect-Partners/" Component={MoviesPage} />
       <Route path="/Perfect-Partners/login" Component={LoginPage} />
     </Routes>
   );

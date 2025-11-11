@@ -9,7 +9,7 @@ const AuthContext = createContext<{
 }>({
   currentUser: null,
   userLoggedIn: false,
-  userLoading: true,
+  userLoading: false,
 });
 
 export function useAuth() {
@@ -26,10 +26,11 @@ export function AuthProvider({ children }: any) {
     return () => unsubscribe();
   }, []);
 
-  function initializeUser(user: any) {
+  function initializeUser(user: User | null) {
     if (
-      user.email !== "mrhelldeal@gmail.com" &&
-      user.email !== "grandbardematthieu@gmail.com"
+      !user ||
+      (user.email !== "mrhelldeal@gmail.com" &&
+        user.email !== "grandbardematthieu@gmail.com")
     )
       return;
     console.log("valid user");

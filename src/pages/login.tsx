@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { doSignInWithGoogle } from "../firebase/auth";
 import { Navigate } from "react-router";
 import { useAuth } from "../contexts/authContext";
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
   const { userLoggedIn } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
