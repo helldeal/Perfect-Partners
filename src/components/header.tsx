@@ -20,85 +20,37 @@ export const Header = () => {
   };
 
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "12px 20px",
-        borderBottom: "1px solid #eee",
-        gap: 12,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <h1 style={{ margin: 0, fontSize: 18 }}>Perfect Partners</h1>
-        <nav style={{ color: "#333", fontSize: 14 }}>
-          Vidéogramme <span style={{ opacity: 0.6 }}>/</span> Jeux Vidéo{" "}
-          <span style={{ opacity: 0.6 }}>/</span> Lego
+    <header className="flex justify-between items-center p-3 gap-3">
+      <div className="flex items-center gap-4">
+        <h1 className="m-0 text-lg">Perfect Partners</h1>
+        <nav className="text-gray-800 text-sm">
+          Vidéogramme <span className="opacity-60">/</span> Jeux Vidéo{" "}
+          <span className="opacity-60">/</span> Lego
         </nav>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        {/* Profile dropdown using native <details> so no extra hooks required */}
-        <details style={{ position: "relative" }}>
-          <summary
-            style={{
-              listStyle: "none",
-              cursor: "pointer",
-              padding: 0,
-              margin: 0,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <img
-              src={currentUser?.photoURL || ""}
-              alt={currentUser?.displayName || "profile"}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
-            />
+      <div className="flex items-center gap-3">
+        <details className="relative">
+          <summary className="list-none cursor-pointer p-0 m-0 flex items-center">
+            {currentUser?.photoURL ? (
+              <img
+                src={currentUser.photoURL}
+                alt={currentUser.displayName || "profile"}
+                referrerPolicy="no-referrer"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-300" />
+            )}
           </summary>
 
-          <div
-            style={{
-              position: "absolute",
-              right: 0,
-              top: "110%",
-              background: "#000",
-              border: "1px solid #e6e6e6",
-              borderRadius: 8,
-              padding: 8,
-              boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-              minWidth: 160,
-              zIndex: 50,
-            }}
-          >
-            <div
-              style={{
-                padding: "6px 8px",
-                borderBottom: "1px solid #f0f0f0",
-                fontSize: 14,
-              }}
-            >
+          <div className="absolute right-0 top-full bg-black border border-gray-300 rounded-lg p-2 shadow-lg min-w-40 z-50">
+            <div className="p-2 border-b border-gray-200 text-sm">
               {currentUser?.displayName}
             </div>
             <button
               onClick={handleSignOut}
-              style={{
-                marginTop: 8,
-                width: "100%",
-                padding: "8px 10px",
-                background: "#e53e3e",
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-                fontSize: 14,
-              }}
+              className="mt-2 w-full p-2 bg-red-600 text-white rounded-md cursor-pointer text-sm"
               type="button"
             >
               Sign out

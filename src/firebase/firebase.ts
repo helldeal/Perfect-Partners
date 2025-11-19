@@ -8,7 +8,7 @@ import { getAuth } from "firebase/auth";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCDsLyeXW_Q12tU_doCFsK4jWykRPhn09c",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "perfect-partners-930b2.firebaseapp.com",
   projectId: "perfect-partners-930b2",
   storageBucket: "perfect-partners-930b2.firebasestorage.app",

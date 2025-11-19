@@ -1,11 +1,9 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-
-export const tmdbApi = {
-  baseUrl: process.env.tmdb_url,
-  apiKey: process.env.tmdb_api_key,
+const tmdbApi = {
+  baseUrl: import.meta.env.VITE_TMDB_URL,
+  apiKey: import.meta.env.VITE_TMDB_API_KEY,
 };
-
-export const TMDB = {
+const TMDB = {
   fetchTrending: async () => {
     const response = await fetch(
       `${tmdbApi.baseUrl}/trending/all/day?api_key=${tmdbApi.apiKey}`
