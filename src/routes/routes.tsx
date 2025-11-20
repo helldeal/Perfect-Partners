@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router";
-import { MoviesPage } from "../pages/Movies";
 import LoginPage from "../pages/Login";
+import { MoviesPage } from "../pages/Movies";
 
 const AppRoutes = () => {
   return (
