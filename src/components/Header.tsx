@@ -1,14 +1,16 @@
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { useAuth } from "../contexts/authContext";
 import { doSignOut } from "../firebase/auth";
+import logoImg from "../assets/logo.png";
 
-export const Header = () => {
+export const Header = ({ navSelected }: { navSelected: string }) => {
   const { userLoggedIn, userLoading, currentUser } = useAuth();
-  console.log("Header auth state:", {
-    userLoggedIn,
-    userLoading,
-    currentUser,
-  });
+  const navigate = useNavigate();
+  // console.log("Header auth state:", {
+  //   userLoggedIn,
+  //   userLoading,
+  //   currentUser,
+  // });
   {
     !userLoggedIn && !userLoading && (
       <Navigate to={"/Perfect-Partners/login"} replace={true} />
@@ -22,10 +24,29 @@ export const Header = () => {
   return (
     <header className="flex justify-between items-center p-3 gap-3">
       <div className="flex items-center gap-4">
-        <h1 className="m-0 text-lg">Perfect Partners</h1>
-        <nav className="text-gray-800 text-sm">
-          Vidéogramme <span className="opacity-60">/</span> Jeux Vidéo{" "}
-          <span className="opacity-60">/</span> Lego
+        <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
+        <h1 className="m-0 text-lg cursor-default">Perfect Partners</h1>
+        <nav className="text-gray-600 text-sm cursor-pointer">
+          <span
+            className={navSelected === "movies" ? "font-bold" : ""}
+            onClick={() => navigate("/Perfect-Partners/movies")}
+          >
+            Vidéogramme
+          </span>{" "}
+          <span className="opacity-60">/</span>{" "}
+          <span
+            className={navSelected === "games" ? "font-bold" : ""}
+            onClick={() => navigate("/Perfect-Partners/games")}
+          >
+            Jeux Vidéo
+          </span>{" "}
+          <span className="opacity-60">/</span>{" "}
+          <span
+            className={navSelected === "legos" ? "font-bold" : ""}
+            onClick={() => navigate("/Perfect-Partners/legos")}
+          >
+            Lego
+          </span>
         </nav>
       </div>
 
