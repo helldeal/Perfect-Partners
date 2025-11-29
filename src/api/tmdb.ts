@@ -41,6 +41,24 @@ export const TMDB = {
     );
     return await response.json();
   },
+  fetchMovieImages: async (movieId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/movie/${movieId}/images?api_key=${tmdbApi.apiKey}`
+    );
+    return await response.json();
+  },
+  fetchMovieCredits: async (movieId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/movie/${movieId}/credits?api_key=${tmdbApi.apiKey}&language=fr`
+    );
+    return await response.json();
+  },
+  fetchMovieRecommendations: async (movieId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/movie/${movieId}/recommendations?api_key=${tmdbApi.apiKey}&language=fr&page=1`
+    );
+    return await response.json();
+  },
   fetchTVDetails: async (tvId: string) => {
     const response = await fetch(
       `${tmdbApi.baseUrl}/tv/${tvId}?api_key=${tmdbApi.apiKey}&language=fr`
@@ -56,6 +74,24 @@ export const TMDB = {
   fetchTVVideos: async (tvId: string) => {
     const response = await fetch(
       `${tmdbApi.baseUrl}/tv/${tvId}/videos?api_key=${tmdbApi.apiKey}&language=fr`
+    );
+    return await response.json();
+  },
+  fetchTVImages: async (tvId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/tv/${tvId}/images?api_key=${tmdbApi.apiKey}`
+    );
+    return await response.json();
+  },
+  fetchTVCredits: async (tvId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/tv/${tvId}/credits?api_key=${tmdbApi.apiKey}&language=fr`
+    );
+    return await response.json();
+  },
+  fetchTVRecommendations: async (tvId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/tv/${tvId}/recommendations?api_key=${tmdbApi.apiKey}&language=fr&page=1`
     );
     return await response.json();
   },

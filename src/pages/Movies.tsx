@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getSearchMultiQuery } from "../api/tmdb";
 import { Header } from "../components/Header";
 import { useDebounce } from "../utils/useDebounce";
 import {
   MediaItem,
+  Movie,
+  MovieSaga,
+  TVShow,
   useAddMovie,
   useAddTVShow,
   useFirebaseMovies,
   useFirebaseTVShows,
 } from "../api/movies";
-import { isMovie, isTVShow } from "../utils/movies";
+import { getMediaListFromMediaItems, isMovie, isTVShow } from "../utils/movies";
+import SearchItem from "../components/search/SearchItem";
+import { MovieWatchItem } from "../components/movies/MoviesWatching";
+import { SagaWatchItem } from "../components/movies/SagasWatching";
+import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
 
 export const MoviesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,105 +37,127 @@ export const MoviesPage = () => {
     }
   };
 
-  const mediaList = [
-    ...(firebaseMoviesQuery.data || []),
-    ...(firebaseTVShowsQuery.data || []),
-  ];
+  const mediaList = useMemo(
+    () => [
+      ...(firebaseMoviesQuery.data || []),
+      ...(firebaseTVShowsQuery.data || []),
+    ],
+    [firebaseMoviesQuery.data, firebaseTVShowsQuery.data]
+  );
+
+  const { planToWatch, watching, completed } = useMemo(
+    () => getMediaListFromMediaItems(mediaList),
+    [mediaList]
+  );
 
   return (
-    <div className="min-h-screen flex flex-col gap-6 bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-slate-100 p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-slate-100">
       <Header navSelected="movies" />
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="Search for a movie..."
-          className="p-2 pr-8 w-full box-border"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") setSearchTerm("");
-          }}
-        />
+      <div className=" flex flex-col gap-6 p-12">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search for a movie..."
+            className="p-2 pr-8 w-full box-border"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setSearchTerm("");
+            }}
+          />
 
-        {searchTerm.length > 0 && (
-          <span
-            onClick={() => setSearchTerm("")}
-            className="absolute right-2 top-2 cursor-pointer text-gray-600 select-none"
-          >
-            ✕
-          </span>
+          {searchTerm.length > 0 && (
+            <span
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-2 cursor-pointer text-gray-600 select-none"
+            >
+              ✕
+            </span>
+          )}
+        </div>
+        {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
+          searchMultiQuery.isLoading ? (
+            <p>Loading...</p>
+          ) : searchList && searchList.length > 0 ? (
+            <div className="flex gap-16 flex-wrap justify-center py-8">
+              {searchList.map((item: any) => (
+                <SearchItem
+                  key={item.id}
+                  id={item.id}
+                  image={item.poster_path}
+                  title={item.title || item.name}
+                  release_date={item.release_date || item.first_air_date}
+                  overview={item.overview}
+                  itemList={mediaList}
+                  handleAddToList={handleAddToList}
+                  item={item}
+                />
+              ))}
+            </div>
+          ) : (
+            <p>No results found.</p>
+          )
+        ) : (
+          <>
+            {watching.length > 0 && (
+              <>
+                <h2 className="text-2xl">Continue Watching</h2>
+                <div className="grid grid-cols-6 gap-12 flex-wrap">
+                  {watching.map((itemList, index) => (
+                    <WatchItemMapping key={index} itemList={itemList} />
+                  ))}
+                </div>
+              </>
+            )}
+            {planToWatch.length > 0 && (
+              <>
+                <h2 className="text-2xl">Plan to Watch</h2>
+                <div className="grid grid-cols-6 gap-12 flex-wrap">
+                  {planToWatch.map((itemList, index) => (
+                    <WatchItemMapping key={index} itemList={itemList} />
+                  ))}
+                </div>
+              </>
+            )}
+            {completed.length > 0 && (
+              <>
+                <h2 className="text-2xl">Completed</h2>
+                <div className="grid grid-cols-6 gap-12 flex-wrap">
+                  {completed.map((itemList, index) => (
+                    <WatchItemMapping key={index} itemList={itemList} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
-      {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
-        searchMultiQuery.isLoading ? (
-          <p>Loading...</p>
-        ) : searchList && searchList.length > 0 ? (
-          <div className="flex gap-16 flex-wrap justify-center py-8">
-            {searchList.map((item: any) => (
-              <div
-                key={item.id}
-                className="text-center w-72 h-112 relative rounded-lg overflow-hidden transform transition-transform duration-200 hover:scale-120"
-              >
-                <img
-                  src={
-                    item.poster_path &&
-                    `https://image.tmdb.org/t/p/w780${item.poster_path}`
-                  }
-                  alt={item.title || item.name}
-                  className="absolute bg-gray-800 flex items-center justify-center w-full h-full object-cover"
-                />
-                <div className="absolute w-full h-full flex flex-col justify-around bg-black text-white opacity-0 hover:opacity-90 transition-opacity">
-                  <h3 className="m-0 text-md font-bold">
-                    {item.title || item.name}
-                  </h3>
-                  <h3>
-                    {new Date(
-                      item.release_date || item.first_air_date
-                    ).toLocaleDateString() || "Date inconnue"}
-                  </h3>
-                  <div className="p-2">
-                    <p className="text-sm text-justify leading-snug line-clamp-4">
-                      {item.overview || "Aucune description disponible."}
-                    </p>
-                  </div>
-                  {mediaList.some((movie) => movie.id === item.id) ? (
-                    <span className="text-green-500 font-bold">
-                      Added to your list
-                    </span>
-                  ) : (
-                    <button
-                      className="cursor-pointer"
-                      onClick={() => handleAddToList(item)}
-                    >
-                      Add to List
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No results found.</p>
-        )
+    </div>
+  );
+};
+
+const WatchItemMapping = ({
+  itemList,
+}: {
+  itemList: Movie | TVShow | MovieSaga;
+}) => {
+  return (
+    <div className="transform transition-transform duration-350 hover:scale-110 cursor-pointer">
+      {Array.isArray(itemList) ? (
+        <SagaWatchItem
+          key={(itemList as MovieSaga)[0].collection.id}
+          saga={itemList as MovieSaga}
+        />
+      ) : isMovie(itemList as MediaItem) ? (
+        <MovieWatchItem
+          key={(itemList as Movie).id}
+          movie={itemList as Movie}
+        />
       ) : (
-        mediaList && (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">My Movie List</h2>
-            {mediaList.map((movie) => (
-              <div key={movie.id} className="mb-2">
-                <h3 className="text-xl font-semibold">
-                  {isMovie(movie) ? movie.title : movie.name}
-                </h3>
-                <p className="text-sm">
-                  Released on:{" "}
-                  {isMovie(movie)
-                    ? movie.release_date
-                    : movie.first_air_date || "Unknown"}
-                </p>
-              </div>
-            ))}
-          </div>
-        )
+        <TVShowWatchItem
+          key={(itemList as TVShow).id}
+          tvShow={itemList as TVShow}
+        />
       )}
     </div>
   );

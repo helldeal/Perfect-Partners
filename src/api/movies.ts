@@ -7,14 +7,20 @@ import { db } from "../firebase/firebase";
 import { filterMovieFields, filterTVShowFields } from "../utils/movies";
 
 export type MediaItem = Movie | TVShow;
+export type MediaList = (MovieSaga | TVShow | Movie)[];
+
+export type MovieSaga = Movie[];
 
 export type Movie = {
   id: number;
+  firebaseId?: string;
   title: string;
   overview: string;
   release_date: string;
   poster_path: string;
   backdrop_path: string;
+  logo?: string;
+  runtime?: number;
   watched?: boolean;
   watch_providers?: any;
   collection?: any;
@@ -23,11 +29,13 @@ export type Movie = {
 
 export type TVShow = {
   id: number;
+  firebaseId?: string;
   name: string;
   overview: string;
   first_air_date: string;
   poster_path: string;
   backdrop_path: string;
+  logo?: string;
   watch_providers?: any;
   videos?: any;
   seasons?: TVSeason[];
@@ -48,6 +56,7 @@ export type TVEpisode = {
   name: string;
   overview: string;
   episode_number: number;
+  runtime?: number;
   air_date: string;
   still_path: string;
   watched?: boolean;
@@ -60,13 +69,20 @@ export const useFirebaseMovies = () => {
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies.json`
     );
-    const data = await response.json();
-    return data ? Object.values(data) : [];
+    const data = (await response.json()) as Record<string, Movie>;
+    return data
+      ? Object.entries(data).map(([key, movie]) => ({
+          ...movie,
+          firebaseId: key,
+        }))
+      : [];
   };
 
   const moviesQuery = useQuery({
     queryKey: ["firebaseMovies"],
     queryFn: fetchStoredMovies,
+    staleTime: Infinity,
+    placeholderData: (prev) => prev,
   });
 
   // 🔥 Listener en temps réel
@@ -74,8 +90,13 @@ export const useFirebaseMovies = () => {
     const dbRef = ref(db, "movies");
 
     const unsubscribe = onValue(dbRef, (snapshot) => {
-      const data = snapshot.val();
-      const movies = data ? Object.values(data) : [];
+      const data = snapshot.val() as Record<string, Movie>;
+      const movies = data
+        ? Object.entries(data).map(([key, movie]) => ({
+            ...movie,
+            firebaseId: key,
+          }))
+        : [];
 
       // ➡️ Mise à jour du cache React Query
       queryClient.setQueryData(["firebaseMovies"], movies);
@@ -91,20 +112,28 @@ export const useAddMovie = () => {
   const queryClient = useQueryClient();
 
   const addMovie = async (movie: Movie): Promise<void> => {
-    const [details, watchProviders, videos] = await Promise.all([
+    const [details, watchProviders, videos, images] = await Promise.all([
       TMDB.fetchMovieDetails(movie.id.toString()),
       TMDB.fetchMovieWatchProviders(movie.id.toString()),
       TMDB.fetchMovieVideos(movie.id.toString()),
+      TMDB.fetchMovieImages(movie.id.toString()),
     ]);
 
     const providersFR = watchProviders.results["FR"];
+    const logo =
+      images.logos.find((l: any) => l.iso_3166_1 === "FR")?.file_path ??
+      images.logos.find((l: any) => l.iso_3166_1 === "US")?.file_path ??
+      images.logos[0]?.file_path ??
+      undefined;
 
     // enrichir l'objet
-    const enrichedMovie = {
+    const enrichedMovie: Movie = {
       ...movie,
       watch_providers: providersFR?.flatrate ?? [],
       videos: videos.results ?? [],
-      collection: details.belongs_to_collection ?? null,
+      logo,
+      collection: details.belongs_to_collection ?? undefined,
+      runtime: details.runtime ?? undefined,
       watched: false,
     };
 
@@ -136,19 +165,80 @@ export const useAddMovie = () => {
   return mutation;
 };
 
+export const useUpdateMovie = () => {
+  const queryClient = useQueryClient();
+  const updateMovie = async ({
+    movieId,
+    updatedData,
+  }: {
+    movieId: string;
+    updatedData: Partial<Movie>;
+  }): Promise<void> => {
+    const response = await fetch(
+      `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${movieId}.json`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to update movie");
+    }
+  };
+  const mutation = useMutation({
+    mutationFn: updateMovie,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["firebaseMovies"] });
+    },
+  });
+
+  return mutation;
+};
+
+export const useDeleteMovie = () => {
+  const queryClient = useQueryClient();
+  const deleteMovie = async (movieId: string): Promise<void> => {
+    const response = await fetch(
+      `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${movieId}.json`,
+      {
+        method: "DELETE",
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to delete movie");
+    }
+  };
+  const mutation = useMutation({
+    mutationFn: deleteMovie,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["firebaseMovies"] });
+    },
+  });
+
+  return mutation;
+};
+
 export const useFirebaseTVShows = () => {
   const queryClient = useQueryClient();
   const fetchStoredTVShows = async (): Promise<TVShow[]> => {
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows.json`
     );
-    const data = await response.json();
-    return data ? Object.values(data) : [];
+    const data = (await response.json()) as Record<string, TVShow>;
+    return data
+      ? Object.entries(data).map(([key, tvShow]) => ({
+          ...tvShow,
+          firebaseId: key,
+        }))
+      : [];
   };
 
   const tvShowsQuery = useQuery({
     queryKey: ["firebaseTVShows"],
     queryFn: fetchStoredTVShows,
+    staleTime: Infinity,
+    placeholderData: (prev) => prev,
   });
 
   // 🔥 Listener en temps réel
@@ -156,8 +246,13 @@ export const useFirebaseTVShows = () => {
     const dbRef = ref(db, "tvshows");
 
     const unsubscribe = onValue(dbRef, (snapshot) => {
-      const data = snapshot.val();
-      const tvShows = data ? Object.values(data) : [];
+      const data = snapshot.val() as Record<string, TVShow>;
+      const tvShows = data
+        ? Object.entries(data).map(([key, tvShow]) => ({
+            ...tvShow,
+            firebaseId: key,
+          }))
+        : [];
 
       // ➡️ Mise à jour du cache React Query
       queryClient.setQueryData(["firebaseTVShows"], tvShows);
@@ -172,10 +267,11 @@ export const useFirebaseTVShows = () => {
 export const useAddTVShow = () => {
   const queryClient = useQueryClient();
   const addTVShow = async (tvShow: TVShow): Promise<void> => {
-    const [details, watchProviders, videos] = await Promise.all([
+    const [details, watchProviders, videos, images] = await Promise.all([
       TMDB.fetchTVDetails(tvShow.id.toString()),
       TMDB.fetchTVWatchProviders(tvShow.id.toString()),
       TMDB.fetchTVVideos(tvShow.id.toString()),
+      TMDB.fetchTVImages(tvShow.id.toString()),
     ]);
     const providersFR = watchProviders.results["FR"];
 
@@ -192,12 +288,19 @@ export const useAddTVShow = () => {
       })
     );
 
+    const logo =
+      images.logos.find((l: any) => l.iso_3166_1 === "FR")?.file_path ??
+      images.logos.find((l: any) => l.iso_3166_1 === "US")?.file_path ??
+      images.logos[0]?.file_path ??
+      undefined;
+
     // enrichir l'objet
-    const enrichedTVShow = {
+    const enrichedTVShow: TVShow = {
       ...tvShow,
       seasons: seasonsWithEpisodes,
       watch_providers: providersFR?.flatrate ?? [],
       videos: videos.results ?? [],
+      logo,
     };
     // filtrer pour ne garder QUE les champs voulus
     const cleanTVShow = filterTVShowFields(enrichedTVShow);
@@ -217,6 +320,60 @@ export const useAddTVShow = () => {
   };
   const mutation = useMutation({
     mutationFn: addTVShow,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["firebaseTVShows"] });
+    },
+  });
+
+  return mutation;
+};
+
+export const useUpdateTVShow = () => {
+  const queryClient = useQueryClient();
+  const updateTVShow = async ({
+    tvShowId,
+    updatedData,
+  }: {
+    tvShowId: string;
+    updatedData: Partial<TVShow>;
+  }): Promise<void> => {
+    const response = await fetch(
+      `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${tvShowId}.json`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to update TV show");
+    }
+  };
+  const mutation = useMutation({
+    mutationFn: updateTVShow,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["firebaseTVShows"] });
+    },
+  });
+
+  return mutation;
+};
+
+export const useDeleteTVShow = () => {
+  const queryClient = useQueryClient();
+  const deleteTVShow = async (tvShowId: string): Promise<void> => {
+    const response = await fetch(
+      `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${tvShowId}.json`,
+      {
+        method: "DELETE",
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to delete TV show");
+    }
+  };
+  const mutation = useMutation({
+    mutationFn: deleteTVShow,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["firebaseTVShows"] });
     },

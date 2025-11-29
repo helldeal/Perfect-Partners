@@ -2,6 +2,7 @@ import { Navigate, useNavigate } from "react-router";
 import { useAuth } from "../contexts/authContext";
 import { doSignOut } from "../firebase/auth";
 import logoImg from "../assets/logo.png";
+import { useState, useEffect } from "react";
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
   const { userLoggedIn, userLoading, currentUser } = useAuth();
@@ -21,8 +22,25 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
     await doSignOut();
   };
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
-    <header className="flex justify-between items-center p-3 gap-3">
+    <header
+      className={`flex justify-between items-center p-3 gap-3 h-16 sticky top-0 z-10 border-b ${
+        isScrolled ? "bg-gray-800" : "bg-transparent"
+      } transition-colors duration-300`}
+    >
       <div className="flex items-center gap-4">
         <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
         <h1 className="m-0 text-lg cursor-default">Perfect Partners</h1>

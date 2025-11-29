@@ -1,4 +1,12 @@
-import { MediaItem, Movie, TVEpisode, TVSeason, TVShow } from "../api/movies";
+import {
+  MediaItem,
+  MediaList,
+  Movie,
+  MovieSaga,
+  TVEpisode,
+  TVSeason,
+  TVShow,
+} from "../api/movies";
 
 export function isMovie(item: MediaItem): item is Movie {
   return "title" in item;
@@ -9,48 +17,24 @@ export function isTVShow(item: MediaItem): item is TVShow {
 }
 
 export const streamingLinks: Record<number, string> = {
-  8: "https://www.netflix.com/", // Netflix
-  337: "https://www.disneyplus.com/", // Disney+
-  9: "https://www.amazon.com/Prime-Video/", // Amazon Prime Video
-  10: "https://www.amazon.com/Prime-Video/", // Amazon Video (purchase/rental)
-  2: "https://www.apple.com/apple-tv-plus/", // Apple TV / Apple iTunes
-  350: "https://www.apple.com/apple-tv-plus/", // Apple TV+ (alternate ID)
-  15: "https://www.hulu.com/", // Hulu
-  384: "https://www.max.com/", // HBO Max
-  387: "https://www.peacocktv.com/", // Peacock Premium
-  386: "https://www.peacocktv.com/", // Peacock (standard version)
-  130: "https://www.sky.com/", // Sky Store
-  35: "https://www.rakuten.tv/", // Rakuten TV
-  76: "https://www.viaplay.com/", // Viaplay
-  421: "https://www.joynplus.de/", // Joyn Plus (Germany)
-  425: "https://www.paramountplus.com/", // Paramount+
-  430: "https://www.starz.com/", // Starz
-  440: "https://www.crunchyroll.com/", // Crunchyroll
-  450: "https://www.showtime.com/", // Showtime
-  460: "https://www.discoveryplus.com/", // Discovery+
-  470: "https://www.amcplus.com/", // AMC+
-  480: "https://www.britbox.com/", // BritBox
-  490: "https://www.acorn.tv/", // Acorn TV
-  500: "https://www.zee5.com/", // ZEE5
-  510: "https://www.hotstar.com/", // Hotstar
-  520: "https://www.fubo.tv/", // FuboTV
-  530: "https://www.tubitv.com/", // Tubi
-  540: "https://www.pluto.tv/", // Pluto TV
-  550: "https://www.sling.com/", // Sling TV
-  600: "https://www.mycanal.fr/", // myCANAL (France)
-  610: "https://www.arte.tv/", // ARTE (France)
-  620: "https://www.tf1.fr/tf1/", // TF1 (France)
-  630: "https://www.france.tv/", // France.tv (France)
-  640: "https://www.6play.fr/", // 6play (France)
-  650: "https://www.allocine.fr/", // AlloCiné (France)
-  660: "https://www.molotov.tv/", // Molotov.tv (France)
-  670: "https://www.ocs.fr/", // OCS (France)
-  680: "https://www.canalplus.com/", // Canal+ (France)
-  690: "https://www.salto.fr/", // Salto (France)
-  700: "https://www.orange.fr/", // Orange TV (France)
-  710: "https://www.free.fr/freebox/", // Freebox TV (France)
+  8: "https://www.netflix.com/",
+  337: "https://www.disneyplus.com/",
+  9: "https://www.amazon.com/Prime-Video/",
+  119: "https://www.amazon.com/Prime-Video/",
+  2: "https://www.apple.com/apple-tv-plus/",
+  1899: "https://www.hbomax.com/",
+  15: "https://www.hulu.com/",
+  384: "https://www.max.com/",
+  35: "https://www.rakuten.tv/",
+  531: "https://www.paramountplus.com/",
+  283: "https://www.crunchyroll.com/",
+  192: "https://www.youtube.com/", // YouTube
+  193: "https://www.sfrplay.fr/", // SFR Play (VOD/Streaming)
+  3: "https://play.google.com/store/movies", // Google Play Movies / VOD
+  2077: "https://www.plex.tv/", // Plex / Plex Channels
+  610: "https://www.arte.tv/",
+  1967: "https://www.molotov.tv/",
 };
-
 export const filterMovieFields = (movie: any): Movie => {
   return {
     id: movie.id,
@@ -59,6 +43,8 @@ export const filterMovieFields = (movie: any): Movie => {
     release_date: movie.release_date,
     poster_path: movie.poster_path,
     backdrop_path: movie.backdrop_path,
+    logo: movie.logo,
+    runtime: movie.runtime,
     watched: movie.watched ?? false,
     watch_providers: movie.watch_providers,
     collection: movie.collection,
@@ -74,6 +60,7 @@ export const filterTVShowFields = (tvShow: any): TVShow => {
     first_air_date: tvShow.first_air_date,
     poster_path: tvShow.poster_path,
     backdrop_path: tvShow.backdrop_path,
+    logo: tvShow.logo,
     watch_providers: tvShow.watch_providers,
     videos: tvShow.videos,
     seasons: tvShow.seasons.map((season: any) => filterTVSeasonFields(season)),
@@ -100,8 +87,71 @@ export const filterTVEpisodeFields = (episode: any): TVEpisode => {
     name: episode.name,
     overview: episode.overview,
     episode_number: episode.episode_number,
+    runtime: episode.runtime,
     air_date: episode.air_date,
     still_path: episode.still_path,
     watched: episode.watched ?? false,
+  };
+};
+
+export const getMediaListFromMediaItems = (items: MediaItem[]) => {
+  const planToWatch: MediaList = [];
+  const watching: MediaList = [];
+  const completed: MediaList = [];
+
+  const groupedMovies: Record<number, Movie[]> = {};
+
+  items.forEach((item) => {
+    if (isMovie(item)) {
+      if (item.collection) {
+        if (!groupedMovies[item.collection.id]) {
+          groupedMovies[item.collection.id] = [];
+        }
+        groupedMovies[item.collection.id].push(item);
+      } else {
+        groupedMovies[item.id] = [item];
+      }
+    } else if (isTVShow(item)) {
+      const allEpisodes = item.seasons!.flatMap((season) => season.episodes);
+      const watchedEpisodes = allEpisodes.filter((episode) => episode.watched);
+
+      if (watchedEpisodes.length === 0) {
+        planToWatch.push(item);
+      } else if (watchedEpisodes.length === allEpisodes.length) {
+        completed.push(item);
+      } else {
+        watching.push(item);
+      }
+    }
+  });
+
+  Object.values(groupedMovies).forEach((movieSaga: MovieSaga) => {
+    if (movieSaga.length === 1) {
+      if (movieSaga[0].watched) {
+        completed.push(movieSaga[0]);
+      } else {
+        planToWatch.push(movieSaga[0]);
+      }
+      return;
+    }
+    movieSaga.sort((a, b) =>
+      a.release_date
+        ? a.release_date.localeCompare(b.release_date)
+        : a.title.localeCompare(b.title)
+    );
+    const watchedMovies = movieSaga.filter((movie) => movie.watched);
+    if (watchedMovies.length === 0) {
+      planToWatch.push(movieSaga);
+    } else if (watchedMovies.length === movieSaga.length) {
+      completed.push(movieSaga);
+    } else {
+      watching.push(movieSaga);
+    }
+  });
+
+  return {
+    planToWatch,
+    watching,
+    completed,
   };
 };
