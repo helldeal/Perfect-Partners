@@ -58,6 +58,14 @@ export const ItemModalContent = ({
         }),
         "*"
       );
+      contentWindow.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: "setVolume",
+          args: [50],
+        }),
+        "*"
+      );
     }
   }, [muted]);
   return (
