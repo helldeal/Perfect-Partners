@@ -51,7 +51,7 @@ export const MoviesPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-slate-100">
+    <div className="min-h-screen bg-[#181818] text-slate-100">
       <Header navSelected="movies" />
       <div className=" flex flex-col gap-6 p-12">
         <div className="relative">
@@ -102,7 +102,7 @@ export const MoviesPage = () => {
             {watching.length > 0 && (
               <>
                 <h2 className="text-2xl">Continue Watching</h2>
-                <div className="grid grid-cols-6 gap-12 flex-wrap">
+                <div className="grid grid-cols-6 gap-12 items-stretch">
                   {watching.map((itemList, index) => (
                     <WatchItemMapping key={index} itemList={itemList} />
                   ))}
@@ -112,7 +112,7 @@ export const MoviesPage = () => {
             {planToWatch.length > 0 && (
               <>
                 <h2 className="text-2xl">Plan to Watch</h2>
-                <div className="grid grid-cols-6 gap-12 flex-wrap">
+                <div className="grid grid-cols-6 gap-12 items-stretch">
                   {planToWatch.map((itemList, index) => (
                     <WatchItemMapping key={index} itemList={itemList} />
                   ))}
@@ -122,7 +122,7 @@ export const MoviesPage = () => {
             {completed.length > 0 && (
               <>
                 <h2 className="text-2xl">Completed</h2>
-                <div className="grid grid-cols-6 gap-12 flex-wrap">
+                <div className="grid grid-cols-6 gap-12 items-stretch">
                   {completed.map((itemList, index) => (
                     <WatchItemMapping key={index} itemList={itemList} />
                   ))}

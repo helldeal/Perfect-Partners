@@ -4,6 +4,12 @@ import { doSignOut } from "../firebase/auth";
 import logoImg from "../assets/logo.png";
 import { useState, useEffect } from "react";
 
+const navMenu = [
+  { name: "Cinéma", path: "/Perfect-Partners/movies", key: "movies" },
+  { name: "Jeux", path: "/Perfect-Partners/games", key: "games" },
+  { name: "Lego", path: "/Perfect-Partners/legos", key: "legos" },
+];
+
 export const Header = ({ navSelected }: { navSelected: string }) => {
   const { userLoggedIn, userLoading, currentUser } = useAuth();
   const navigate = useNavigate();
@@ -37,34 +43,29 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
 
   return (
     <header
-      className={`flex justify-between items-center p-3 gap-3 h-16 sticky top-0 z-10 border-b ${
-        isScrolled ? "bg-gray-800" : "bg-transparent"
-      } transition-colors duration-300`}
+      className={`flex justify-between items-center p-3 gap-3 h-16 sticky top-0 z-10 ${
+        isScrolled ? "bg-[#181818]" : "bg-transparent"
+      } transition-colors duration-300 px-18`}
     >
       <div className="flex items-center gap-4">
-        <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
-        <h1 className="m-0 text-lg cursor-default">Perfect Partners</h1>
-        <nav className="text-gray-600 text-sm cursor-pointer">
-          <span
-            className={navSelected === "movies" ? "font-bold" : ""}
-            onClick={() => navigate("/Perfect-Partners/movies")}
-          >
-            Vidéogramme
-          </span>{" "}
-          <span className="opacity-60">/</span>{" "}
-          <span
-            className={navSelected === "games" ? "font-bold" : ""}
-            onClick={() => navigate("/Perfect-Partners/games")}
-          >
-            Jeux Vidéo
-          </span>{" "}
-          <span className="opacity-60">/</span>{" "}
-          <span
-            className={navSelected === "legos" ? "font-bold" : ""}
-            onClick={() => navigate("/Perfect-Partners/legos")}
-          >
-            Lego
-          </span>
+        <div
+          className="flex items-center gap-2 cursor-pointer mr-8 text-center scale-110"
+          onClick={() => navigate("/Perfect-Partners/")}
+        >
+          <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
+          <h1 className="text-lg leading-none">Perfect Partners</h1>
+        </div>
+
+        <nav className=" cursor-pointer space-x-2 text-sm hidden md:flex">
+          {navMenu.map((item) => (
+            <span
+              key={item.key}
+              className={`ml-4 ${navSelected === item.key ? "font-bold" : ""}`}
+              onClick={() => navigate(item.path)}
+            >
+              {item.name}
+            </span>
+          ))}{" "}
         </nav>
       </div>
 

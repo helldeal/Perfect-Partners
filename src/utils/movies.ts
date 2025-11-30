@@ -19,8 +19,8 @@ export function isTVShow(item: MediaItem): item is TVShow {
 export const streamingLinks: Record<number, string> = {
   8: "https://www.netflix.com/",
   337: "https://www.disneyplus.com/",
-  9: "https://www.amazon.com/Prime-Video/",
-  119: "https://www.amazon.com/Prime-Video/",
+  9: "https://www.primevideo.com/",
+  119: "https://www.primevideo.com/",
   2: "https://www.apple.com/apple-tv-plus/",
   1899: "https://www.hbomax.com/",
   15: "https://www.hulu.com/",
