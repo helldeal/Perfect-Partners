@@ -6,7 +6,7 @@ import {
   TVEpisode,
   TVSeason,
   TVShow,
-} from "../api/movies";
+} from "../api/models/movies";
 
 export function isMovie(item: MediaItem): item is Movie {
   return "title" in item;

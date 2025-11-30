@@ -2,21 +2,14 @@ import { useMemo, useState } from "react";
 import { getSearchMultiQuery } from "../api/tmdb";
 import { Header } from "../components/Header";
 import { useDebounce } from "../utils/useDebounce";
-import {
-  MediaItem,
-  Movie,
-  MovieSaga,
-  TVShow,
-  useAddMovie,
-  useAddTVShow,
-  useFirebaseMovies,
-  useFirebaseTVShows,
-} from "../api/movies";
+import { MediaItem, Movie, MovieSaga, TVShow } from "../api/models/movies";
 import { getMediaListFromMediaItems, isMovie, isTVShow } from "../utils/movies";
 import SearchItem from "../components/search/SearchItem";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
 import { SagaWatchItem } from "../components/movies/SagasWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
+import { useAddMovie, useFirebaseMovies } from "../api/firebase/movies";
+import { useAddTVShow, useFirebaseTVShows } from "../api/firebase/tvshows";
 
 export const MoviesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,9 +136,9 @@ const WatchItemMapping = ({
 }) => {
   return (
     <div className="transform transition-transform duration-350 hover:scale-110 cursor-pointer">
-      {Array.isArray(itemList) ? (
+      {Array.isArray(itemList) && itemList[0].collection ? (
         <SagaWatchItem
-          key={(itemList as MovieSaga)[0].collection.id}
+          key={(itemList as MovieSaga)[0].collection?.id}
           saga={itemList as MovieSaga}
         />
       ) : isMovie(itemList as MediaItem) ? (

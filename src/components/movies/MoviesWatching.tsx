@@ -1,7 +1,8 @@
-import { Movie, useDeleteMovie } from "../../api/movies";
+import { Movie } from "../../api/models/movies";
 import { ItemModalContent } from "../ItemModalContent";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
+import { useDeleteMovie } from "../../api/firebase/movies";
 
 export const MovieWatchItem = ({ movie }: { movie: Movie }) => {
   const deleteMovieMutation = useDeleteMovie();
@@ -17,10 +18,10 @@ export const MovieWatchItem = ({ movie }: { movie: Movie }) => {
         overview={movie.overview}
         date={formatYearRange([movie.release_date])}
         background_path={movie.backdrop_path}
-        videos={movie.videos}
+        videos={movie.videos ?? []}
         runtime={movie.runtime}
         logo={movie.logo}
-        watch_providers={movie.watch_providers}
+        watch_providers={movie.watch_providers ?? []}
         handleDelete={handleDeleteMovie}
         handleAllWatch={() => {}}
       />

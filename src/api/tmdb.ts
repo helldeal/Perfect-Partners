@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MediaItem } from "./movies";
+import { MediaItem } from "./models/movies";
 export const tmdbApi = {
   baseUrl: import.meta.env.VITE_TMDB_URL,
   apiKey: import.meta.env.VITE_TMDB_API_KEY,

@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { MediaItem, Movie, TVEpisode, TVSeason } from "../api/movies";
+import {
+  MediaItem,
+  Movie,
+  TVEpisode,
+  TVSeason,
+  Video,
+  WatchProvider,
+} from "../api/models/movies";
 import {
   MutedIcon,
   RemoveButtonIcon,
@@ -17,11 +24,11 @@ interface ItemModalContentProps {
   background_path: string;
   list?: TVSeason[] | Movie[];
   runtime?: number;
-  videos: any[];
+  videos: Video[];
   logo?: string;
   recomandations?: MediaItem[];
   credits?: any;
-  watch_providers: any[];
+  watch_providers: WatchProvider[];
   handleDelete: () => void;
   handleAllWatch: () => void;
   handleWatchItem?: (item: TVEpisode | Movie) => void;
