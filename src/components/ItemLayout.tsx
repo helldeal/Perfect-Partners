@@ -2,14 +2,17 @@ import { useState } from "react";
 import { Modal } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { Close } from "./Close";
+import { WatchProgress } from "./movies/WatchProgress";
 
 export const ItemLayout = ({
   name,
   image,
+  progress,
   children,
 }: {
   name: string;
   image: string;
+  progress: number;
   children: React.ReactNode;
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,13 +28,19 @@ export const ItemLayout = ({
 
   return (
     <div className="w-full h-full" onClick={openModal}>
-      <img
-        src={
-          image ? `https://image.tmdb.org/t/p/w400${image}` : "/placeholder.png"
-        }
-        alt={name}
-        className="w-full h-full rounded object-cover"
-      />
+      <div className="w-full h-full relative">
+        <img
+          src={
+            image
+              ? `https://image.tmdb.org/t/p/w400${image}`
+              : "/placeholder.png"
+          }
+          alt={name}
+          className="w-full h-full rounded object-cover"
+        />
+        <WatchProgress progress={progress} />
+      </div>
+
       <Modal
         open={isModalOpen}
         onClose={closeModal}

@@ -10,13 +10,9 @@ export const WatchButtonIcon = () => (
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.868v4.264a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+      d="M1.5 12s3.75-7 10.5-7 10.5 7 10.5 7-3.75 7-10.5 7S1.5 12 1.5 12z"
     />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
+    <circle cx={12} cy={12} r={3} stroke="currentColor" strokeWidth={2} />
   </svg>
 );
 

@@ -112,6 +112,9 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
         groupedMovies[item.id] = [item];
       }
     } else if (isTVShow(item)) {
+      item.seasons = item.seasons?.filter(
+        (season) => season.season_number !== 0
+      ); // Exclude specials
       const allEpisodes = item.seasons!.flatMap((season) => season.episodes);
       const watchedEpisodes = allEpisodes.filter((episode) => episode.watched);
 

@@ -22,13 +22,13 @@ const SearchItem: React.FC<SearchItemProps> = ({
   item,
 }) => {
   return (
-    <div className="text-center w-72 h-112 relative rounded-lg overflow-hidden transform transition-transform duration-350 hover:scale-110">
+    <div className="text-center relative rounded-lg overflow-hidden transform transition-transform duration-350 hover:scale-110">
       <img
-        src={image ? `https://image.tmdb.org/t/p/w780${image}` : undefined}
+        src={image ? `https://image.tmdb.org/t/p/w400${image}` : undefined}
         alt={title}
-        className="absolute bg-gray-800 flex items-center justify-center w-full h-full object-cover"
+        className="bg-gray-800 flex items-center justify-center w-full h-full object-cover"
       />
-      <div className="absolute w-full h-full flex flex-col p-3 justify-around bg-black text-white opacity-0 hover:opacity-90 transition-opacity">
+      <div className="absolute top-0 left-0 w-full h-full flex flex-col p-3 justify-around bg-black text-white opacity-0 hover:opacity-90 transition-opacity">
         <h3 className="m-0 text-md font-bold">{title}</h3>
         <h3>
           {release_date

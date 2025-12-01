@@ -110,7 +110,7 @@ export const TMDB = {
 //     staleTime: Infinity,
 //   });
 // }
-export function getSearchMultiQuery(query: string) {
+export function useSearchMultiQuery(query: string) {
   return useQuery({
     queryKey: ["searchMulti", query],
     queryFn: () => TMDB.fetchSearchMulti(query),
@@ -119,3 +119,39 @@ export function getSearchMultiQuery(query: string) {
     placeholderData: (prev) => prev,
   });
 }
+
+export function useMovieRecommendationsQuery(movieId: string) {
+  return useQuery({
+    queryKey: ["movieRecommendations", movieId],
+    queryFn: () => TMDB.fetchMovieRecommendations(movieId),
+    staleTime: Infinity,
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useTVRecommendationsQuery(tvId: string) {
+  return useQuery({
+    queryKey: ["tvRecommendations", tvId],
+    queryFn: () => TMDB.fetchTVRecommendations(tvId),
+    staleTime: Infinity,
+    placeholderData: (prev) => prev,
+  });
+}
+
+export const useMovieCreditsQuery = (movieId: string) => {
+  return useQuery({
+    queryKey: ["movieCredits", movieId],
+    queryFn: () => TMDB.fetchMovieCredits(movieId),
+    staleTime: Infinity,
+    placeholderData: (prev) => prev,
+  });
+};
+
+export const useTVCreditsQuery = (tvId: string) => {
+  return useQuery({
+    queryKey: ["tvCredits", tvId],
+    queryFn: () => TMDB.fetchTVCredits(tvId),
+    staleTime: Infinity,
+    placeholderData: (prev) => prev,
+  });
+};

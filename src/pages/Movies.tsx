@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { getSearchMultiQuery } from "../api/tmdb";
+import { useSearchMultiQuery } from "../api/tmdb";
 import { Header } from "../components/Header";
 import { useDebounce } from "../utils/useDebounce";
 import { MediaItem, Movie, MovieSaga, TVShow } from "../api/models/movies";
@@ -14,7 +14,7 @@ import { useAddTVShow, useFirebaseTVShows } from "../api/firebase/tvshows";
 export const MoviesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedQuery = useDebounce(searchTerm, 400);
-  const searchMultiQuery = getSearchMultiQuery(debouncedQuery);
+  const searchMultiQuery = useSearchMultiQuery(debouncedQuery);
   const addMovieMutation = useAddMovie();
   const addTVShowMutation = useAddTVShow();
   const firebaseMoviesQuery = useFirebaseMovies();
@@ -72,7 +72,7 @@ export const MoviesPage = () => {
           searchMultiQuery.isLoading ? (
             <p>Loading...</p>
           ) : searchList && searchList.length > 0 ? (
-            <div className="flex gap-16 flex-wrap justify-center py-8">
+            <div className="grid grid-cols-6 gap-12 items-stretch">
               {searchList.map((item: any) => (
                 <SearchItem
                   key={item.id}
@@ -94,7 +94,7 @@ export const MoviesPage = () => {
           <>
             {watching.length > 0 && (
               <>
-                <h2 className="text-2xl">Continue Watching</h2>
+                <h2 className="text-2xl">Continue</h2>
                 <div className="grid grid-cols-6 gap-12 items-stretch">
                   {watching.map((itemList, index) => (
                     <WatchItemMapping key={index} itemList={itemList} />

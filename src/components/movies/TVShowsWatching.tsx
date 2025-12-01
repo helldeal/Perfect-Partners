@@ -1,19 +1,63 @@
-import { TVShow } from "../../api/models/movies";
-import { ItemModalContent } from "../ItemModalContent";
+import { TVEpisode, TVShow } from "../../api/models/movies";
+import { WatchItemModalContent } from "./WatchItemModalContent";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
-import { useDeleteTVShow } from "../../api/firebase/tvshows";
+import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
+import { useTVRecommendationsQuery } from "../../api/tmdb";
 
 export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
   const deleteTVShowMutation = useDeleteTVShow();
+  const updateTVShowMutation = useUpdateTVShow();
 
   const handleDeleteTVShow = () => {
     deleteTVShowMutation.mutate(tvShow.firebaseId!);
   };
+  const handleAllWatch = () => {
+    const updatedSeasons = tvShow.seasons?.map((season) => ({
+      ...season,
+      episodes: season.episodes?.map((episode) => ({
+        ...episode,
+        watched: true,
+      })),
+    }));
+
+    updateTVShowMutation.mutate({
+      tvShowId: tvShow.firebaseId!,
+      updatedData: { seasons: updatedSeasons },
+    });
+  };
+
+  const handleWatchItem = (id: string) => {
+    updateTVShowMutation.mutate({
+      tvShowId: tvShow.firebaseId!,
+      updatedData: {
+        ...tvShow,
+        seasons: tvShow.seasons?.map((season) => ({
+          ...season,
+          episodes: season.episodes?.map((episode) =>
+            episode.id === Number(id) ? { ...episode, watched: true } : episode
+          ),
+        })),
+      },
+    });
+  };
+
+  const progress =
+    ((tvShow.seasons
+      ?.flatMap((season) => season.episodes ?? [])
+      .filter((episode) => episode.watched).length ?? 0) /
+      (tvShow.seasons?.flatMap((season) => season.episodes ?? []).length ??
+        1)) *
+    100;
 
   return (
-    <ItemLayout name={tvShow.name} image={tvShow.poster_path}>
-      <ItemModalContent
+    <ItemLayout
+      name={tvShow.name}
+      image={tvShow.poster_path}
+      progress={progress}
+    >
+      <WatchItemModalContent
+        id={tvShow.id}
         title={tvShow.name}
         overview={tvShow.overview}
         date={formatYearRange(
@@ -26,8 +70,13 @@ export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
         videos={tvShow.videos ?? []}
         logo={tvShow.logo}
         watch_providers={tvShow.watch_providers ?? []}
+        recomandationsQuery={useTVRecommendationsQuery}
         handleDelete={handleDeleteTVShow}
-        handleAllWatch={() => {}}
+        handleAllWatch={handleAllWatch}
+        handleWatchItem={handleWatchItem}
+        allWatched={tvShow.seasons?.every((season) =>
+          season.episodes?.every((episode) => episode.watched) ? true : false
+        )}
       />
     </ItemLayout>
   );

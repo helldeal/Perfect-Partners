@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MediaItem,
   Movie,
@@ -6,18 +6,24 @@ import {
   TVSeason,
   Video,
   WatchProvider,
-} from "../api/models/movies";
+} from "../../api/models/movies";
 import {
   MutedIcon,
   RemoveButtonIcon,
   UnmutedIcon,
   WatchButtonIcon,
-} from "../assets/svgs";
-import { ItemIconButton } from "./ItemIconButton";
-import { streamingLinks } from "../utils/movies";
-import { formatRuntime, formatYearRange } from "../utils/dates";
+} from "../../assets/svgs";
+import { ItemIconButton } from "../ItemIconButton";
+import { isMovie, isTVShow, streamingLinks } from "../../utils/movies";
+import { formatRuntime, formatYearRange } from "../../utils/dates";
+import SearchItem from "../search/SearchItem";
+import { useAddMovie, useFirebaseMovies } from "../../api/firebase/movies";
+import { useAddTVShow, useFirebaseTVShows } from "../../api/firebase/tvshows";
+import { MediaListIndicator } from "./MediaListIndicator";
+import { MediaListMapping } from "./MediaListMapping";
 
 interface ItemModalContentProps {
+  id: number;
   title: string;
   overview: string;
   date: string;
@@ -26,15 +32,17 @@ interface ItemModalContentProps {
   runtime?: number;
   videos: Video[];
   logo?: string;
-  recomandations?: MediaItem[];
-  credits?: any;
+  recomandationsQuery?: any;
+  creditsQuery?: any;
   watch_providers: WatchProvider[];
   handleDelete: () => void;
   handleAllWatch: () => void;
-  handleWatchItem?: (item: TVEpisode | Movie) => void;
+  handleWatchItem?: (id: string) => void;
+  allWatched?: boolean;
 }
 
-export const ItemModalContent = ({
+export const WatchItemModalContent = ({
+  id,
   title,
   overview,
   date,
@@ -43,14 +51,41 @@ export const ItemModalContent = ({
   runtime,
   videos,
   logo,
-  recomandations,
-  credits,
+  recomandationsQuery,
+  creditsQuery,
   watch_providers,
   handleDelete,
   handleAllWatch,
+  handleWatchItem,
+  allWatched,
 }: ItemModalContentProps) => {
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const addMovieMutation = useAddMovie();
+  const addTVShowMutation = useAddTVShow();
+
+  const firebaseMoviesQuery = useFirebaseMovies();
+  const firebaseTVShowsQuery = useFirebaseTVShows();
+
+  const handleAddToList = (item: MediaItem) => {
+    if (isMovie(item)) {
+      addMovieMutation.mutate(item);
+    } else if (isTVShow(item)) {
+      addTVShowMutation.mutate(item);
+    }
+  };
+
+  const mediaList = useMemo(
+    () => [
+      ...(firebaseMoviesQuery.data || []),
+      ...(firebaseTVShowsQuery.data || []),
+    ],
+    [firebaseMoviesQuery.data, firebaseTVShowsQuery.data]
+  );
+
+  const recomandationsQueryResult = recomandationsQuery
+    ? recomandationsQuery(id)
+    : null;
 
   useEffect(() => {
     if (!iframeRef.current) return;
@@ -135,10 +170,20 @@ export const ItemModalContent = ({
               className="object-contain mb-6"
             />
             <div className="flex space-x-4">
-              <ItemIconButton title="Watch" handleClick={handleAllWatch}>
-                <WatchButtonIcon />
-              </ItemIconButton>
-              <ItemIconButton title="Remove" handleClick={handleDelete}>
+              {!allWatched && (
+                <ItemIconButton
+                  type="primary"
+                  title="Watch"
+                  handleClick={handleAllWatch}
+                >
+                  <WatchButtonIcon />
+                </ItemIconButton>
+              )}
+              <ItemIconButton
+                type="secondary"
+                title="Remove"
+                handleClick={handleDelete}
+              >
                 <RemoveButtonIcon />
               </ItemIconButton>
             </div>
@@ -146,6 +191,7 @@ export const ItemModalContent = ({
           {videos && videos.length > 0 ? (
             <div className="absolute bottom-1/10 mb-4 right-12 flex">
               <ItemIconButton
+                type="secondary"
                 title={muted ? "Unmute" : "Mute"}
                 handleClick={() => setMuted(!muted)}
               >
@@ -160,7 +206,7 @@ export const ItemModalContent = ({
           <div className="col-span-2">
             <div className="flex space-x-4 mt-2 text-gray-400 items-center mb-4">
               <p>{date}</p>
-              <ListIndicator list={list ?? []} />
+              <MediaListIndicator list={list ?? []} />
               {runtime && <p>{formatRuntime(runtime)}</p>}
             </div>
             <p className="mb-2 line-clamp-4">{overview}</p>
@@ -192,96 +238,35 @@ export const ItemModalContent = ({
             )}
           </div>
         </div>
-        <ListMapping list={list ?? []} />
+        <MediaListMapping list={list ?? []} handleWatchItem={handleWatchItem} />
+        <div className="mt-6">
+          <h2 className="text-2xl mb-4">Recommandations</h2>
+          {recomandationsQueryResult && recomandationsQueryResult.isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            recomandationsQueryResult &&
+            recomandationsQueryResult.data && (
+              <div className="grid grid-cols-5 gap-4 pb-4">
+                {recomandationsQueryResult.data.results
+                  .slice(0, 10)
+                  .map((item: any) => (
+                    <SearchItem
+                      key={item.id}
+                      id={item.id}
+                      image={item.poster_path}
+                      title={item.title || item.name}
+                      release_date={item.release_date || item.first_air_date}
+                      overview={item.overview}
+                      itemList={mediaList}
+                      handleAddToList={handleAddToList}
+                      item={item}
+                    />
+                  ))}
+              </div>
+            )
+          )}
+        </div>
       </div>
     </>
   );
-};
-
-const ListIndicator = ({ list }: { list: TVSeason[] | Movie[] }) => {
-  if (list.length === 0) return null;
-  if ((list[0] as TVSeason).season_number !== undefined) {
-    const seasons = list as TVSeason[];
-    return (
-      <span>
-        {seasons.length} Saison{seasons.length > 1 ? "s" : ""}
-      </span>
-    );
-  } else {
-    const movies = list as Movie[];
-    return <span>{movies.length} Films</span>;
-  }
-};
-
-const ListMapping = ({ list }: { list: TVSeason[] | Movie[] }) => {
-  if (list.length === 0) return null;
-  if ((list[0] as TVSeason).season_number !== undefined) {
-    const seasons = list as TVSeason[];
-    return (
-      <div className="flex flex-col gap-4">
-        {seasons.map((season) => (
-          <div key={season.id}>
-            <h3 className="text-xl">{season.name}</h3>
-            <div className="flex flex-col mt-2 gap-2">
-              {season.episodes.map((episode) => (
-                <div
-                  key={episode.id}
-                  className="border-b rounded border-gray-500 pb-2 flex items-center gap-4 px-4"
-                >
-                  <p
-                    className="text-2xl text-center"
-                    style={{ flex: "0 0 7%" }}
-                  >
-                    {episode.episode_number}
-                  </p>
-                  <img
-                    src={`https://image.tmdb.org/t/p/w185${episode.still_path}`}
-                    alt={episode.name}
-                    className="w-32 h-18 object-cover rounded"
-                  />
-                  <div style={{ flex: "0 0 70%" }}>
-                    <div className="flex items-center gap-4 mb-1 justify-between">
-                      <h4 className="text-lg">{`Episode ${episode.episode_number}: ${episode.name}`}</h4>
-                      <p>{formatRuntime(episode.runtime!)}</p>
-                    </div>
-                    <p className="text-gray-300 text-sm line-clamp-3 mb-2">
-                      {episode.overview}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  } else {
-    const movies = list as Movie[];
-    return (
-      <div className="flex flex-col gap-4">
-        {movies.map((movie) => (
-          <div
-            key={movie.id}
-            className="border-b rounded border-gray-500 pb-4 flex items-center gap-4 px-4"
-          >
-            <img
-              src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
-              alt={movie.title}
-              className="w-32 h-48 object-cover rounded"
-            />
-            <div className="flex flex-col gap-2">
-              <p>{formatYearRange([movie.release_date])}</p>
-              <div className="flex items-center gap-4 mb-1 justify-between">
-                <h3 className="text-xl">{movie.title}</h3>
-                <p>{formatRuntime(movie.runtime!)}</p>
-              </div>
-              <p className="text-gray-300 text-sm line-clamp-4">
-                {movie.overview}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 };
