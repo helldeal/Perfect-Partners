@@ -55,13 +55,15 @@ export const useFirebaseMovies = () => {
 export const useAddMovie = () => {
   const queryClient = useQueryClient();
 
-  const addMovie = async (movie: Movie): Promise<void> => {
+  const addMovie = async (id: number): Promise<void> => {
     const [details, watchProviders, videos, images] = await Promise.all([
-      TMDB.fetchMovieDetails(movie.id.toString()),
-      TMDB.fetchMovieWatchProviders(movie.id.toString()),
-      TMDB.fetchMovieVideos(movie.id.toString()),
-      TMDB.fetchMovieImages(movie.id.toString()),
+      TMDB.fetchMovieDetails(id.toString()),
+      TMDB.fetchMovieWatchProviders(id.toString()),
+      TMDB.fetchMovieVideos(id.toString()),
+      TMDB.fetchMovieImages(id.toString()),
     ]);
+
+    const movie = details; // Les détails du film contiennent déjà les champs de base
 
     const providersFR = watchProviders.results["FR"];
     const logo =
@@ -85,9 +87,9 @@ export const useAddMovie = () => {
     const cleanMovie = filterMovieFields(enrichedMovie);
 
     const response = await fetch(
-      `${import.meta.env.VITE_FIREBASE_DB_URL}/movies.json`,
+      `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${cleanMovie.id}.json`,
       {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cleanMovie),
       }

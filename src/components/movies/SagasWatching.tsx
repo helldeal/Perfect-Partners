@@ -5,21 +5,28 @@ import { useDeleteMovie, useUpdateMovie } from "../../api/firebase/movies";
 import { useMovieRecommendationsQuery } from "../../api/tmdb";
 import { WatchItemModal } from "../../api/models/watchItemModal";
 
-export const SagaWatchItem = ({ saga }: { saga: MovieSaga }) => {
+export const SagaWatchItem = ({
+  saga,
+  inWishlist = true,
+}: {
+  saga: MovieSaga;
+  inWishlist?: boolean;
+}) => {
   const deleteMovieMutation = useDeleteMovie();
   const updateMovieMutation = useUpdateMovie();
   const sagaItem = saga[0].collection!;
 
   const handleDeleteSaga = () => {
     saga.forEach((movie) => {
-      deleteMovieMutation.mutate(movie.firebaseId!);
+      deleteMovieMutation.mutate(movie.id.toString());
     });
   };
 
   const handleAllWatch = () => {
+    console.log("handleAllWatch");
     saga.forEach((movie) => {
       updateMovieMutation.mutate({
-        movieId: movie.firebaseId!,
+        movieId: movie.id.toString(),
         updatedData: { watched: true },
       });
     });
@@ -54,6 +61,7 @@ export const SagaWatchItem = ({ saga }: { saga: MovieSaga }) => {
     handleAllWatch: handleAllWatch,
     handleWatchItem: handleWatchItem,
     allWatched: saga.every((movie) => movie.watched ?? false),
+    wishListed: inWishlist,
   };
 
   return (

@@ -5,12 +5,18 @@ import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
 import { useTVRecommendationsQuery } from "../../api/tmdb";
 import { WatchItemModal } from "../../api/models/watchItemModal";
 
-export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
+export const TVShowWatchItem = ({
+  tvShow,
+  inWishlist = true,
+}: {
+  tvShow: TVShow;
+  inWishlist?: boolean;
+}) => {
   const deleteTVShowMutation = useDeleteTVShow();
   const updateTVShowMutation = useUpdateTVShow();
 
   const handleDeleteTVShow = () => {
-    deleteTVShowMutation.mutate(tvShow.firebaseId!);
+    deleteTVShowMutation.mutate(tvShow.id.toString());
   };
   const handleAllWatch = () => {
     const updatedSeasons = tvShow.seasons?.map((season) => ({
@@ -22,14 +28,14 @@ export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
     }));
 
     updateTVShowMutation.mutate({
-      tvShowId: tvShow.firebaseId!,
+      tvShowId: tvShow.id.toString(),
       updatedData: { seasons: updatedSeasons },
     });
   };
 
   const handleWatchItem = (id: string, list: TVSeason[]) => {
     updateTVShowMutation.mutate({
-      tvShowId: tvShow.firebaseId!,
+      tvShowId: tvShow.id.toString(),
       updatedData: {
         ...tvShow,
         seasons: list.map((season) => ({
@@ -71,6 +77,7 @@ export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
     allWatched: tvShow.seasons?.every((season) =>
       season.episodes?.every((episode) => episode.watched) ? true : false
     ),
+    wishListed: inWishlist,
   };
 
   return (

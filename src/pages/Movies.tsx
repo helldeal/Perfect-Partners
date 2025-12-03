@@ -49,9 +49,9 @@ export const MoviesPage = () => {
 
   const handleAddToList = (item: MediaItem) => {
     if (isMovie(item)) {
-      addMovieMutation.mutate(item);
+      addMovieMutation.mutate(item.id);
     } else if (isTVShow(item)) {
-      addTVShowMutation.mutate(item);
+      addTVShowMutation.mutate(item.id);
     }
   };
 
@@ -81,12 +81,14 @@ export const MoviesPage = () => {
       return item.id === payload.id;
     });
 
-    if (!itemInList) return;
-
-    // Construire le nouveau payload
     let newPayload: Partial<WatchItemModal> = {};
 
-    if (Array.isArray(itemInList)) {
+    if (!itemInList) {
+      if (payload.wishListed)
+        newPayload = { allWatched: false, wishListed: false };
+    } else if (itemInList && !payload.wishListed) {
+      newPayload = { wishListed: true };
+    } else if (Array.isArray(itemInList)) {
       const allWatched = itemInList.every((movie) => movie.watched);
       if (payload.allWatched !== allWatched || payload.list !== itemInList) {
         newPayload = { list: itemInList, allWatched };
@@ -108,7 +110,6 @@ export const MoviesPage = () => {
       }
     }
 
-    // Mettre à jour uniquement si quelque chose a changé
     if (Object.keys(newPayload).length > 0) {
       updatePayload(newPayload);
     }

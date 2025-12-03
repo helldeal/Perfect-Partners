@@ -93,9 +93,7 @@ export const MediaListMapping = ({
               ) : (
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                   <ItemIconButton
-                    handleClick={() =>
-                      handleWatchItem!(movie.firebaseId!.toString())
-                    }
+                    handleClick={() => handleWatchItem!(movie.id.toString())}
                     title={"Mark as Watched"}
                     type={"primary"}
                   >

@@ -17,4 +17,5 @@ export type WatchItemModal = {
   handleAllWatch: () => void;
   handleWatchItem?: (id: string, list?: any) => void;
   allWatched?: boolean;
+  wishListed: boolean;
 };

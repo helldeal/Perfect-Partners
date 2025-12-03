@@ -53,13 +53,15 @@ export const useFirebaseTVShows = () => {
 
 export const useAddTVShow = () => {
   const queryClient = useQueryClient();
-  const addTVShow = async (tvShow: TVShow): Promise<void> => {
+  const addTVShow = async (id: number): Promise<void> => {
     const [details, watchProviders, videos, images] = await Promise.all([
-      TMDB.fetchTVDetails(tvShow.id.toString()),
-      TMDB.fetchTVWatchProviders(tvShow.id.toString()),
-      TMDB.fetchTVVideos(tvShow.id.toString()),
-      TMDB.fetchTVImages(tvShow.id.toString()),
+      TMDB.fetchTVDetails(id.toString()),
+      TMDB.fetchTVWatchProviders(id.toString()),
+      TMDB.fetchTVVideos(id.toString()),
+      TMDB.fetchTVImages(id.toString()),
     ]);
+    const tvShow = details; // Les détails de la série contiennent déjà les champs de base
+
     const providersFR = watchProviders.results["FR"];
 
     const seasonsWithEpisodes = await Promise.all(
@@ -92,9 +94,9 @@ export const useAddTVShow = () => {
     // filtrer pour ne garder QUE les champs voulus
     const cleanTVShow = filterTVShowFields(enrichedTVShow);
     const response = await fetch(
-      `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows.json`,
+      `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${cleanTVShow.id}.json`,
       {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cleanTVShow),
       }

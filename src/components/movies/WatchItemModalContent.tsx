@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MediaItem } from "../../api/models/movies";
+import { MediaItem, Movie, TVSeason } from "../../api/models/movies";
 import {
+  AddButtonIcon,
   MutedIcon,
   RemoveButtonIcon,
   UnmutedIcon,
@@ -25,11 +26,24 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const firebaseMoviesQuery = useFirebaseMovies();
   const firebaseTVShowsQuery = useFirebaseTVShows();
 
-  const handleAddToList = (item: MediaItem) => {
+  const handleRecommendationAddToList = (item: MediaItem) => {
     if (isMovie(item)) {
-      addMovieMutation.mutate(item);
+      addMovieMutation.mutate(item.id);
     } else if (isTVShow(item)) {
-      addTVShowMutation.mutate(item);
+      addTVShowMutation.mutate(item.id);
+    }
+  };
+
+  const handleAddToList = (item: WatchItemModal) => {
+    if (!item.list) addMovieMutation.mutate(item.id);
+    else if (item.list && item.list.length > 0) {
+      if ((item.list as TVSeason[])[0].episodes) {
+        addTVShowMutation.mutate(item.id);
+      } else if ((item.list as Movie[])[0].collection) {
+        (item.list as Movie[]).forEach((movie: Movie) => {
+          addMovieMutation.mutate(movie.id);
+        });
+      }
     }
   };
 
@@ -127,24 +141,34 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
               alt={item.title}
               className="object-contain mb-6"
             />
-            <div className="flex space-x-4">
-              {!item.allWatched && (
+            {item.wishListed ? (
+              <div className="flex space-x-4">
+                {!item.allWatched && (
+                  <ItemIconButton
+                    type="primary"
+                    title="Watch"
+                    handleClick={item.handleAllWatch}
+                  >
+                    <WatchButtonIcon />
+                  </ItemIconButton>
+                )}
                 <ItemIconButton
-                  type="primary"
-                  title="Watch"
-                  handleClick={item.handleAllWatch}
+                  type="secondary"
+                  title="Remove"
+                  handleClick={item.handleDelete}
                 >
-                  <WatchButtonIcon />
+                  <RemoveButtonIcon />
                 </ItemIconButton>
-              )}
-              <ItemIconButton
-                type="secondary"
-                title="Remove"
-                handleClick={item.handleDelete}
+              </div>
+            ) : (
+              <button
+                className="w-fit bg-white text-black px-4 py-2 rounded flex items-center space-x-2 hover:bg-gray-200 cursor-pointer"
+                onClick={() => handleAddToList(item)}
               >
-                <RemoveButtonIcon />
-              </ItemIconButton>
-            </div>
+                <AddButtonIcon />
+                <span className="leading-none mb-0.5">Ajouter à la liste</span>
+              </button>
+            )}
           </div>
           {item.videos && item.videos.length > 0 ? (
             <div className="absolute bottom-1/10 mb-4 right-12 flex">
@@ -219,7 +243,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                       release_date={item.release_date || item.first_air_date}
                       overview={item.overview}
                       itemList={mediaList}
-                      handleAddToList={handleAddToList}
+                      handleAddToList={handleRecommendationAddToList}
                       item={item}
                     />
                   ))}

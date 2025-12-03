@@ -9,7 +9,7 @@ export const ItemLayout = ({
 }: {
   name: string;
   image: string;
-  progress: number;
+  progress?: number;
   payload: any;
 }) => {
   const openModal = useModalStore((state) => state.openModal);
@@ -31,7 +31,7 @@ export const ItemLayout = ({
           alt={name}
           className="w-full h-full rounded object-cover"
         />
-        <WatchProgress progress={progress} />
+        {!!progress && <WatchProgress progress={progress} />}
       </div>
     </div>
   );

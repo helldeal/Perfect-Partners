@@ -5,7 +5,6 @@ export type MovieSaga = Movie[];
 
 export type Movie = {
   id: number;
-  firebaseId?: string;
   title: string;
   overview: string;
   release_date: string;
@@ -21,7 +20,6 @@ export type Movie = {
 
 export type TVShow = {
   id: number;
-  firebaseId?: string;
   name: string;
   overview: string;
   first_air_date: string;

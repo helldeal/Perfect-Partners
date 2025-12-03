@@ -5,16 +5,22 @@ import { useDeleteMovie, useUpdateMovie } from "../../api/firebase/movies";
 import { useMovieRecommendationsQuery } from "../../api/tmdb";
 import { WatchItemModal } from "../../api/models/watchItemModal";
 
-export const MovieWatchItem = ({ movie }: { movie: Movie }) => {
+export const MovieWatchItem = ({
+  movie,
+  inWishlist = true,
+}: {
+  movie: Movie;
+  inWishlist?: boolean;
+}) => {
   const deleteMovieMutation = useDeleteMovie();
   const updateMovieMutation = useUpdateMovie();
 
   const handleDeleteMovie = () => {
-    deleteMovieMutation.mutate(movie.firebaseId!);
+    deleteMovieMutation.mutate(movie.id.toString());
   };
   const handleWatchItem = () => {
     updateMovieMutation.mutate({
-      movieId: movie.firebaseId!,
+      movieId: movie.id.toString(),
       updatedData: { watched: true },
     });
   };
@@ -33,6 +39,7 @@ export const MovieWatchItem = ({ movie }: { movie: Movie }) => {
     handleDelete: handleDeleteMovie,
     handleAllWatch: handleWatchItem,
     allWatched: movie.watched,
+    wishListed: inWishlist,
   };
 
   return (
