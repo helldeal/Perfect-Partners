@@ -1,9 +1,9 @@
-import { TVEpisode, TVShow } from "../../api/models/movies";
-import { WatchItemModalContent } from "./WatchItemModalContent";
+import { TVShow } from "../../api/models/movies";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
 import { useTVRecommendationsQuery } from "../../api/tmdb";
+import { WatchItemModal } from "../../api/models/watchItemModal";
 
 export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
   const deleteTVShowMutation = useDeleteTVShow();
@@ -50,34 +50,35 @@ export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
         1)) *
     100;
 
+  const modalContent: WatchItemModal = {
+    id: tvShow.id,
+    title: tvShow.name,
+    overview: tvShow.overview,
+    date: formatYearRange(
+      tvShow.seasons
+        ?.map((season) => season.air_date)
+        .filter((date) => date !== undefined) || []
+    ),
+    background_path: tvShow.backdrop_path,
+    list: tvShow.seasons ?? [],
+    videos: tvShow.videos ?? [],
+    logo: tvShow.logo,
+    watch_providers: tvShow.watch_providers ?? [],
+    recomandationsQuery: useTVRecommendationsQuery,
+    handleDelete: handleDeleteTVShow,
+    handleAllWatch: handleAllWatch,
+    handleWatchItem: handleWatchItem,
+    allWatched: tvShow.seasons?.every((season) =>
+      season.episodes?.every((episode) => episode.watched) ? true : false
+    ),
+  };
+
   return (
     <ItemLayout
       name={tvShow.name}
       image={tvShow.poster_path}
       progress={progress}
-    >
-      <WatchItemModalContent
-        id={tvShow.id}
-        title={tvShow.name}
-        overview={tvShow.overview}
-        date={formatYearRange(
-          tvShow.seasons
-            ?.map((season) => season.air_date)
-            .filter((date) => date !== undefined) || []
-        )}
-        background_path={tvShow.backdrop_path}
-        list={tvShow.seasons ?? []}
-        videos={tvShow.videos ?? []}
-        logo={tvShow.logo}
-        watch_providers={tvShow.watch_providers ?? []}
-        recomandationsQuery={useTVRecommendationsQuery}
-        handleDelete={handleDeleteTVShow}
-        handleAllWatch={handleAllWatch}
-        handleWatchItem={handleWatchItem}
-        allWatched={tvShow.seasons?.every((season) =>
-          season.episodes?.every((episode) => episode.watched) ? true : false
-        )}
-      />
-    </ItemLayout>
+      payload={modalContent}
+    />
   );
 };

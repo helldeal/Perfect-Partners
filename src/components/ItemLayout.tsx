@@ -1,33 +1,26 @@
-import { useState } from "react";
-import { Modal } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
-import { Close } from "./Close";
+import useModalStore from "../store/modalStore";
 import { WatchProgress } from "./movies/WatchProgress";
 
 export const ItemLayout = ({
   name,
   image,
   progress,
-  children,
+  payload,
 }: {
   name: string;
   image: string;
   progress: number;
-  children: React.ReactNode;
+  payload: any;
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showContent, setShowContent] = useState(false);
-  const openModal = () => {
-    setIsModalOpen(true);
+  const openModal = useModalStore((state) => state.openModal);
+  const setShowContent = useModalStore((state) => state.setShowContent);
+
+  const openModalHandler = () => {
+    openModal(payload);
     setShowContent(true);
   };
-  const closeModal = (e?: any) => {
-    e?.stopPropagation();
-    setShowContent(false);
-  };
-
   return (
-    <div className="w-full h-full" onClick={openModal}>
+    <div className="w-full h-full" onClick={openModalHandler}>
       <div className="w-full h-full relative">
         <img
           src={
@@ -40,34 +33,6 @@ export const ItemLayout = ({
         />
         <WatchProgress progress={progress} />
       </div>
-
-      <Modal
-        open={isModalOpen}
-        onClose={closeModal}
-        className="flex justify-center overflow-y-scroll"
-      >
-        <AnimatePresence
-          onExitComplete={() => {
-            setIsModalOpen(false);
-          }}
-        >
-          {showContent && (
-            <motion.div
-              key="modal-animation"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
-            >
-              <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
-                <Close closeAction={closeModal} />
-                {children}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Modal>
     </div>
   );
 };

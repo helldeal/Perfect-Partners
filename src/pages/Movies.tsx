@@ -10,6 +10,11 @@ import { SagaWatchItem } from "../components/movies/SagasWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
 import { useAddMovie, useFirebaseMovies } from "../api/firebase/movies";
 import { useAddTVShow, useFirebaseTVShows } from "../api/firebase/tvshows";
+import { Modal } from "@mui/material";
+import { Close } from "../components/Close";
+import { motion, AnimatePresence } from "framer-motion";
+import useModalStore from "../store/modalStore";
+import { WatchItemModalContent } from "../components/movies/WatchItemModalContent";
 
 export const MoviesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +24,18 @@ export const MoviesPage = () => {
   const addTVShowMutation = useAddTVShow();
   const firebaseMoviesQuery = useFirebaseMovies();
   const firebaseTVShowsQuery = useFirebaseTVShows();
+
+  const isModalOpen = useModalStore((state) => state.isModalOpen);
+  const closeModal = useModalStore((state) => state.closeModal);
+  const payload = useModalStore((state) => state.payload);
+
+  const showContent = useModalStore((state) => state.showContent);
+  const setShowContent = useModalStore((state) => state.setShowContent);
+
+  const exitModal = (e?: any) => {
+    e?.stopPropagation();
+    setShowContent(false);
+  };
 
   const searchList = debouncedQuery.length > 0 ? searchMultiQuery.data : null;
 
@@ -45,29 +62,12 @@ export const MoviesPage = () => {
 
   return (
     <div className="min-h-screen bg-[#181818] text-slate-100">
-      <Header navSelected="movies" />
+      <Header
+        navSelected="movies"
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+      />
       <div className=" flex flex-col gap-6 p-12">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search for a movie..."
-            className="p-2 pr-8 w-full box-border"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") setSearchTerm("");
-            }}
-          />
-
-          {searchTerm.length > 0 && (
-            <span
-              onClick={() => setSearchTerm("")}
-              className="absolute right-2 top-2 cursor-pointer text-gray-600 select-none"
-            >
-              ✕
-            </span>
-          )}
-        </div>
         {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
           searchMultiQuery.isLoading ? (
             <p>Loading...</p>
@@ -122,6 +122,33 @@ export const MoviesPage = () => {
                 </div>
               </>
             )}
+            <Modal
+              open={isModalOpen}
+              onClose={closeModal}
+              className="flex justify-center overflow-y-scroll"
+            >
+              <AnimatePresence
+                onExitComplete={() => {
+                  closeModal();
+                }}
+              >
+                {showContent && (
+                  <motion.div
+                    key="modal-animation"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
+                  >
+                    <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
+                      <Close closeAction={exitModal} />
+                      {payload && <WatchItemModalContent item={payload} />}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Modal>
           </>
         )}
       </div>
