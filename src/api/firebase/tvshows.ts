@@ -91,8 +91,6 @@ export const useAddTVShow = () => {
     };
     // filtrer pour ne garder QUE les champs voulus
     const cleanTVShow = filterTVShowFields(enrichedTVShow);
-
-    console.log("TV Show sent to Firebase:", cleanTVShow);
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows.json`,
       {

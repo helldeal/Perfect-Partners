@@ -84,8 +84,6 @@ export const useAddMovie = () => {
     // filtrer pour ne garder QUE les champs voulus
     const cleanMovie = filterMovieFields(enrichedMovie);
 
-    console.log("Movie sent to Firebase:", cleanMovie);
-
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies.json`,
       {
