@@ -1,8 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchMultiQuery } from "../api/tmdb";
 import { Header } from "../components/Header";
 import { useDebounce } from "../utils/useDebounce";
-import { MediaItem, Movie, MovieSaga, TVShow } from "../api/models/movies";
+import {
+  MediaItem,
+  MediaList,
+  Movie,
+  MovieSaga,
+  TVShow,
+} from "../api/models/movies";
 import { getMediaListFromMediaItems, isMovie, isTVShow } from "../utils/movies";
 import SearchItem from "../components/search/SearchItem";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
@@ -15,6 +21,7 @@ import { Close } from "../components/Close";
 import { motion, AnimatePresence } from "framer-motion";
 import useModalStore from "../store/modalStore";
 import { WatchItemModalContent } from "../components/movies/WatchItemModalContent";
+import { WatchItemModal } from "../api/models/watchItemModal";
 
 export const MoviesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,7 +34,8 @@ export const MoviesPage = () => {
 
   const isModalOpen = useModalStore((state) => state.isModalOpen);
   const closeModal = useModalStore((state) => state.closeModal);
-  const payload = useModalStore((state) => state.payload);
+  const payload: WatchItemModal = useModalStore((state) => state.payload);
+  const updatePayload = useModalStore((state) => state.updatePayload);
 
   const showContent = useModalStore((state) => state.showContent);
   const setShowContent = useModalStore((state) => state.setShowContent);
@@ -47,7 +55,7 @@ export const MoviesPage = () => {
     }
   };
 
-  const mediaList = useMemo(
+  const mediaItems = useMemo(
     () => [
       ...(firebaseMoviesQuery.data || []),
       ...(firebaseTVShowsQuery.data || []),
@@ -56,9 +64,55 @@ export const MoviesPage = () => {
   );
 
   const { planToWatch, watching, completed } = useMemo(
-    () => getMediaListFromMediaItems(mediaList),
-    [mediaList]
+    () => getMediaListFromMediaItems(mediaItems),
+    [mediaItems]
   );
+
+  const mediaList: MediaList = useMemo(
+    () => planToWatch.concat(watching).concat(completed),
+    [planToWatch, watching, completed]
+  );
+
+  useEffect(() => {
+    if (!payload || payload.id == null) return;
+
+    const itemInList = mediaList.find((item) => {
+      if (Array.isArray(item)) return item[0].id === payload.id;
+      return item.id === payload.id;
+    });
+
+    if (!itemInList) return;
+
+    // Construire le nouveau payload
+    let newPayload: Partial<WatchItemModal> = {};
+
+    if (Array.isArray(itemInList)) {
+      const allWatched = itemInList.every((movie) => movie.watched);
+      if (payload.allWatched !== allWatched || payload.list !== itemInList) {
+        newPayload = { list: itemInList, allWatched };
+      }
+    } else if ("watched" in itemInList) {
+      const allWatched = (itemInList as Movie).watched;
+      if (payload.allWatched !== allWatched) {
+        newPayload = { allWatched };
+      }
+    } else {
+      const allWatched = (itemInList as TVShow).seasons?.every((season) =>
+        season.episodes?.every((episode) => episode.watched)
+      );
+      if (
+        payload.allWatched !== allWatched ||
+        payload.list !== (itemInList as TVShow).seasons
+      ) {
+        newPayload = { list: (itemInList as TVShow).seasons, allWatched };
+      }
+    }
+
+    // Mettre à jour uniquement si quelque chose a changé
+    if (Object.keys(newPayload).length > 0) {
+      updatePayload(newPayload);
+    }
+  }, [mediaList, payload, updatePayload]);
 
   return (
     <div className="min-h-screen bg-[#181818] text-slate-100">
@@ -81,7 +135,7 @@ export const MoviesPage = () => {
                   title={item.title || item.name}
                   release_date={item.release_date || item.first_air_date}
                   overview={item.overview}
-                  itemList={mediaList}
+                  itemList={mediaItems}
                   handleAddToList={handleAddToList}
                   item={item}
                 />

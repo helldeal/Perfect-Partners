@@ -1,4 +1,4 @@
-import { TVShow } from "../../api/models/movies";
+import { TVSeason, TVShow } from "../../api/models/movies";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
@@ -27,12 +27,12 @@ export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
     });
   };
 
-  const handleWatchItem = (id: string) => {
+  const handleWatchItem = (id: string, list: TVSeason[]) => {
     updateTVShowMutation.mutate({
       tvShowId: tvShow.firebaseId!,
       updatedData: {
         ...tvShow,
-        seasons: tvShow.seasons?.map((season) => ({
+        seasons: list.map((season) => ({
           ...season,
           episodes: season.episodes?.map((episode) =>
             episode.id === Number(id) ? { ...episode, watched: true } : episode
@@ -60,7 +60,7 @@ export const TVShowWatchItem = ({ tvShow }: { tvShow: TVShow }) => {
         .filter((date) => date !== undefined) || []
     ),
     background_path: tvShow.backdrop_path,
-    list: tvShow.seasons ?? [],
+    list: tvShow.seasons,
     videos: tvShow.videos ?? [],
     logo: tvShow.logo,
     watch_providers: tvShow.watch_providers ?? [],

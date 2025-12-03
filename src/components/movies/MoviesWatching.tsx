@@ -32,7 +32,7 @@ export const MovieWatchItem = ({ movie }: { movie: Movie }) => {
     watch_providers: movie.watch_providers ?? [],
     handleDelete: handleDeleteMovie,
     handleAllWatch: handleWatchItem,
-    allWatched: movie.watched ?? false,
+    allWatched: movie.watched,
   };
 
   return (

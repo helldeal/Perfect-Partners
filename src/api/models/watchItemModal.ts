@@ -15,6 +15,6 @@ export type WatchItemModal = {
   watch_providers: WatchProvider[];
   handleDelete: () => void;
   handleAllWatch: () => void;
-  handleWatchItem?: (id: string) => void;
+  handleWatchItem?: (id: string, list?: any) => void;
   allWatched?: boolean;
 };

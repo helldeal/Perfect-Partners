@@ -9,7 +9,7 @@ export const MediaListMapping = ({
   handleWatchItem,
 }: {
   list: TVSeason[] | Movie[];
-  handleWatchItem?: (id: string) => void;
+  handleWatchItem?: (id: string, list?: TVSeason[]) => void;
 }) => {
   if (list.length === 0) return null;
   if ((list[0] as TVSeason).season_number !== undefined) {
@@ -45,7 +45,7 @@ export const MediaListMapping = ({
                       <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                         <ItemIconButton
                           handleClick={() =>
-                            handleWatchItem!(episode.id.toString())
+                            handleWatchItem!(episode.id.toString(), seasons)
                           }
                           title={"Mark as Watched"}
                           type={"primary"}

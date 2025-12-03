@@ -7,6 +7,7 @@ interface ModalStore {
   openModal: (payload: any) => void;
   closeModal: () => void;
   setShowContent: (show: boolean) => void;
+  updatePayload: (updates: Partial<any>) => void;
 }
 
 const useModalStore = create<ModalStore>((set) => ({
@@ -16,6 +17,10 @@ const useModalStore = create<ModalStore>((set) => ({
   openModal: (payload) => set({ isModalOpen: true, payload }),
   closeModal: () => set({ isModalOpen: false, payload: null }),
   setShowContent: (show) => set({ showContent: show }),
+  updatePayload: (updates) =>
+    set((state) => ({
+      payload: state.payload ? { ...state.payload, ...updates } : state.payload,
+    })),
 }));
 
 export default useModalStore;
