@@ -20,7 +20,7 @@ export const MediaListMapping = ({
           <div key={season.id}>
             <h3 className="text-xl">{season.name}</h3>
             <div className="flex flex-col mt-2 gap-2">
-              {season.episodes.map((episode) => (
+              {season.episodes?.map((episode) => (
                 <div
                   key={episode.id}
                   className="border-b rounded border-gray-500 pb-2 flex items-center gap-4 px-4"

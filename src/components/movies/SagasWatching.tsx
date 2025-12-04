@@ -23,7 +23,6 @@ export const SagaWatchItem = ({
   };
 
   const handleAllWatch = () => {
-    console.log("handleAllWatch");
     saga.forEach((movie) => {
       updateMovieMutation.mutate({
         movieId: movie.id.toString(),

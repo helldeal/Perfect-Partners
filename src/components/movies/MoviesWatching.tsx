@@ -2,7 +2,13 @@ import { Movie } from "../../api/models/movies";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteMovie, useUpdateMovie } from "../../api/firebase/movies";
-import { useMovieRecommendationsQuery } from "../../api/tmdb";
+import {
+  useMovieDetailsQuery,
+  useMovieImagesQuery,
+  useMovieRecommendationsQuery,
+  useMovieVideosQuery,
+  useMovieWatchProvidersQuery,
+} from "../../api/tmdb";
 import { WatchItemModal } from "../../api/models/watchItemModal";
 
 export const MovieWatchItem = ({
@@ -35,6 +41,10 @@ export const MovieWatchItem = ({
     runtime: movie.runtime,
     logo: movie.logo,
     recomandationsQuery: useMovieRecommendationsQuery,
+    watchProvidersQuery: useMovieWatchProvidersQuery,
+    videosQuery: useMovieVideosQuery,
+    imagesQuery: useMovieImagesQuery,
+    detailsQuery: useMovieDetailsQuery,
     watch_providers: movie.watch_providers ?? [],
     handleDelete: handleDeleteMovie,
     handleAllWatch: handleWatchItem,

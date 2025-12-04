@@ -2,7 +2,13 @@ import { TVSeason, TVShow } from "../../api/models/movies";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
-import { useTVRecommendationsQuery } from "../../api/tmdb";
+import {
+  useTVDetailsQuery,
+  useTVImagesQuery,
+  useTVRecommendationsQuery,
+  useTVVideosQuery,
+  useTVWatchProvidersQuery,
+} from "../../api/tmdb";
 import { WatchItemModal } from "../../api/models/watchItemModal";
 
 export const TVShowWatchItem = ({
@@ -71,6 +77,10 @@ export const TVShowWatchItem = ({
     logo: tvShow.logo,
     watch_providers: tvShow.watch_providers ?? [],
     recomandationsQuery: useTVRecommendationsQuery,
+    watchProvidersQuery: useTVWatchProvidersQuery,
+    videosQuery: useTVVideosQuery,
+    imagesQuery: useTVImagesQuery,
+    detailsQuery: useTVDetailsQuery,
     handleDelete: handleDeleteTVShow,
     handleAllWatch: handleAllWatch,
     handleWatchItem: handleWatchItem,

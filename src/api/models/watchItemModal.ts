@@ -11,6 +11,10 @@ export type WatchItemModal = {
   videos: Video[];
   logo?: string;
   recomandationsQuery?: any;
+  watchProvidersQuery?: any;
+  videosQuery?: any;
+  imagesQuery?: any;
+  detailsQuery?: any;
   creditsQuery?: any;
   watch_providers: WatchProvider[];
   handleDelete: () => void;

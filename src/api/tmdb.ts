@@ -120,38 +120,110 @@ export function useSearchMultiQuery(query: string) {
   });
 }
 
-export function useMovieRecommendationsQuery(movieId: string) {
+export function useMovieDetailsQuery(movieId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["movieDetails", movieId],
+    queryFn: () => TMDB.fetchMovieDetails(movieId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useTVDetailsQuery(tvId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["tvDetails", tvId],
+    queryFn: () => TMDB.fetchTVDetails(tvId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useMovieImagesQuery(movieId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["movieImages", movieId],
+    queryFn: () => TMDB.fetchMovieImages(movieId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useTVImagesQuery(tvId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["tvImages", tvId],
+    queryFn: () => TMDB.fetchTVImages(tvId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useMovieWatchProvidersQuery(movieId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["movieWatchProviders", movieId],
+    queryFn: () => TMDB.fetchMovieWatchProviders(movieId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useTVWatchProvidersQuery(tvId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["tvWatchProviders", tvId],
+    queryFn: () => TMDB.fetchTVWatchProviders(tvId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useMovieVideosQuery(movieId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["movieVideos", movieId],
+    queryFn: () => TMDB.fetchMovieVideos(movieId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useTVVideosQuery(tvId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["tvVideos", tvId],
+    queryFn: () => TMDB.fetchTVVideos(tvId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}
+
+export function useMovieRecommendationsQuery(movieId: string, opts?: any) {
   return useQuery({
     queryKey: ["movieRecommendations", movieId],
     queryFn: () => TMDB.fetchMovieRecommendations(movieId),
     staleTime: Infinity,
-    placeholderData: (prev) => prev,
+    ...opts,
   });
 }
 
-export function useTVRecommendationsQuery(tvId: string) {
+export function useTVRecommendationsQuery(tvId: string, opts?: any) {
   return useQuery({
     queryKey: ["tvRecommendations", tvId],
     queryFn: () => TMDB.fetchTVRecommendations(tvId),
     staleTime: Infinity,
-    placeholderData: (prev) => prev,
+    ...opts,
   });
 }
 
-export const useMovieCreditsQuery = (movieId: string) => {
+export const useMovieCreditsQuery = (movieId: string, opts?: any) => {
   return useQuery({
     queryKey: ["movieCredits", movieId],
     queryFn: () => TMDB.fetchMovieCredits(movieId),
     staleTime: Infinity,
-    placeholderData: (prev) => prev,
+    ...opts,
   });
 };
 
-export const useTVCreditsQuery = (tvId: string) => {
+export const useTVCreditsQuery = (tvId: string, opts?: any) => {
   return useQuery({
     queryKey: ["tvCredits", tvId],
     queryFn: () => TMDB.fetchTVCredits(tvId),
     staleTime: Infinity,
-    placeholderData: (prev) => prev,
+    ...opts,
   });
 };

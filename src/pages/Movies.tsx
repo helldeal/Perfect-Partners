@@ -10,7 +10,6 @@ import {
   TVShow,
 } from "../api/models/movies";
 import { getMediaListFromMediaItems, isMovie, isTVShow } from "../utils/movies";
-import SearchItem from "../components/search/SearchItem";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
 import { SagaWatchItem } from "../components/movies/SagasWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
@@ -22,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import useModalStore from "../store/modalStore";
 import { WatchItemModalContent } from "../components/movies/WatchItemModalContent";
 import { WatchItemModal } from "../api/models/watchItemModal";
+import { MediaItemSearch } from "../components/movies/MediaItemSearch";
 
 export const MoviesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -128,18 +128,8 @@ export const MoviesPage = () => {
             <p>Loading...</p>
           ) : searchList && searchList.length > 0 ? (
             <div className="grid grid-cols-6 gap-12 items-stretch">
-              {searchList.map((item: any) => (
-                <SearchItem
-                  key={item.id}
-                  id={item.id}
-                  image={item.poster_path}
-                  title={item.title || item.name}
-                  release_date={item.release_date || item.first_air_date}
-                  overview={item.overview}
-                  itemList={mediaItems}
-                  handleAddToList={handleAddToList}
-                  item={item}
-                />
+              {searchList.map((item: MediaItem) => (
+                <MediaItemSearch key={item.id} item={item} />
               ))}
             </div>
           ) : (
@@ -177,36 +167,36 @@ export const MoviesPage = () => {
                 </div>
               </>
             )}
-            <Modal
-              open={isModalOpen}
-              onClose={closeModal}
-              className="flex justify-center overflow-y-scroll"
-            >
-              <AnimatePresence
-                onExitComplete={() => {
-                  closeModal();
-                }}
-              >
-                {showContent && (
-                  <motion.div
-                    key="modal-animation"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
-                  >
-                    <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
-                      <Close closeAction={exitModal} />
-                      {payload && <WatchItemModalContent item={payload} />}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Modal>
           </>
         )}
       </div>
+      <Modal
+        open={isModalOpen}
+        onClose={closeModal}
+        className="flex justify-center overflow-y-scroll"
+      >
+        <AnimatePresence
+          onExitComplete={() => {
+            closeModal();
+          }}
+        >
+          {showContent && (
+            <motion.div
+              key="modal-animation"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
+            >
+              <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
+                <Close closeAction={exitModal} />
+                {payload && <WatchItemModalContent item={payload} />}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Modal>
     </div>
   );
 };

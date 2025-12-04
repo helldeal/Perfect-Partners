@@ -9,15 +9,18 @@ import {
 } from "../../assets/svgs";
 import { ItemIconButton } from "../ItemIconButton";
 import { isMovie, isTVShow, streamingLinks } from "../../utils/movies";
-import { formatRuntime } from "../../utils/dates";
-import SearchItem from "../search/SearchItem";
+import { formatRuntime, formatYearRange } from "../../utils/dates";
 import { useAddMovie, useFirebaseMovies } from "../../api/firebase/movies";
 import { useAddTVShow, useFirebaseTVShows } from "../../api/firebase/tvshows";
 import { MediaListIndicator } from "./MediaListIndicator";
 import { MediaListMapping } from "./MediaListMapping";
 import { WatchItemModal } from "../../api/models/watchItemModal";
+import SearchItem from "../search/SearchItem";
+import { TMDB } from "../../api/tmdb";
 
 export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
+  const [enrichedItemState, setEnrichedItemState] =
+    useState<WatchItemModal>(item);
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const addMovieMutation = useAddMovie();
@@ -59,6 +62,161 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
     ? item.recomandationsQuery(item.id)
     : null;
 
+  const shouldFetchDetails =
+    !item.runtime && (!item.list || !(item.list[0] as TVSeason)?.episodes);
+
+  const shouldFetchVideos = item.videos.length === 0;
+
+  const shouldFetchProviders = item.watch_providers.length === 0;
+
+  const shouldFetchImages = !item.logo;
+
+  const detailsQuery = item.detailsQuery
+    ? item.detailsQuery(item.id, { enabled: shouldFetchDetails })
+    : { data: null };
+
+  const videosQuery = item.videosQuery
+    ? item.videosQuery(item.id, { enabled: shouldFetchVideos })
+    : { data: null };
+
+  const providersQuery = item.watchProvidersQuery
+    ? item.watchProvidersQuery(item.id, { enabled: shouldFetchProviders })
+    : { data: null };
+
+  const imagesQuery = item.imagesQuery
+    ? item.imagesQuery(item.id, { enabled: shouldFetchImages })
+    : { data: null };
+
+  // mémoire des données synchrones (runtime, videos, providers, logo, date partielle)
+  const baseEnriched = useMemo(() => {
+    const newItem: WatchItemModal = { ...item };
+
+    // RUNTIME manquant → depuis detailsQuery.data.runtime
+    if (detailsQuery?.data?.runtime) {
+      newItem.runtime = detailsQuery.data.runtime;
+    }
+
+    // VIDEOS manquantes
+    if (videosQuery?.data?.results) {
+      newItem.videos = videosQuery.data.results;
+    }
+
+    // WATCH PROVIDERS manquants (adaptation : providersQuery structure peut varier)
+    if (providersQuery?.data?.results?.FR?.flatrate) {
+      newItem.watch_providers = providersQuery.data.results.FR.flatrate;
+    }
+
+    // LOGO : bonus FR → US → fallback
+    if (imagesQuery?.data?.logos) {
+      const logos = imagesQuery.data.logos;
+      const logoFR =
+        logos.find((l: any) => l.iso_3166_1 === "FR")?.file_path ??
+        logos.find((l: any) => l.iso_3166_1 === "US")?.file_path ??
+        logos[0]?.file_path ??
+        undefined;
+      newItem.logo = logoFR;
+    }
+
+    // Si detailsQuery contient saisons, on peut calculer la date (mais pas encore les épisodes)
+    if (shouldFetchDetails && detailsQuery?.data?.seasons) {
+      console.log(
+        "Calcul date from seasons for item:",
+        detailsQuery.data.seasons
+      );
+      newItem.date = formatYearRange(
+        detailsQuery.data.seasons
+          .filter((season: any) => season.season_number !== 0)
+          .map((season: any) => season.air_date)
+          .filter((d: any) => d !== undefined) || []
+      );
+      // on place les saisons sans épisodes pour l'instant
+      newItem.list = detailsQuery.data.seasons.filter(
+        (season: any) => season.season_number !== 0
+      );
+    }
+
+    return newItem;
+  }, [
+    item,
+    detailsQuery?.data,
+    videosQuery?.data,
+    providersQuery?.data,
+    imagesQuery?.data,
+    shouldFetchDetails,
+  ]);
+
+  // --- useEffect pour gérer la partie async (saisons -> épisodes) ---
+  useEffect(() => {
+    let cancelled = false;
+
+    // si il n'y a pas de saisons à enrichir -> on écrit baseEnriched synchronement
+    if (
+      !detailsQuery?.data?.seasons ||
+      detailsQuery.data.seasons.length === 0
+    ) {
+      setEnrichedItemState(baseEnriched);
+      return;
+    }
+
+    // Si les saisons existent mais ont déjà des épisodes dans item.list, on merge/retourne directement
+    const firstListHasEpisodes =
+      item.list &&
+      (item.list[0] as any)?.episodes &&
+      (item.list[0] as any).episodes.length > 0;
+    if (firstListHasEpisodes) {
+      // preferer l'item original si il contient déjà des episodes
+      setEnrichedItemState(baseEnriched);
+      return;
+    }
+
+    // Async fetch des saisons + episodes
+    (async () => {
+      try {
+        // récupération des saisons depuis detailsQuery
+        const seasons: any[] = detailsQuery.data.seasons ?? [];
+
+        // fetch en parallèle les détails de chaque saison
+        const seasonsWithEpisodes = await Promise.all(
+          seasons
+            .filter((season) => season.season_number !== 0)
+            .map(async (season) => {
+              const seasonDetails = await TMDB.fetchTVSeasonDetails(
+                item.id.toString(),
+                season.season_number
+              );
+              return {
+                ...season,
+                episodes: seasonDetails?.episodes ?? [],
+              };
+            })
+        );
+
+        if (cancelled) return;
+
+        // merge avec baseEnriched (déjà contient runtime, videos, providers, logo, date)
+        const merged = {
+          ...baseEnriched,
+          list: seasonsWithEpisodes,
+        } as WatchItemModal;
+
+        setEnrichedItemState(merged);
+      } catch (err) {
+        console.error("Erreur lors du fetch des saisons/episodes:", err);
+        // fallback : on met la version synchrone
+        if (!cancelled) setEnrichedItemState(baseEnriched);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseEnriched, detailsQuery?.data, item.id, item.list]);
+  const enrichedItem = enrichedItemState;
+
+  // console.log("Enriched WatchItemModalContent for:", enrichedItem);
+
+  const displayItem = enrichedItem;
+
   useEffect(() => {
     if (!iframeRef.current) return;
 
@@ -95,7 +253,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             zIndex: 20,
           }}
         >
-          {item.videos && item.videos.length > 0 ? (
+          {displayItem.videos && displayItem.videos.length > 0 ? (
             <iframe
               ref={iframeRef}
               style={{
@@ -106,17 +264,17 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 height: "100%",
               }}
               className=" pointer-events-none"
-              src={`https://www.youtube.com/embed/${item.videos[0]?.key}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&loop=1&playlist=${item.videos[0]?.key}&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1&mute=1`}
-              title={item.title}
+              src={`https://www.youtube.com/embed/${displayItem.videos[0]?.key}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&loop=1&playlist=${displayItem.videos[0]?.key}&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1&mute=1`}
+              title={displayItem.title}
               frameBorder="0"
               allow="autoplay; encrypted-media"
               allowFullScreen
             ></iframe>
           ) : (
-            item.background_path && (
+            displayItem.background_path && (
               <img
-                src={`https://image.tmdb.org/t/p/w780${item.background_path}`}
-                alt={item.title}
+                src={`https://image.tmdb.org/t/p/w780${displayItem.background_path}`}
+                alt={displayItem.title}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -137,17 +295,17 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
         >
           <div className="absolute bottom-1/10 mb-4 left-12 flex flex-col gap-4">
             <img
-              src={`https://image.tmdb.org/t/p/w300${item.logo}`}
-              alt={item.title}
+              src={`https://image.tmdb.org/t/p/w300${displayItem.logo}`}
+              alt={displayItem.title}
               className="object-contain mb-6"
             />
-            {item.wishListed ? (
+            {displayItem.wishListed ? (
               <div className="flex space-x-4">
-                {!item.allWatched && (
+                {!displayItem.allWatched && (
                   <ItemIconButton
                     type="primary"
                     title="Watch"
-                    handleClick={item.handleAllWatch}
+                    handleClick={displayItem.handleAllWatch}
                   >
                     <WatchButtonIcon />
                   </ItemIconButton>
@@ -155,7 +313,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 <ItemIconButton
                   type="secondary"
                   title="Remove"
-                  handleClick={item.handleDelete}
+                  handleClick={displayItem.handleDelete}
                 >
                   <RemoveButtonIcon />
                 </ItemIconButton>
@@ -163,14 +321,14 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             ) : (
               <button
                 className="w-fit bg-white text-black px-4 py-2 rounded flex items-center space-x-2 hover:bg-gray-200 cursor-pointer"
-                onClick={() => handleAddToList(item)}
+                onClick={() => handleAddToList(displayItem)}
               >
                 <AddButtonIcon />
                 <span className="leading-none mb-0.5">Ajouter à la liste</span>
               </button>
             )}
           </div>
-          {item.videos && item.videos.length > 0 ? (
+          {displayItem.videos && displayItem.videos.length > 0 ? (
             <div className="absolute bottom-1/10 mb-4 right-12 flex">
               <ItemIconButton
                 type="secondary"
@@ -187,15 +345,17 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
         <div className="grid grid-cols-3 gap-8">
           <div className="col-span-2">
             <div className="flex space-x-4 mt-2 text-gray-400 items-center mb-4">
-              <p>{item.date}</p>
-              <MediaListIndicator list={item.list ?? []} />
-              {item.runtime && <p>{formatRuntime(item.runtime)}</p>}
+              <p>{displayItem.date}</p>
+              <MediaListIndicator list={displayItem.list ?? []} />
+              {displayItem.runtime && (
+                <p>{formatRuntime(displayItem.runtime)}</p>
+              )}
             </div>
-            <p className="mb-2 line-clamp-4">{item.overview}</p>
+            <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
           </div>
           <div className="col-span-1 flex flex-col items-end">
-            {item.watch_providers ? (
-              item.watch_providers?.slice(0, 3).map((provider) => {
+            {displayItem.watch_providers ? (
+              displayItem.watch_providers?.slice(0, 3).map((provider) => {
                 const link = streamingLinks[provider.provider_id] || null;
                 return (
                   <img
@@ -221,34 +381,30 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           </div>
         </div>
         <MediaListMapping
-          list={item.list ?? []}
+          list={displayItem.list ?? []}
           handleWatchItem={item.handleWatchItem}
         />
         <div className="mt-6">
           <h2 className="text-2xl mb-4">Recommandations</h2>
-          {recomandationsQueryResult && recomandationsQueryResult.isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            recomandationsQueryResult &&
-            recomandationsQueryResult.data && (
-              <div className="grid grid-cols-5 gap-4 pb-4">
-                {recomandationsQueryResult.data.results
-                  .slice(0, 10)
-                  .map((item: any) => (
-                    <SearchItem
-                      key={item.id}
-                      id={item.id}
-                      image={item.poster_path}
-                      title={item.title || item.name}
-                      release_date={item.release_date || item.first_air_date}
-                      overview={item.overview}
-                      itemList={mediaList}
-                      handleAddToList={handleRecommendationAddToList}
-                      item={item}
-                    />
-                  ))}
-              </div>
-            )
+          {recomandationsQueryResult && recomandationsQueryResult.data && (
+            <div className="grid grid-cols-5 gap-4 pb-4">
+              {recomandationsQueryResult.data.results
+                .slice(0, 10)
+                .map((item: any) => (
+                  // <MediaItemSearch key={item.id} item={item} />
+                  <SearchItem
+                    key={item.id}
+                    id={item.id}
+                    image={item.poster_path}
+                    title={item.title || item.name}
+                    release_date={item.release_date || item.first_air_date}
+                    overview={item.overview}
+                    itemList={mediaList}
+                    handleAddToList={handleRecommendationAddToList}
+                    item={item}
+                  />
+                ))}
+            </div>
           )}
         </div>
       </div>
