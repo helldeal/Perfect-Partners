@@ -14,9 +14,11 @@ import { WatchItemModal } from "../../api/models/watchItemModal";
 export const MovieWatchItem = ({
   movie,
   inWishlist = true,
+  onAdd,
 }: {
   movie: Movie;
   inWishlist?: boolean;
+  onAdd?: () => void;
 }) => {
   const deleteMovieMutation = useDeleteMovie();
   const updateMovieMutation = useUpdateMovie();
@@ -55,9 +57,11 @@ export const MovieWatchItem = ({
   return (
     <ItemLayout
       name={movie.title}
-      image={movie.poster_path}
+      image={`https://image.tmdb.org/t/p/w400${movie.poster_path}`}
       progress={movie.watched ? 100 : 0}
       payload={modalContent}
+      onAdd={onAdd}
+      inList={inWishlist}
     />
   );
 };

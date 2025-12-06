@@ -7,7 +7,7 @@ export const ItemIconButton = ({
   children: React.ReactNode;
   title: string;
   type: "primary" | "secondary";
-  handleClick: () => void;
+  handleClick: (e: any) => void;
 }) => {
   return (
     <button

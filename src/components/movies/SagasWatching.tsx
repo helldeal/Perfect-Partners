@@ -66,7 +66,7 @@ export const SagaWatchItem = ({
   return (
     <ItemLayout
       name={sagaItem.name}
-      image={sagaItem.poster_path}
+      image={`https://image.tmdb.org/t/p/w400${sagaItem.poster_path}`}
       progress={progress}
       payload={modalContent}
     />

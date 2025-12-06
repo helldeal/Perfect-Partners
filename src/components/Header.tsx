@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/authContext";
 import { doSignOut } from "../firebase/auth";
 import logoImg from "../assets/logo.png";
 import { useState, useEffect } from "react";
+import useSearchStore from "../store/searchStore";
 
 const navMenu = [
   { name: "Cinéma", path: "/Perfect-Partners/movies", key: "movies" },
@@ -10,15 +11,7 @@ const navMenu = [
   { name: "Lego", path: "/Perfect-Partners/legos", key: "legos" },
 ];
 
-export const Header = ({
-  navSelected,
-  searchTerm,
-  setSearchTerm,
-}: {
-  navSelected: string;
-  searchTerm?: string;
-  setSearchTerm?: (term: string) => void;
-}) => {
+export const Header = ({ navSelected }: { navSelected: string }) => {
   const { userLoggedIn, userLoading, currentUser } = useAuth();
   const navigate = useNavigate();
   // console.log("Header auth state:", {
@@ -31,6 +24,9 @@ export const Header = ({
       <Navigate to={"/Perfect-Partners/login"} replace={true} />
     );
   }
+
+  const searchTerm = useSearchStore((state) => state.query);
+  const setSearchTerm = useSearchStore((state) => state.setQuery);
 
   const handleSignOut = async () => {
     await doSignOut();
@@ -78,29 +74,38 @@ export const Header = ({
       </div>
 
       <div className="flex items-center gap-3">
-        {searchTerm !== undefined && !!setSearchTerm && (
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search for a movie..."
-              className="p-2 pr-8 w-full box-border"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") setSearchTerm("");
-              }}
-            />
+        <div className="relative">
+          <input
+            type="text"
+            placeholder={(() => {
+              switch (navSelected) {
+                case "movies":
+                  return "Rechercher des films, séries...";
+                case "games":
+                  return "Rechercher des jeux...";
+                case "legos":
+                  return "Rechercher des legos...";
+                default:
+                  return "Rechercher...";
+              }
+            })()}
+            className="p-2 pr-8 w-full box-border"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setSearchTerm("");
+            }}
+          />
 
-            {searchTerm.length > 0 && (
-              <span
-                onClick={() => setSearchTerm("")}
-                className="absolute right-2 top-2 cursor-pointer text-gray-600 select-none"
-              >
-                ✕
-              </span>
-            )}
-          </div>
-        )}
+          {searchTerm.length > 0 && (
+            <span
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-2 cursor-pointer text-gray-600 select-none"
+            >
+              ✕
+            </span>
+          )}
+        </div>
         <details className="relative">
           <summary className="list-none cursor-pointer p-0 m-0 flex items-center">
             {currentUser?.photoURL ? (

@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchMultiQuery } from "../api/tmdb";
-import { Header } from "../components/Header";
 import { useDebounce } from "../utils/useDebounce";
 import {
   MediaItem,
@@ -9,51 +8,29 @@ import {
   MovieSaga,
   TVShow,
 } from "../api/models/movies";
-import { getMediaListFromMediaItems, isMovie, isTVShow } from "../utils/movies";
+import { getMediaListFromMediaItems, isMovie } from "../utils/movies";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
 import { SagaWatchItem } from "../components/movies/SagasWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
-import { useAddMovie, useFirebaseMovies } from "../api/firebase/movies";
-import { useAddTVShow, useFirebaseTVShows } from "../api/firebase/tvshows";
-import { Modal } from "@mui/material";
-import { Close } from "../components/Close";
-import { motion, AnimatePresence } from "framer-motion";
+import { useFirebaseMovies } from "../api/firebase/movies";
+import { useFirebaseTVShows } from "../api/firebase/tvshows";
 import useModalStore from "../store/modalStore";
-import { WatchItemModalContent } from "../components/movies/WatchItemModalContent";
 import { WatchItemModal } from "../api/models/watchItemModal";
 import { MediaItemSearch } from "../components/movies/MediaItemSearch";
+import useSearchStore from "../store/searchStore";
+import { MainLayout } from "../components/MainLayout";
 
 export const MoviesPage = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchTerm = useSearchStore((state) => state.query);
   const debouncedQuery = useDebounce(searchTerm, 400);
   const searchMultiQuery = useSearchMultiQuery(debouncedQuery);
-  const addMovieMutation = useAddMovie();
-  const addTVShowMutation = useAddTVShow();
   const firebaseMoviesQuery = useFirebaseMovies();
   const firebaseTVShowsQuery = useFirebaseTVShows();
 
-  const isModalOpen = useModalStore((state) => state.isModalOpen);
-  const closeModal = useModalStore((state) => state.closeModal);
   const payload: WatchItemModal = useModalStore((state) => state.payload);
   const updatePayload = useModalStore((state) => state.updatePayload);
 
-  const showContent = useModalStore((state) => state.showContent);
-  const setShowContent = useModalStore((state) => state.setShowContent);
-
-  const exitModal = (e?: any) => {
-    e?.stopPropagation();
-    setShowContent(false);
-  };
-
   const searchList = debouncedQuery.length > 0 ? searchMultiQuery.data : null;
-
-  const handleAddToList = (item: MediaItem) => {
-    if (isMovie(item)) {
-      addMovieMutation.mutate(item.id);
-    } else if (isTVShow(item)) {
-      addTVShowMutation.mutate(item.id);
-    }
-  };
 
   const mediaItems = useMemo(
     () => [
@@ -116,12 +93,7 @@ export const MoviesPage = () => {
   }, [mediaList, payload, updatePayload]);
 
   return (
-    <div className="min-h-screen bg-[#181818] text-slate-100">
-      <Header
-        navSelected="movies"
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
+    <MainLayout navSelected="movies">
       <div className=" flex flex-col gap-6 p-12">
         {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
           searchMultiQuery.isLoading ? (
@@ -170,34 +142,7 @@ export const MoviesPage = () => {
           </>
         )}
       </div>
-      <Modal
-        open={isModalOpen}
-        onClose={closeModal}
-        className="flex justify-center overflow-y-scroll"
-      >
-        <AnimatePresence
-          onExitComplete={() => {
-            closeModal();
-          }}
-        >
-          {showContent && (
-            <motion.div
-              key="modal-animation"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
-            >
-              <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
-                <Close closeAction={exitModal} />
-                {payload && <WatchItemModalContent item={payload} />}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Modal>
-    </div>
+    </MainLayout>
   );
 };
 

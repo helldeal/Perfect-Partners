@@ -14,9 +14,11 @@ import { WatchItemModal } from "../../api/models/watchItemModal";
 export const TVShowWatchItem = ({
   tvShow,
   inWishlist = true,
+  onAdd,
 }: {
   tvShow: TVShow;
   inWishlist?: boolean;
+  onAdd?: () => void;
 }) => {
   const deleteTVShowMutation = useDeleteTVShow();
   const updateTVShowMutation = useUpdateTVShow();
@@ -93,9 +95,11 @@ export const TVShowWatchItem = ({
   return (
     <ItemLayout
       name={tvShow.name}
-      image={tvShow.poster_path}
+      image={`https://image.tmdb.org/t/p/w400${tvShow.poster_path}`}
       progress={progress}
       payload={modalContent}
+      onAdd={onAdd}
+      inList={inWishlist}
     />
   );
 };

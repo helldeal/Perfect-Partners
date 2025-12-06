@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MediaItem, Movie, TVSeason } from "../../api/models/movies";
+import { Movie, TVSeason } from "../../api/models/movies";
 import {
   AddButtonIcon,
   MutedIcon,
@@ -8,15 +8,15 @@ import {
   WatchButtonIcon,
 } from "../../assets/svgs";
 import { ItemIconButton } from "../ItemIconButton";
-import { isMovie, isTVShow, streamingLinks } from "../../utils/movies";
+import { streamingLinks } from "../../utils/movies";
 import { formatRuntime, formatYearRange } from "../../utils/dates";
-import { useAddMovie, useFirebaseMovies } from "../../api/firebase/movies";
-import { useAddTVShow, useFirebaseTVShows } from "../../api/firebase/tvshows";
+import { useAddMovie } from "../../api/firebase/movies";
+import { useAddTVShow } from "../../api/firebase/tvshows";
 import { MediaListIndicator } from "./MediaListIndicator";
 import { MediaListMapping } from "./MediaListMapping";
 import { WatchItemModal } from "../../api/models/watchItemModal";
-import SearchItem from "../search/SearchItem";
 import { TMDB } from "../../api/tmdb";
+import { MediaItemSearch } from "./MediaItemSearch";
 
 export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const [enrichedItemState, setEnrichedItemState] =
@@ -25,17 +25,6 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const addMovieMutation = useAddMovie();
   const addTVShowMutation = useAddTVShow();
-
-  const firebaseMoviesQuery = useFirebaseMovies();
-  const firebaseTVShowsQuery = useFirebaseTVShows();
-
-  const handleRecommendationAddToList = (item: MediaItem) => {
-    if (isMovie(item)) {
-      addMovieMutation.mutate(item.id);
-    } else if (isTVShow(item)) {
-      addTVShowMutation.mutate(item.id);
-    }
-  };
 
   const handleAddToList = (item: WatchItemModal) => {
     if (!item.list) addMovieMutation.mutate(item.id);
@@ -49,14 +38,6 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
       }
     }
   };
-
-  const mediaList = useMemo(
-    () => [
-      ...(firebaseMoviesQuery.data || []),
-      ...(firebaseTVShowsQuery.data || []),
-    ],
-    [firebaseMoviesQuery.data, firebaseTVShowsQuery.data]
-  );
 
   const recomandationsQueryResult = item.recomandationsQuery
     ? item.recomandationsQuery(item.id)
@@ -391,18 +372,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
               {recomandationsQueryResult.data.results
                 .slice(0, 10)
                 .map((item: any) => (
-                  // <MediaItemSearch key={item.id} item={item} />
-                  <SearchItem
-                    key={item.id}
-                    id={item.id}
-                    image={item.poster_path}
-                    title={item.title || item.name}
-                    release_date={item.release_date || item.first_air_date}
-                    overview={item.overview}
-                    itemList={mediaList}
-                    handleAddToList={handleRecommendationAddToList}
-                    item={item}
-                  />
+                  <MediaItemSearch key={item.id} item={item} />
                 ))}
             </div>
           )}
