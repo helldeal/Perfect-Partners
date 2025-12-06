@@ -26,6 +26,8 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const addMovieMutation = useAddMovie();
   const addTVShowMutation = useAddTVShow();
 
+  console.log("Rendering WatchItemModalContent for item:", item);
+
   const handleAddToList = (item: WatchItemModal) => {
     if (!item.list) addMovieMutation.mutate(item.id);
     else if (item.list && item.list.length > 0) {
@@ -192,11 +194,8 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
       cancelled = true;
     };
   }, [baseEnriched, detailsQuery?.data, item.id, item.list]);
-  const enrichedItem = enrichedItemState;
 
-  // console.log("Enriched WatchItemModalContent for:", enrichedItem);
-
-  const displayItem = enrichedItem;
+  const displayItem = enrichedItemState;
 
   useEffect(() => {
     if (!iframeRef.current) return;

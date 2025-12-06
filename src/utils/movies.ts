@@ -2,7 +2,6 @@ import {
   MediaItem,
   MediaList,
   Movie,
-  MovieSaga,
   TVEpisode,
   TVSeason,
   TVShow,
@@ -103,14 +102,7 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
 
   items.forEach((item) => {
     if (isMovie(item)) {
-      if (item.collection) {
-        if (!groupedMovies[item.collection.id]) {
-          groupedMovies[item.collection.id] = [];
-        }
-        groupedMovies[item.collection.id].push(item);
-      } else {
-        groupedMovies[item.id] = [item];
-      }
+      groupedMovies[item.id] = [item];
     } else if (isTVShow(item)) {
       item.seasons = item.seasons?.filter(
         (season) => season.season_number !== 0
@@ -128,27 +120,14 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
     }
   });
 
-  Object.values(groupedMovies).forEach((movieSaga: MovieSaga) => {
-    if (movieSaga.length === 1) {
-      if (movieSaga[0].watched) {
-        completed.push(movieSaga[0]);
+  Object.values(groupedMovies).forEach((movieList: Movie[]) => {
+    if (movieList.length === 1) {
+      if (movieList[0].watched) {
+        completed.push(movieList[0]);
       } else {
-        planToWatch.push(movieSaga[0]);
+        planToWatch.push(movieList[0]);
       }
       return;
-    }
-    movieSaga.sort((a, b) =>
-      a.release_date
-        ? a.release_date.localeCompare(b.release_date)
-        : a.title.localeCompare(b.title)
-    );
-    const watchedMovies = movieSaga.filter((movie) => movie.watched);
-    if (watchedMovies.length === 0) {
-      planToWatch.push(movieSaga);
-    } else if (watchedMovies.length === movieSaga.length) {
-      completed.push(movieSaga);
-    } else {
-      watching.push(movieSaga);
     }
   });
 

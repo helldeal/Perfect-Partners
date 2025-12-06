@@ -26,16 +26,14 @@ export const MediaItemSearch: React.FC<MediaItemSearchProps> = ({ item }) => {
 
   return (
     <div className="transform transition-transform duration-350 hover:scale-110 cursor-pointer">
-      {isMovie(item as MediaItem) ? (
+      {isMovie(item) ? (
         <MovieWatchItem
-          key={(item as Movie).id}
           movie={item as Movie}
           onAdd={() => handleAddToList(item)}
           inWishlist={firebaseMoviesQuery.data?.some((m) => m.id === item.id)}
         />
       ) : (
         <TVShowWatchItem
-          key={(item as TVShow).id}
           tvShow={item as TVShow}
           onAdd={() => handleAddToList(item)}
           inWishlist={firebaseTVShowsQuery.data?.some(

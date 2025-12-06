@@ -1,16 +1,9 @@
 import { useEffect, useMemo } from "react";
 import { useSearchMultiQuery } from "../api/tmdb";
 import { useDebounce } from "../utils/useDebounce";
-import {
-  MediaItem,
-  MediaList,
-  Movie,
-  MovieSaga,
-  TVShow,
-} from "../api/models/movies";
+import { MediaItem, MediaList, Movie, TVShow } from "../api/models/movies";
 import { getMediaListFromMediaItems, isMovie } from "../utils/movies";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
-import { SagaWatchItem } from "../components/movies/SagasWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
 import { useFirebaseMovies } from "../api/firebase/movies";
 import { useFirebaseTVShows } from "../api/firebase/tvshows";
@@ -54,7 +47,6 @@ export const MoviesPage = () => {
     if (!payload || payload.id == null) return;
 
     const itemInList = mediaList.find((item) => {
-      if (Array.isArray(item)) return item[0].id === payload.id;
       return item.id === payload.id;
     });
 
@@ -65,11 +57,6 @@ export const MoviesPage = () => {
         newPayload = { allWatched: false, wishListed: false };
     } else if (itemInList && !payload.wishListed) {
       newPayload = { wishListed: true };
-    } else if (Array.isArray(itemInList)) {
-      const allWatched = itemInList.every((movie) => movie.watched);
-      if (payload.allWatched !== allWatched || payload.list !== itemInList) {
-        newPayload = { list: itemInList, allWatched };
-      }
     } else if ("watched" in itemInList) {
       const allWatched = (itemInList as Movie).watched;
       if (payload.allWatched !== allWatched) {
@@ -101,7 +88,13 @@ export const MoviesPage = () => {
           ) : searchList && searchList.length > 0 ? (
             <div className="grid grid-cols-6 gap-12 items-stretch">
               {searchList.map((item: MediaItem) => (
-                <MediaItemSearch key={item.id} item={item} />
+                <MediaItemSearch
+                  key={item.id}
+                  item={
+                    mediaItems.find((mediaItem) => mediaItem.id === item.id) ??
+                    item
+                  }
+                />
               ))}
             </div>
           ) : (
@@ -146,19 +139,10 @@ export const MoviesPage = () => {
   );
 };
 
-const WatchItemMapping = ({
-  itemList,
-}: {
-  itemList: Movie | TVShow | MovieSaga;
-}) => {
+const WatchItemMapping = ({ itemList }: { itemList: MediaItem }) => {
   return (
     <div className="transform transition-transform duration-350 hover:scale-110 cursor-pointer">
-      {Array.isArray(itemList) && itemList[0].collection ? (
-        <SagaWatchItem
-          key={(itemList as MovieSaga)[0].collection?.id}
-          saga={itemList as MovieSaga}
-        />
-      ) : isMovie(itemList as MediaItem) ? (
+      {isMovie(itemList) ? (
         <MovieWatchItem
           key={(itemList as Movie).id}
           movie={itemList as Movie}
