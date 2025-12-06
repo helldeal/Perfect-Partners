@@ -145,7 +145,7 @@ export const MoviesPage = () => {
             {completed.length > 0 && (
               <>
                 <h2 className="text-2xl">Completed</h2>
-                <div className="grid grid-cols-6 gap-y-12 items-stretch">
+                <div className="grid grid-cols-6 gap-12 items-stretch">
                   {completed.map((itemList) => {
                     // const previousItem = completed[index - 1] ?? null;
                     // const nextItem = completed[index + 1] ?? null;

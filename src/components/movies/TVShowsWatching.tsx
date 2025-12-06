@@ -3,6 +3,7 @@ import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
 import {
+  useTVCreditsQuery,
   useTVDetailsQuery,
   useTVImagesQuery,
   useTVRecommendationsQuery,
@@ -98,6 +99,7 @@ export const TVShowWatchItem = ({
     videosQuery: useTVVideosQuery,
     imagesQuery: useTVImagesQuery,
     detailsQuery: useTVDetailsQuery,
+    creditsQuery: useTVCreditsQuery,
     handleDelete: handleDeleteTVShow,
     handleAllWatch: handleAllWatch,
     handleWatchItem: handleWatchItem,

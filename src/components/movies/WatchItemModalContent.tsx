@@ -43,6 +43,10 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
     ? item.recomandationsQuery(item.id)
     : null;
 
+  const creditsQueryResult = item.creditsQuery
+    ? item.creditsQuery(item.id)
+    : null;
+
   const shouldFetchDetails =
     !item.runtime && (!item.list || !(item.list[0] as TVSeason)?.episodes);
 
@@ -363,9 +367,9 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           handleWatchItem={item.handleWatchItem}
           handleUnwatchItem={item.handleUnwatchItem}
         />
-        <div className="mt-6">
-          <h2 className="text-2xl mb-4">Recommandations</h2>
-          {recomandationsQueryResult && recomandationsQueryResult.data && (
+        {recomandationsQueryResult && recomandationsQueryResult.data && (
+          <div className="mt-6">
+            <h2 className="text-2xl mb-4">Recommandations</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {recomandationsQueryResult.data.results
                 .slice(0, 10)
@@ -373,8 +377,29 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                   <MediaItemSearch key={item.id} item={item} />
                 ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+        {creditsQueryResult && creditsQueryResult.data && (
+          <div className="mt-6">
+            <h2 className="text-2xl mb-4">Crédits</h2>
+            <div className="grid grid-cols-5 gap-4 pb-4">
+              {creditsQueryResult.data.cast.slice(0, 10).map((person: any) => (
+                <div key={person.id} className="flex flex-col items-center">
+                  <img
+                    src={
+                      person.profile_path
+                        ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
+                        : "https://via.placeholder.com/185x278?text=No+Image"
+                    }
+                    alt={person.name}
+                    className="w-24 h-36 object-cover rounded mb-2"
+                  />
+                  <p>{person.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
