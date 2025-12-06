@@ -10,8 +10,8 @@ import {
 import { ItemIconButton } from "../ItemIconButton";
 import { streamingLinks } from "../../utils/movies";
 import { formatRuntime, formatYearRange } from "../../utils/dates";
-import { useAddMovie } from "../../api/firebase/movies";
-import { useAddTVShow } from "../../api/firebase/tvshows";
+import { useAddMovie, useFirebaseMovies } from "../../api/firebase/movies";
+import { useAddTVShow, useFirebaseTVShows } from "../../api/firebase/tvshows";
 import { MediaListIndicator } from "./MediaListIndicator";
 import { MediaListMapping } from "./MediaListMapping";
 import { WatchItemModal } from "../../api/models/watchItemModal";
@@ -25,6 +25,16 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const addMovieMutation = useAddMovie();
   const addTVShowMutation = useAddTVShow();
+  const firebaseMoviesQuery = useFirebaseMovies();
+  const firebaseTVShowsQuery = useFirebaseTVShows();
+
+  const mediaItems = useMemo(
+    () => [
+      ...(firebaseMoviesQuery.data || []),
+      ...(firebaseTVShowsQuery.data || []),
+    ],
+    [firebaseMoviesQuery.data, firebaseTVShowsQuery.data]
+  );
 
   const handleAddToList = (item: WatchItemModal) => {
     if (!item.list) addMovieMutation.mutate(item.id);
@@ -387,7 +397,13 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             <h2 className="text-2xl mb-4">{collectionsQuery.data.name}</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {collectionsQuery.data.parts.map((item: any) => (
-                <MediaItemSearch key={item.id} item={item} />
+                <MediaItemSearch
+                  key={item.id}
+                  item={
+                    mediaItems.find((mediaItem) => mediaItem.id === item.id) ??
+                    item
+                  }
+                />
               ))}
             </div>
           </div>
@@ -399,7 +415,14 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
               {recomandationsQueryResult.data.results
                 .slice(0, 10)
                 .map((item: any) => (
-                  <MediaItemSearch key={item.id} item={item} />
+                  <MediaItemSearch
+                    key={item.id}
+                    item={
+                      mediaItems.find(
+                        (mediaItem) => mediaItem.id === item.id
+                      ) ?? item
+                    }
+                  />
                 ))}
             </div>
           </div>
