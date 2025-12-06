@@ -132,8 +132,20 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
   });
 
   return {
-    planToWatch,
-    watching,
-    completed,
+    planToWatch: planToWatch.sort((a, b) =>
+      (isMovie(a) ? a.title : a.name).localeCompare(
+        isMovie(b) ? b.title : b.name
+      )
+    ),
+    watching: watching.sort((a, b) =>
+      (isMovie(a) ? a.title : a.name).localeCompare(
+        isMovie(b) ? b.title : b.name
+      )
+    ),
+    completed: completed.sort((a, b) =>
+      (isMovie(a) ? a.title : a.name).localeCompare(
+        isMovie(b) ? b.title : b.name
+      )
+    ),
   };
 };

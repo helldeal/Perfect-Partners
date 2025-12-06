@@ -1,15 +1,17 @@
 import { TVSeason, Movie } from "../../api/models/movies";
 import { formatRuntime, formatYearRange } from "../../utils/dates";
 import { ItemIconButton } from "../ItemIconButton";
-import { WatchButtonIcon } from "../../assets/svgs";
+import { RemoveButtonIcon, WatchButtonIcon } from "../../assets/svgs";
 import { WatchProgress } from "./WatchProgress";
 
 export const MediaListMapping = ({
   list,
   handleWatchItem,
+  handleUnwatchItem,
 }: {
   list: TVSeason[] | Movie[];
   handleWatchItem?: (id: string, list?: TVSeason[]) => void;
+  handleUnwatchItem?: (id: string, list?: TVSeason[]) => void;
 }) => {
   if (list.length === 0) return null;
   if ((list[0] as TVSeason).season_number !== undefined) {
@@ -38,9 +40,22 @@ export const MediaListMapping = ({
                       className="w-32 h-18 object-cover rounded"
                     />
                     {episode.watched ? (
-                      <div className="absolute left-0 right-0 bottom-0">
-                        <WatchProgress progress={100} />
-                      </div>
+                      <>
+                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
+                          <ItemIconButton
+                            handleClick={() =>
+                              handleUnwatchItem!(episode.id.toString(), seasons)
+                            }
+                            title={"Mark as Unwatched"}
+                            type={"secondary"}
+                          >
+                            <RemoveButtonIcon />
+                          </ItemIconButton>
+                        </div>
+                        <div className="absolute left-0 right-0 bottom-0">
+                          <WatchProgress progress={100} />
+                        </div>
+                      </>
                     ) : (
                       <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                         <ItemIconButton
@@ -87,9 +102,22 @@ export const MediaListMapping = ({
                 className="w-32 h-48 object-cover rounded"
               />
               {movie.watched ? (
-                <div className="absolute left-0 right-0 bottom-0">
-                  <WatchProgress progress={100} />
-                </div>
+                <>
+                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
+                    <ItemIconButton
+                      handleClick={() =>
+                        handleUnwatchItem!(movie.id.toString())
+                      }
+                      title={"Mark as Unwatched"}
+                      type={"secondary"}
+                    >
+                      <RemoveButtonIcon />
+                    </ItemIconButton>
+                  </div>
+                  <div className="absolute left-0 right-0 bottom-0">
+                    <WatchProgress progress={100} />
+                  </div>
+                </>
               ) : (
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                   <ItemIconButton

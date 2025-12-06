@@ -56,6 +56,21 @@ export const TVShowWatchItem = ({
     });
   };
 
+  const handleUnwatchItem = (id: string, list: TVSeason[]) => {
+    updateTVShowMutation.mutate({
+      tvShowId: tvShow.id.toString(),
+      updatedData: {
+        ...tvShow,
+        seasons: list.map((season) => ({
+          ...season,
+          episodes: season.episodes?.map((episode) =>
+            episode.id === Number(id) ? { ...episode, watched: false } : episode
+          ),
+        })),
+      },
+    });
+  };
+
   const progress =
     ((tvShow.seasons
       ?.flatMap((season) => season.episodes ?? [])
@@ -86,6 +101,7 @@ export const TVShowWatchItem = ({
     handleDelete: handleDeleteTVShow,
     handleAllWatch: handleAllWatch,
     handleWatchItem: handleWatchItem,
+    handleUnwatchItem: handleUnwatchItem,
     allWatched: tvShow.seasons?.every((season) =>
       season.episodes?.every((episode) => episode.watched) ? true : false
     ),

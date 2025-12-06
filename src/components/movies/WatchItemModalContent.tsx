@@ -26,8 +26,6 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const addMovieMutation = useAddMovie();
   const addTVShowMutation = useAddTVShow();
 
-  console.log("Rendering WatchItemModalContent for item:", item);
-
   const handleAddToList = (item: WatchItemModal) => {
     if (!item.list) addMovieMutation.mutate(item.id);
     else if (item.list && item.list.length > 0) {
@@ -363,6 +361,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
         <MediaListMapping
           list={displayItem.list ?? []}
           handleWatchItem={item.handleWatchItem}
+          handleUnwatchItem={item.handleUnwatchItem}
         />
         <div className="mt-6">
           <h2 className="text-2xl mb-4">Recommandations</h2>

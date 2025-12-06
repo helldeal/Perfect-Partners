@@ -1,7 +1,13 @@
 import { useEffect, useMemo } from "react";
 import { useSearchMultiQuery } from "../api/tmdb";
 import { useDebounce } from "../utils/useDebounce";
-import { MediaItem, MediaList, Movie, TVShow } from "../api/models/movies";
+import {
+  MediaItem,
+  MediaList,
+  Movie,
+  TVSeason,
+  TVShow,
+} from "../api/models/movies";
 import { getMediaListFromMediaItems, isMovie } from "../utils/movies";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
@@ -54,7 +60,19 @@ export const MoviesPage = () => {
 
     if (!itemInList) {
       if (payload.wishListed)
-        newPayload = { allWatched: false, wishListed: false };
+        newPayload = {
+          list: (payload.list as TVSeason[])?.some((e) => e.episodes.length > 0)
+            ? (payload.list as TVSeason[]).map((e) => ({
+                ...e,
+                episodes: e.episodes.map((episode) => ({
+                  ...episode,
+                  watched: false,
+                })),
+              }))
+            : undefined,
+          allWatched: false,
+          wishListed: false,
+        };
     } else if (itemInList && !payload.wishListed) {
       newPayload = { wishListed: true };
     } else if ("watched" in itemInList) {
@@ -107,7 +125,9 @@ export const MoviesPage = () => {
                 <h2 className="text-2xl">Continue</h2>
                 <div className="grid grid-cols-6 gap-12 items-stretch">
                   {watching.map((itemList, index) => (
-                    <WatchItemMapping key={index} itemList={itemList} />
+                    <div key={index}>
+                      <WatchItemMapping itemList={itemList} />
+                    </div>
                   ))}
                 </div>
               </>
@@ -125,10 +145,45 @@ export const MoviesPage = () => {
             {completed.length > 0 && (
               <>
                 <h2 className="text-2xl">Completed</h2>
-                <div className="grid grid-cols-6 gap-12 items-stretch">
-                  {completed.map((itemList, index) => (
-                    <WatchItemMapping key={index} itemList={itemList} />
-                  ))}
+                <div className="grid grid-cols-6 gap-y-12 items-stretch">
+                  {completed.map((itemList) => {
+                    // const previousItem = completed[index - 1] ?? null;
+                    // const nextItem = completed[index + 1] ?? null;
+                    // const isSameCollectionAsPrevious =
+                    //   previousItem &&
+                    //   isMovie(previousItem) &&
+                    //   isMovie(itemList) &&
+                    //   itemList.collection?.id === previousItem.collection?.id;
+                    // const isSameCollectionAsNext =
+                    //   nextItem &&
+                    //   isMovie(nextItem) &&
+                    //   isMovie(itemList) &&
+                    //   itemList.collection?.id === nextItem.collection?.id;
+                    return (
+                      //                       <div
+                      //                         key={index}
+                      //                         className={`${
+                      //                           isSameCollectionAsPrevious ? "pl-6" : "ml-6"
+                      //                         } ${
+                      //                           isSameCollectionAsNext ? "pr-6" : "mr-6"
+                      //                         } relative z-0`}
+                      //                       >
+                      //                         {(isSameCollectionAsNext ||
+                      //                           isSameCollectionAsPrevious) && (
+                      //                           <div
+                      //                             className="
+                      //   absolute top-1/2 left-0 right-0 h-[2px]
+                      //   bg-gradient-to-r from-red-500 via-red-700 to-red-500
+                      //   opacity-50 rounded-full
+                      //   -translate-y-1/2
+                      //   -z-10
+                      // "
+                      //                           ></div>
+                      //                         )}
+                      <WatchItemMapping itemList={itemList} />
+                      // </div>
+                    );
+                  })}
                 </div>
               </>
             )}

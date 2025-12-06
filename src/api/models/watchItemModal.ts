@@ -20,6 +20,7 @@ export type WatchItemModal = {
   handleDelete: () => void;
   handleAllWatch: () => void;
   handleWatchItem?: (id: string, list?: any) => void;
+  handleUnwatchItem?: (id: string, list?: any) => void;
   allWatched?: boolean;
   wishListed: boolean;
 };
