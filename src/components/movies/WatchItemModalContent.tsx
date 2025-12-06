@@ -81,6 +81,11 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
       newItem.runtime = detailsQuery.data.runtime;
     }
 
+    // COLLECTION ID manquante → depuis item.list (adaptation : on prend la collection du 1er film)
+    if (!item.collectionId && detailsQuery?.data?.belongs_to_collection?.id) {
+      newItem.collectionId = detailsQuery.data.belongs_to_collection.id;
+    }
+
     // VIDEOS manquantes
     if (videosQuery?.data?.results) {
       newItem.videos = videosQuery.data.results;
@@ -104,10 +109,6 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
 
     // Si detailsQuery contient saisons, on peut calculer la date (mais pas encore les épisodes)
     if (shouldFetchDetails && detailsQuery?.data?.seasons) {
-      console.log(
-        "Calcul date from seasons for item:",
-        detailsQuery.data.seasons
-      );
       newItem.date = formatYearRange(
         detailsQuery.data.seasons
           .filter((season: any) => season.season_number !== 0)
@@ -199,6 +200,14 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
 
   const displayItem = enrichedItemState;
 
+  const shouldFetchCollection = !!displayItem.collectionId;
+
+  const collectionsQuery = displayItem.collectionQuery
+    ? displayItem.collectionQuery(displayItem.collectionId, {
+        enabled: shouldFetchCollection,
+      })
+    : { data: null };
+
   useEffect(() => {
     if (!iframeRef.current) return;
 
@@ -276,11 +285,17 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           }}
         >
           <div className="absolute bottom-1/10 mb-4 left-12 flex flex-col gap-4">
-            <img
-              src={`https://image.tmdb.org/t/p/w300${displayItem.logo}`}
-              alt={displayItem.title}
-              className="object-contain mb-6"
-            />
+            {displayItem.logo ? (
+              <img
+                src={`https://image.tmdb.org/t/p/w300${displayItem.logo}`}
+                alt={displayItem.title}
+                className="object-contain mb-6"
+              />
+            ) : (
+              <h1 className="text-4xl font-bold text-white">
+                {displayItem.title}
+              </h1>
+            )}
             {displayItem.wishListed ? (
               <div className="flex space-x-4">
                 {!displayItem.allWatched && (
@@ -367,6 +382,16 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           handleWatchItem={item.handleWatchItem}
           handleUnwatchItem={item.handleUnwatchItem}
         />
+        {collectionsQuery && collectionsQuery.data && (
+          <div className="mt-6">
+            <h2 className="text-2xl mb-4">{collectionsQuery.data.name}</h2>
+            <div className="grid grid-cols-5 gap-4 pb-4">
+              {collectionsQuery.data.parts.map((item: any) => (
+                <MediaItemSearch key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+        )}
         {recomandationsQueryResult && recomandationsQueryResult.data && (
           <div className="mt-6">
             <h2 className="text-2xl mb-4">Recommandations</h2>

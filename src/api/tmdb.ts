@@ -23,6 +23,12 @@ export const TMDB = {
       (item: any) => item.media_type === "movie" || item.media_type === "tv"
     );
   },
+  fetchCollectionDetails: async (collectionId: string) => {
+    const response = await fetch(
+      `${tmdbApi.baseUrl}/collection/${collectionId}?api_key=${tmdbApi.apiKey}&language=fr`
+    );
+    return await response.json();
+  },
   fetchMovieDetails: async (movieId: string) => {
     const response = await fetch(
       `${tmdbApi.baseUrl}/movie/${movieId}?api_key=${tmdbApi.apiKey}&language=fr`
@@ -227,3 +233,12 @@ export const useTVCreditsQuery = (tvId: string, opts?: any) => {
     ...opts,
   });
 };
+
+export function useCollectionDetailsQuery(collectionId: string, opts?: any) {
+  return useQuery({
+    queryKey: ["collectionDetails", collectionId],
+    queryFn: () => TMDB.fetchCollectionDetails(collectionId),
+    staleTime: Infinity,
+    ...opts,
+  });
+}

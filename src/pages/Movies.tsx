@@ -180,7 +180,7 @@ export const MoviesPage = () => {
                       // "
                       //                           ></div>
                       //                         )}
-                      <WatchItemMapping itemList={itemList} />
+                      <WatchItemMapping itemList={itemList} key={itemList.id} />
                       // </div>
                     );
                   })}
@@ -196,7 +196,7 @@ export const MoviesPage = () => {
 
 const WatchItemMapping = ({ itemList }: { itemList: MediaItem }) => {
   return (
-    <div className="transform transition-transform duration-350 hover:scale-110 cursor-pointer">
+    <div className="w-full h-full transform transition-transform duration-350 hover:scale-110 cursor-pointer">
       {isMovie(itemList) ? (
         <MovieWatchItem
           key={(itemList as Movie).id}

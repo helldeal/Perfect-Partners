@@ -53,7 +53,7 @@ export const ItemLayout = ({
             <div className="absolute bottom-2 right-2">
               <ItemIconButton
                 type="secondary"
-                title="Remove"
+                title="Ajouter à la liste"
                 handleClick={(e) => {
                   e.stopPropagation();
                   onAdd();

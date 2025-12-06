@@ -3,6 +3,7 @@ import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteMovie, useUpdateMovie } from "../../api/firebase/movies";
 import {
+  useCollectionDetailsQuery,
   useMovieCreditsQuery,
   useMovieDetailsQuery,
   useMovieImagesQuery,
@@ -44,6 +45,8 @@ export const MovieWatchItem = ({
     runtime: movie.runtime,
     logo: movie.logo,
     recomandationsQuery: useMovieRecommendationsQuery,
+    collectionQuery: useCollectionDetailsQuery,
+    collectionId: movie.collection?.id.toString(),
     watchProvidersQuery: useMovieWatchProvidersQuery,
     videosQuery: useMovieVideosQuery,
     imagesQuery: useMovieImagesQuery,

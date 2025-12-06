@@ -31,7 +31,7 @@ export const MainLayout = ({
       {children}
       <Modal
         open={isModalOpen}
-        onClose={closeModal}
+        onClose={exitModal}
         className="flex justify-center overflow-y-scroll"
       >
         <AnimatePresence
@@ -45,7 +45,7 @@ export const MainLayout = ({
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
             >
               <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
