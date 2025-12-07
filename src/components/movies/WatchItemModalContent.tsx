@@ -49,8 +49,8 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
     }
   };
 
-  const recomandationsQueryResult = item.recomandationsQuery
-    ? item.recomandationsQuery(item.id)
+  const recommendationsQueryResult = item.recommendationsQuery
+    ? item.recommendationsQuery(item.id)
     : null;
 
   const creditsQueryResult = item.creditsQuery
@@ -413,11 +413,11 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             />
           </div>
         )}
-        {recomandationsQueryResult && recomandationsQueryResult.data && (
+        {recommendationsQueryResult && recommendationsQueryResult.data && (
           <div className="mt-6">
             <h2 className="text-2xl mb-4">Recommandations</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
-              {recomandationsQueryResult.data.results
+              {recommendationsQueryResult.data.results
                 .slice(0, 10)
                 .map((item: any) => (
                   <MediaItemSearch

@@ -10,7 +10,7 @@ export type WatchItemModal = {
   runtime?: number;
   videos: Video[];
   logo?: string;
-  recomandationsQuery?: any;
+  recommendationsQuery?: any;
   collectionId?: string;
   collectionQuery?: any;
   watchProvidersQuery?: any;

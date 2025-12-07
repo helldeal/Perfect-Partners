@@ -62,7 +62,8 @@ export const filterTVShowFields = (tvShow: any): TVShow => {
     logo: tvShow.logo,
     watch_providers: tvShow.watch_providers,
     videos: tvShow.videos,
-    seasons: tvShow.seasons.map((season: any) => filterTVSeasonFields(season)),
+    seasons:
+      tvShow.seasons?.map((season: any) => filterTVSeasonFields(season)) ?? [],
   };
 };
 
@@ -74,9 +75,9 @@ export const filterTVSeasonFields = (season: any): TVSeason => {
     overview: season.overview,
     season_number: season.season_number,
     poster_path: season.poster_path,
-    episodes: season.episodes.map((episode: any) =>
-      filterTVEpisodeFields(episode)
-    ),
+    episodes:
+      season.episodes?.map((episode: any) => filterTVEpisodeFields(episode)) ??
+      [],
   };
 };
 
