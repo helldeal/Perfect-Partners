@@ -147,8 +147,13 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
         ? a.release_date.localeCompare(b.release_date)
         : a.title.localeCompare(b.title)
     );
+    if (!movies[0].collection) {
+      throw new Error(
+        "Invariant violation: Expected all movies in this group to have a collection."
+      );
+    }
     const movieSaga: MovieSaga = {
-      ...movies[0].collection!,
+      ...movies[0].collection,
       movies,
     };
     const watchedMovies = movies.filter((movie) => movie.watched);
