@@ -31,8 +31,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       !user ||
       (user.email !== "mrhelldeal@gmail.com" &&
         user.email !== "grandbardematthieu@gmail.com")
-    )
+    ) {
+      setLoading(false);
       return;
+    }
     console.log("valid user");
     setCurrentUser(user);
     setUserLoggedIn(!!user);

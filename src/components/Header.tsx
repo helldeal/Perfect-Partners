@@ -14,13 +14,13 @@ const navMenu = [
 export const Header = ({ navSelected }: { navSelected: string }) => {
   const { userLoggedIn, userLoading, currentUser } = useAuth();
   const navigate = useNavigate();
-  // console.log("Header auth state:", {
-  //   userLoggedIn,
-  //   userLoading,
-  //   currentUser,
-  // });
+  console.log("Header auth state:", {
+    userLoggedIn,
+    userLoading,
+    currentUser,
+  });
   {
-    !userLoggedIn && !userLoading && <Navigate to={"/login"} replace={true} />;
+    !userLoggedIn && !userLoading && navigate("/login", { replace: true });
   }
 
   const searchTerm = useSearchStore((state) => state.query);
