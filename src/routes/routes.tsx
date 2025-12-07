@@ -7,11 +7,11 @@ import { LegosPage } from "../pages/Legos";
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/Perfect-Partners/" Component={MoviesPage} />
-      <Route path="/Perfect-Partners/movies" Component={MoviesPage} />
-      <Route path="/Perfect-Partners/games" Component={GamesPage} />
-      <Route path="/Perfect-Partners/legos" Component={LegosPage} />
-      <Route path="/Perfect-Partners/login" Component={LoginPage} />
+      <Route path="/" Component={MoviesPage} />
+      <Route path="/movies" Component={MoviesPage} />
+      <Route path="/games" Component={GamesPage} />
+      <Route path="/legos" Component={LegosPage} />
+      <Route path="/login" Component={LoginPage} />
     </Routes>
   );
 };
