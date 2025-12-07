@@ -41,7 +41,7 @@ export type TVSeason = {
   overview: string;
   season_number: number;
   poster_path: string;
-  episodes: TVEpisode[];
+  episodes?: TVEpisode[];
 };
 
 export type TVEpisode = {
