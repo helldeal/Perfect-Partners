@@ -167,17 +167,11 @@ const WatchItemMapping = ({
   return (
     <div className="w-full h-full transform transition-transform duration-350 hover:scale-110 cursor-pointer">
       {isMovieSaga(itemList) ? (
-        <MovieSagaWatchItem movieSaga={itemList as MovieSaga} />
+        <MovieSagaWatchItem movieSaga={itemList} />
       ) : isMovie(itemList) ? (
-        <MovieWatchItem
-          key={(itemList as Movie).id}
-          movie={itemList as Movie}
-        />
+        <MovieWatchItem key={itemList.id} movie={itemList} />
       ) : (
-        <TVShowWatchItem
-          key={(itemList as TVShow).id}
-          tvShow={itemList as TVShow}
-        />
+        <TVShowWatchItem key={itemList.id} tvShow={itemList} />
       )}
     </div>
   );

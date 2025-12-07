@@ -161,21 +161,14 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
     }
   });
 
+  const sortByName = (a: MediaItem | MovieSaga, b: MediaItem | MovieSaga) =>
+    (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
+      isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
+    );
+
   return {
-    planToWatch: planToWatch.sort((a, b) =>
-      (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
-        isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
-      )
-    ),
-    watching: watching.sort((a, b) =>
-      (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
-        isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
-      )
-    ),
-    completed: completed.sort((a, b) =>
-      (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
-        isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
-      )
-    ),
+    planToWatch: planToWatch.sort(sortByName),
+    watching: watching.sort(sortByName),
+    completed: completed.sort(sortByName),
   };
 };
