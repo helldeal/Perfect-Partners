@@ -3,12 +3,16 @@ import { useSearchMultiQuery } from "../api/tmdb";
 import { useDebounce } from "../utils/useDebounce";
 import {
   MediaItem,
-  MediaList,
   Movie,
+  MovieSaga,
   TVSeason,
   TVShow,
 } from "../api/models/movies";
-import { getMediaListFromMediaItems, isMovie } from "../utils/movies";
+import {
+  getMediaListFromMediaItems,
+  isMovie,
+  isMovieSaga,
+} from "../utils/movies";
 import { MovieWatchItem } from "../components/movies/MoviesWatching";
 import { TVShowWatchItem } from "../components/movies/TVShowsWatching";
 import { useFirebaseMovies } from "../api/firebase/movies";
@@ -18,6 +22,7 @@ import { WatchItemModal } from "../api/models/watchItemModal";
 import { MediaItemSearch } from "../components/movies/MediaItemSearch";
 import useSearchStore from "../store/searchStore";
 import { MainLayout } from "../components/MainLayout";
+import { MovieSagaWatchItem } from "../components/movies/MovieSagasWatching";
 
 export const MoviesPage = () => {
   const searchTerm = useSearchStore((state) => state.query);
@@ -44,15 +49,10 @@ export const MoviesPage = () => {
     [mediaItems]
   );
 
-  const mediaList: MediaList = useMemo(
-    () => planToWatch.concat(watching).concat(completed),
-    [planToWatch, watching, completed]
-  );
-
   useEffect(() => {
     if (!payload || payload.id == null) return;
 
-    const itemInList = mediaList.find((item) => {
+    const itemInList = mediaItems.find((item) => {
       return item.id === payload.id;
     });
 
@@ -95,7 +95,7 @@ export const MoviesPage = () => {
     if (Object.keys(newPayload).length > 0) {
       updatePayload(newPayload);
     }
-  }, [mediaList, payload, updatePayload]);
+  }, [mediaItems, payload, updatePayload]);
 
   return (
     <MainLayout navSelected="movies">
@@ -146,44 +146,9 @@ export const MoviesPage = () => {
               <>
                 <h2 className="text-2xl">Completed</h2>
                 <div className="grid grid-cols-6 gap-12 items-stretch">
-                  {completed.map((itemList) => {
-                    // const previousItem = completed[index - 1] ?? null;
-                    // const nextItem = completed[index + 1] ?? null;
-                    // const isSameCollectionAsPrevious =
-                    //   previousItem &&
-                    //   isMovie(previousItem) &&
-                    //   isMovie(itemList) &&
-                    //   itemList.collection?.id === previousItem.collection?.id;
-                    // const isSameCollectionAsNext =
-                    //   nextItem &&
-                    //   isMovie(nextItem) &&
-                    //   isMovie(itemList) &&
-                    //   itemList.collection?.id === nextItem.collection?.id;
-                    return (
-                      //                       <div
-                      //                         key={index}
-                      //                         className={`${
-                      //                           isSameCollectionAsPrevious ? "pl-6" : "ml-6"
-                      //                         } ${
-                      //                           isSameCollectionAsNext ? "pr-6" : "mr-6"
-                      //                         } relative z-0`}
-                      //                       >
-                      //                         {(isSameCollectionAsNext ||
-                      //                           isSameCollectionAsPrevious) && (
-                      //                           <div
-                      //                             className="
-                      //   absolute top-1/2 left-0 right-0 h-[2px]
-                      //   bg-gradient-to-r from-red-500 via-red-700 to-red-500
-                      //   opacity-50 rounded-full
-                      //   -translate-y-1/2
-                      //   -z-10
-                      // "
-                      //                           ></div>
-                      //                         )}
-                      <WatchItemMapping itemList={itemList} key={itemList.id} />
-                      // </div>
-                    );
-                  })}
+                  {completed.map((itemList) => (
+                    <WatchItemMapping itemList={itemList} key={itemList.id} />
+                  ))}
                 </div>
               </>
             )}
@@ -194,10 +159,16 @@ export const MoviesPage = () => {
   );
 };
 
-const WatchItemMapping = ({ itemList }: { itemList: MediaItem }) => {
+const WatchItemMapping = ({
+  itemList,
+}: {
+  itemList: MediaItem | MovieSaga;
+}) => {
   return (
     <div className="w-full h-full transform transition-transform duration-350 hover:scale-110 cursor-pointer">
-      {isMovie(itemList) ? (
+      {isMovieSaga(itemList) ? (
+        <MovieSagaWatchItem movieSaga={itemList as MovieSaga} />
+      ) : isMovie(itemList) ? (
         <MovieWatchItem
           key={(itemList as Movie).id}
           movie={itemList as Movie}

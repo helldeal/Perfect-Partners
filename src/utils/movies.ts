@@ -1,7 +1,8 @@
 import {
+  MediaDisplayList,
   MediaItem,
-  MediaList,
   Movie,
+  MovieSaga,
   TVEpisode,
   TVSeason,
   TVShow,
@@ -13,6 +14,10 @@ export function isMovie(item: MediaItem): item is Movie {
 
 export function isTVShow(item: MediaItem): item is TVShow {
   return "name" in item;
+}
+
+export function isMovieSaga(item: MediaItem | MovieSaga): item is MovieSaga {
+  return "movies" in item;
 }
 
 export const streamingLinks: Record<number, string> = {
@@ -95,15 +100,22 @@ export const filterTVEpisodeFields = (episode: any): TVEpisode => {
 };
 
 export const getMediaListFromMediaItems = (items: MediaItem[]) => {
-  const planToWatch: MediaList = [];
-  const watching: MediaList = [];
-  const completed: MediaList = [];
+  const planToWatch: MediaDisplayList = [];
+  const watching: MediaDisplayList = [];
+  const completed: MediaDisplayList = [];
 
   const groupedMovies: Record<number, Movie[]> = {};
 
   items.forEach((item) => {
     if (isMovie(item)) {
-      groupedMovies[item.id] = [item];
+      if (item.collection) {
+        if (!groupedMovies[item.collection.id]) {
+          groupedMovies[item.collection.id] = [];
+        }
+        groupedMovies[item.collection.id].push(item);
+      } else {
+        groupedMovies[item.id] = [item];
+      }
     } else if (isTVShow(item)) {
       item.seasons = item.seasons?.filter(
         (season) => season.season_number !== 0
@@ -121,31 +133,48 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
     }
   });
 
-  Object.values(groupedMovies).forEach((movieList: Movie[]) => {
-    if (movieList.length === 1) {
-      if (movieList[0].watched) {
-        completed.push(movieList[0]);
+  Object.values(groupedMovies).forEach((movies: Movie[]) => {
+    if (movies.length === 1) {
+      if (movies[0].watched) {
+        completed.push(movies[0]);
       } else {
-        planToWatch.push(movieList[0]);
+        planToWatch.push(movies[0]);
       }
       return;
+    }
+    movies.sort((a, b) =>
+      a.release_date
+        ? a.release_date.localeCompare(b.release_date)
+        : a.title.localeCompare(b.title)
+    );
+    const movieSaga: MovieSaga = {
+      ...movies[0].collection!,
+      movies,
+    };
+    const watchedMovies = movies.filter((movie) => movie.watched);
+    if (watchedMovies.length === 0) {
+      planToWatch.push(movieSaga);
+    } else if (watchedMovies.length === movies.length) {
+      completed.push(movieSaga);
+    } else {
+      watching.push(movieSaga);
     }
   });
 
   return {
     planToWatch: planToWatch.sort((a, b) =>
-      (isMovie(a) ? a.title : a.name).localeCompare(
-        isMovie(b) ? b.title : b.name
+      (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
+        isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
       )
     ),
     watching: watching.sort((a, b) =>
-      (isMovie(a) ? a.title : a.name).localeCompare(
-        isMovie(b) ? b.title : b.name
+      (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
+        isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
       )
     ),
     completed: completed.sort((a, b) =>
-      (isMovie(a) ? a.title : a.name).localeCompare(
-        isMovie(b) ? b.title : b.name
+      (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
+        isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
       )
     ),
   };
