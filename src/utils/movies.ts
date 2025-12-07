@@ -121,7 +121,9 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
         (season) => season.season_number !== 0
       ); // Exclude specials
       const allEpisodes = item.seasons!.flatMap((season) => season.episodes);
-      const watchedEpisodes = allEpisodes.filter((episode) => episode.watched);
+      const watchedEpisodes = allEpisodes.filter(
+        (episode) => episode?.watched ?? false
+      );
 
       if (watchedEpisodes.length === 0) {
         planToWatch.push(item);
