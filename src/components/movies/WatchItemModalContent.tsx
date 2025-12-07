@@ -393,7 +393,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           handleUnwatchItem={item.handleUnwatchItem}
         />
         {collectionsQuery && collectionsQuery.data && (
-          <div className="mt-6">
+          <div className="mt-6 relative">
             <h2 className="text-2xl mb-4">{collectionsQuery.data.name}</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {collectionsQuery.data.parts.map((item: any) => (
@@ -406,6 +406,11 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 />
               ))}
             </div>
+            <img
+              src={`https://image.tmdb.org/t/p/w1280${collectionsQuery.data.backdrop_path}`}
+              alt={collectionsQuery.data.name}
+              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
+            />
           </div>
         )}
         {recomandationsQueryResult && recomandationsQueryResult.data && (
