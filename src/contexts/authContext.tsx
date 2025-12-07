@@ -35,7 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-    console.log("valid user");
     setCurrentUser(user);
     setUserLoggedIn(!!user);
     setLoading(false);

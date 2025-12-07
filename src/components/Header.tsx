@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useAuth } from "../contexts/authContext";
 import { doSignOut } from "../firebase/auth";
 import logoImg from "../assets/logo.png";
@@ -14,11 +14,6 @@ const navMenu = [
 export const Header = ({ navSelected }: { navSelected: string }) => {
   const { userLoggedIn, userLoading, currentUser } = useAuth();
   const navigate = useNavigate();
-  console.log("Header auth state:", {
-    userLoggedIn,
-    userLoading,
-    currentUser,
-  });
   {
     !userLoggedIn && !userLoading && navigate("/login", { replace: true });
   }
