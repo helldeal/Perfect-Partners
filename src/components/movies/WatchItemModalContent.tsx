@@ -299,7 +299,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
               <img
                 src={`https://image.tmdb.org/t/p/w300${displayItem.logo}`}
                 alt={displayItem.title}
-                className="object-contain mb-6"
+                className="object-contain mb-6 max-w-xs"
               />
             ) : (
               <h1 className="text-4xl font-bold text-white">

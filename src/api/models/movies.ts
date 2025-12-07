@@ -1,5 +1,10 @@
 export type MediaItem = Movie | TVShow;
-export type MediaList = (TVShow | Movie)[];
+export type MediaList = MediaItem[];
+export type MediaDisplayList = (MediaItem | MovieSaga)[];
+
+export type MovieSaga = {
+  movies: Movie[];
+} & MovieCollection;
 
 export type Movie = {
   id: number;
