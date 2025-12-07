@@ -94,7 +94,7 @@ export const TVShowWatchItem = ({
     videos: tvShow.videos ?? [],
     logo: tvShow.logo,
     watch_providers: tvShow.watch_providers ?? [],
-    recomandationsQuery: useTVRecommendationsQuery,
+    recommendationsQuery: useTVRecommendationsQuery,
     watchProvidersQuery: useTVWatchProvidersQuery,
     videosQuery: useTVVideosQuery,
     imagesQuery: useTVImagesQuery,

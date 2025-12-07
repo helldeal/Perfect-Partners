@@ -44,7 +44,7 @@ export const MovieWatchItem = ({
     videos: movie.videos ?? [],
     runtime: movie.runtime,
     logo: movie.logo,
-    recomandationsQuery: useMovieRecommendationsQuery,
+    recommendationsQuery: useMovieRecommendationsQuery,
     collectionQuery: useCollectionDetailsQuery,
     collectionId: movie.collection?.id.toString(),
     watchProvidersQuery: useMovieWatchProvidersQuery,
