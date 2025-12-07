@@ -6,9 +6,9 @@ import { useState, useEffect } from "react";
 import useSearchStore from "../store/searchStore";
 
 const navMenu = [
-  { name: "Cinéma", path: "/Perfect-Partners/movies", key: "movies" },
-  { name: "Jeux", path: "/Perfect-Partners/games", key: "games" },
-  { name: "Lego", path: "/Perfect-Partners/legos", key: "legos" },
+  { name: "Cinéma", path: "/movies", key: "movies" },
+  { name: "Jeux", path: "/games", key: "games" },
+  { name: "Lego", path: "/legos", key: "legos" },
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
@@ -20,9 +20,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
   //   currentUser,
   // });
   {
-    !userLoggedIn && !userLoading && (
-      <Navigate to={"/Perfect-Partners/login"} replace={true} />
-    );
+    !userLoggedIn && !userLoading && <Navigate to={"/login"} replace={true} />;
   }
 
   const searchTerm = useSearchStore((state) => state.query);
@@ -54,7 +52,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
       <div className="flex items-center gap-4">
         <div
           className="flex items-center gap-2 cursor-pointer mr-8 text-center scale-110"
-          onClick={() => navigate("/Perfect-Partners/")}
+          onClick={() => navigate("/")}
         >
           <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
           <h1 className="text-lg leading-none">Perfect Partners</h1>

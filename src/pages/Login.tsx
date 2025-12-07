@@ -16,11 +16,7 @@ const LoginPage = () => {
     }
   }, [isSigningIn, setIsSigningIn]);
 
-  return (
-    <div>
-      {userLoggedIn && <Navigate to={"/Perfect-Partners/"} replace={true} />}
-    </div>
-  );
+  return <div>{userLoggedIn && <Navigate to={"/"} replace={true} />}</div>;
 };
 
 export default LoginPage;
