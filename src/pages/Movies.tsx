@@ -61,10 +61,12 @@ export const MoviesPage = () => {
     if (!itemInList) {
       if (payload.wishListed)
         newPayload = {
-          list: (payload.list as TVSeason[])?.some((e) => e.episodes.length > 0)
+          list: (payload.list as TVSeason[])?.some(
+            (e) => (e.episodes ?? []).length > 0
+          )
             ? (payload.list as TVSeason[]).map((e) => ({
                 ...e,
-                episodes: e.episodes.map((episode) => ({
+                episodes: e.episodes?.map((episode) => ({
                   ...episode,
                   watched: false,
                 })),
