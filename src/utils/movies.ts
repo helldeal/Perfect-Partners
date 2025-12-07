@@ -17,7 +17,7 @@ export function isTVShow(item: MediaItem): item is TVShow {
 }
 
 export function isMovieSaga(item: MediaItem | MovieSaga): item is MovieSaga {
-  return "movies" in item;
+  return "movies" in item && Array.isArray((item as any).movies);
 }
 
 export const streamingLinks: Record<number, string> = {
