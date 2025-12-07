@@ -143,7 +143,7 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
       return;
     }
     movies.sort((a, b) =>
-      a.release_date
+      a.release_date && b.release_date
         ? a.release_date.localeCompare(b.release_date)
         : a.title.localeCompare(b.title)
     );
