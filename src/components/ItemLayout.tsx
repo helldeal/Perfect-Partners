@@ -14,7 +14,7 @@ export const ItemLayout = ({
   name: string;
   image: string;
   progress?: number;
-  payload: any;
+  payload?: any;
   onAdd?: () => void;
   inList?: boolean;
 }) => {

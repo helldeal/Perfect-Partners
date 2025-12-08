@@ -47,7 +47,10 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
       <div className="flex items-center gap-4">
         <div
           className="flex items-center gap-2 cursor-pointer mr-8 text-center scale-110"
-          onClick={() => navigate("/")}
+          onClick={() => {
+            setSearchTerm("");
+            navigate("/");
+          }}
         >
           <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
           <h1 className="text-lg leading-none">Perfect Partners</h1>
@@ -58,7 +61,10 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
             <span
               key={item.key}
               className={`ml-4 ${navSelected === item.key ? "font-bold" : ""}`}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                setSearchTerm("");
+                navigate(item.path);
+              }}
             >
               {item.name}
             </span>
