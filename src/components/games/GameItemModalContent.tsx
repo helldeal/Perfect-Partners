@@ -155,6 +155,33 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                   ])}
               </p>
             </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-sm text-gray-400">Genres :</span>
+              {displayItem.genres?.map((genre, index) => (
+                <span key={index} className="text-sm ">
+                  {genre}
+                  {index < displayItem.genres!.length - 1 ? "," : ""}
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-sm text-gray-400">Theme :</span>
+              {displayItem.themes?.map((theme, index) => (
+                <span key={index} className="text-sm">
+                  {theme}
+                  {index < displayItem.themes!.length - 1 ? "," : ""}
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-sm text-gray-400">Platforms :</span>
+              {displayItem.platforms?.map((platform, index) => (
+                <span key={index} className="text-sm">
+                  {platform.name}
+                  {index < displayItem.platforms!.length - 1 ? "," : ""}
+                </span>
+              ))}
+            </div>
             <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
           </div>
           <div className="col-span-1 flex flex-col items-end">
@@ -163,9 +190,9 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 return (
                   <img
                     key={index}
-                    src={`${store.url}`}
+                    src={`https://www.igdb.com/icons/${store.type.toLowerCase()}.svg`}
                     alt={store.type}
-                    className={`mb-2 ml-2 object-contain w-8 h-8 `}
+                    className={`mb-2 ml-2 object-contain w-8 h-8 cursor-pointer `}
                     onClick={() => window.open(`${store.url}`, "_blank")}
                   />
                 );

@@ -30,6 +30,7 @@ export type Game = {
   artworks?: string[];
   screenshots?: string[];
   genres?: string[];
+  themes?: string[];
   video?: string;
   platforms?: Platform[];
   websites?: Websites;
