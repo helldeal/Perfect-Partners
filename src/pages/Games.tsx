@@ -5,6 +5,9 @@ import useSearchStore from "../store/searchStore";
 import { useDebounce } from "../utils/useDebounce";
 import { GameItem } from "../components/games/GameItem";
 import { useAddGame, useFirebaseGames } from "../api/firebase/games";
+import { useEffect } from "react";
+import { GameItemModal } from "../api/models/gameItemModal";
+import useModalStore from "../store/modalStore";
 
 export const GamesPage = () => {
   const searchTerm = useSearchStore((state) => state.query);
@@ -12,8 +15,30 @@ export const GamesPage = () => {
   const searchGamesQuery = useSearchGames(debouncedQuery);
   const firebaseGamesQuery = useFirebaseGames();
   const addGameMutation = useAddGame();
+  const payload: GameItemModal = useModalStore((state) => state.payload);
+  const updatePayload = useModalStore((state) => state.updatePayload);
 
   const searchList = debouncedQuery.length > 0 ? searchGamesQuery.data : null;
+
+  useEffect(() => {
+    if (!payload || payload.game.id == null) return;
+
+    const itemInList = firebaseGamesQuery.data?.find((item) => {
+      return item.id === payload.game.id;
+    });
+
+    let newPayload: Partial<GameItemModal> = {};
+    if (!itemInList) {
+      if (payload.wishListed) {
+        newPayload.wishListed = false;
+      }
+    } else if (itemInList && !payload.wishListed) {
+      newPayload.wishListed = true;
+    }
+    if (Object.keys(newPayload).length > 0) {
+      updatePayload(newPayload);
+    }
+  }, [payload, firebaseGamesQuery.data]);
 
   return (
     <MainLayout navSelected="games">

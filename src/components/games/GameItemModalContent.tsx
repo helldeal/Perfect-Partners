@@ -10,12 +10,20 @@ import { GameItemModal } from "../../api/models/gameItemModal";
 import { useAddGame, useFirebaseGames } from "../../api/firebase/games";
 import { Game } from "../../api/models/games";
 import { formatYearRange } from "../../utils/dates";
+import { useCollectionGames, useSimilarGames } from "../../api/igdb";
+import { GameItem } from "./GameItem";
 
 export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const useFirebaseGamesQuery = useFirebaseGames();
+  const firebaseGamesQuery = useFirebaseGames();
   const addGameMutation = useAddGame();
+  const useCollectionGamesQuery = useCollectionGames(
+    item.game.collections ? item.game.collections[0] : null
+  );
+  const useSimilarGamesQuery = useSimilarGames(
+    item.game.similar_games ? item.game.similar_games : []
+  );
 
   const handleAddToList = (game: Game) => {
     addGameMutation.mutate(game);
@@ -183,27 +191,95 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
               ))}
             </div>
             <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
+            <p className="mb-2 line-clamp-4">{displayItem.storyline}</p>
           </div>
-          <div className="col-span-1 flex flex-col items-end">
-            {displayItem.websites?.stores ? (
-              displayItem.websites.stores.map((store, index) => {
-                return (
-                  <img
-                    key={index}
-                    src={`https://www.igdb.com/icons/${store.type.toLowerCase()}.svg`}
-                    alt={store.type}
-                    className={`mb-2 ml-2 object-contain w-8 h-8 cursor-pointer `}
-                    onClick={() => window.open(`${store.url}`, "_blank")}
-                  />
-                );
-              })
-            ) : (
-              <p className="text-sm text-gray-400">
-                Aucun lien de magasin disponible
-              </p>
-            )}
+          <div className="col-span-1 flex flex-row justify-end gap-4">
+            <div className="flex flex-col mb-4">
+              {displayItem.companies ? (
+                <>
+                  {displayItem.companies.some((c) => c.developer) && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-400 mb-1">Developer:</p>
+                      <p className="text-sm">
+                        {displayItem.companies
+                          .filter((c) => c.developer)
+                          .map((c) => c.name)
+                          .join(", ")}
+                      </p>
+                    </div>
+                  )}
+                  {displayItem.companies.some((c) => c.publisher) && (
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Publisher:</p>
+                      <p className="text-sm">
+                        {displayItem.companies
+                          .filter((c) => c.publisher)
+                          .map((c) => c.name)
+                          .join(", ")}
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-400">N/A</p>
+              )}
+            </div>
+            <div className="flex flex-col items-end">
+              {displayItem.websites?.stores ? (
+                displayItem.websites.stores.map((store, index) => {
+                  return (
+                    <img
+                      key={index}
+                      src={`https://www.igdb.com/icons/${store.type.toLowerCase()}.svg`}
+                      alt={store.type}
+                      className={`mb-2 ml-2 object-contain w-8 h-8 cursor-pointer `}
+                      onClick={() => window.open(`${store.url}`, "_blank")}
+                    />
+                  );
+                })
+              ) : (
+                <p className="text-sm text-gray-400">
+                  Aucun lien de magasin disponible
+                </p>
+              )}
+            </div>
           </div>
         </div>
+        {useCollectionGamesQuery.data &&
+          useCollectionGamesQuery.data.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-2xl mb-4">Collection</h2>
+              <div className="grid grid-cols-5 gap-4 pb-4">
+                {useCollectionGamesQuery.data.map((game) => (
+                  <GameItem
+                    key={game.id}
+                    game={game}
+                    onAdd={() => addGameMutation.mutate(game)}
+                    inWishlist={firebaseGamesQuery.data?.some(
+                      (g) => g.id === game.id
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        {useSimilarGamesQuery.data && useSimilarGamesQuery.data.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-2xl mb-4">Similar Games</h2>
+            <div className="grid grid-cols-5 gap-4 pb-4">
+              {useSimilarGamesQuery.data.map((game) => (
+                <GameItem
+                  key={game.id}
+                  game={game}
+                  onAdd={() => addGameMutation.mutate(game)}
+                  inWishlist={firebaseGamesQuery.data?.some(
+                    (g) => g.id === game.id
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
