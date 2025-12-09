@@ -48,7 +48,7 @@ export function useCollectionGames(collectionId: number | null) {
   return useQuery({
     queryKey: ["collectionGames", collectionId],
     queryFn: () => fetchIGDBCollection(collectionId!),
-    enabled: collectionId != null,
+    enabled: collectionId !== null,
     staleTime: Infinity,
   });
 }

@@ -173,7 +173,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
               ))}
             </div>
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="text-sm text-gray-400">Theme :</span>
+              <span className="text-sm text-gray-400">Themes :</span>
               {displayItem.themes?.map((theme, index) => (
                 <span key={index} className="text-sm">
                   {theme}

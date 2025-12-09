@@ -50,7 +50,7 @@ export const MoviesPage = () => {
   );
 
   useEffect(() => {
-    if (!payload || payload.id == null) return;
+    if (!payload || payload.id === null) return;
 
     const itemInList = mediaItems.find((item) => {
       return item.id === payload.id;

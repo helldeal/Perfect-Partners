@@ -1,5 +1,4 @@
 import { useSearchGames } from "../api/igdb";
-import { Game } from "../api/models/games";
 import { MainLayout } from "../components/MainLayout";
 import useSearchStore from "../store/searchStore";
 import { useDebounce } from "../utils/useDebounce";
@@ -21,7 +20,7 @@ export const GamesPage = () => {
   const searchList = debouncedQuery.length > 0 ? searchGamesQuery.data : null;
 
   useEffect(() => {
-    if (!payload || payload.game.id == null) return;
+    if (!payload || payload.game.id === null) return;
 
     const itemInList = firebaseGamesQuery.data?.find((item) => {
       return item.id === payload.game.id;
@@ -48,7 +47,7 @@ export const GamesPage = () => {
             <p>Loading...</p>
           ) : searchList && searchList.length > 0 ? (
             <div className="grid grid-cols-6 gap-12 items-stretch">
-              {searchList.map((item: Game) => (
+              {searchList.map((item) => (
                 <GameItem
                   key={item.id}
                   game={item}
