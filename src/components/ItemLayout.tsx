@@ -10,6 +10,7 @@ export const ItemLayout = ({
   payload,
   onAdd,
   inList = false,
+  itemSelected = false,
 }: {
   name: string;
   image: string;
@@ -17,6 +18,7 @@ export const ItemLayout = ({
   payload?: any;
   onAdd?: () => void;
   inList?: boolean;
+  itemSelected?: boolean;
 }) => {
   const openModal = useModalStore((state) => state.openModal);
   const setShowContent = useModalStore((state) => state.setShowContent);
@@ -26,8 +28,12 @@ export const ItemLayout = ({
     setShowContent(true);
   };
   return (
-    <div className="w-full h-full" onClick={openModalHandler}>
-      <div className="w-full h-full relative">
+    <div className="w-full h-full " onClick={openModalHandler}>
+      <div
+        className={`w-full h-full relative ${
+          itemSelected ? "border-2 border-blue-500" : ""
+        }`}
+      >
         <img
           src={image ? `${image}` : "/placeholder.png"}
           alt={name}

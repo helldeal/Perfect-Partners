@@ -7,10 +7,12 @@ export const GameItem = ({
   game,
   inWishlist = true,
   onAdd,
+  itemSelected = false,
 }: {
   game: Game;
   inWishlist?: boolean;
   onAdd?: () => void;
+  itemSelected?: boolean;
 }) => {
   const deleteGameMutation = useDeleteGame();
 
@@ -33,6 +35,7 @@ export const GameItem = ({
         payload={modalContent}
         onAdd={onAdd}
         inList={inWishlist}
+        itemSelected={itemSelected}
       />
     </div>
   );

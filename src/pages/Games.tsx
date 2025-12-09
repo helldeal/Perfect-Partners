@@ -68,7 +68,7 @@ export const GamesPage = () => {
           firebaseGamesQuery.data &&
           firebaseGamesQuery.data.length > 0 && (
             <>
-              <h2 className="text-2xl">Your Games</h2>
+              <h2 className="text-2xl">Game List</h2>
               <div className="grid grid-cols-6 gap-12 items-stretch">
                 {firebaseGamesQuery.data.map((game) => (
                   <GameItem key={game.id} game={game} inWishlist={true} />

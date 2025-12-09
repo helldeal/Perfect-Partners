@@ -8,9 +8,13 @@ import { useAddMovie, useFirebaseMovies } from "../../api/firebase/movies";
 
 interface MediaItemSearchProps {
   item: MediaItem;
+  itemSelected?: boolean;
 }
 
-export const MediaItemSearch: React.FC<MediaItemSearchProps> = ({ item }) => {
+export const MediaItemSearch: React.FC<MediaItemSearchProps> = ({
+  item,
+  itemSelected,
+}) => {
   const addMovieMutation = useAddMovie();
   const addTVShowMutation = useAddTVShow();
   const firebaseMoviesQuery = useFirebaseMovies();
@@ -31,6 +35,7 @@ export const MediaItemSearch: React.FC<MediaItemSearchProps> = ({ item }) => {
           movie={item as Movie}
           onAdd={() => handleAddToList(item)}
           inWishlist={firebaseMoviesQuery.data?.some((m) => m.id === item.id)}
+          itemSelected={itemSelected}
         />
       ) : (
         <TVShowWatchItem

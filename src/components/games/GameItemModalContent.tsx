@@ -250,16 +250,23 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             <div className="mt-6">
               <h2 className="text-2xl mb-4">Collection</h2>
               <div className="grid grid-cols-5 gap-4 pb-4">
-                {useCollectionGamesQuery.data.map((game) => (
-                  <GameItem
-                    key={game.id}
-                    game={game}
-                    onAdd={() => addGameMutation.mutate(game)}
-                    inWishlist={firebaseGamesQuery.data?.some(
-                      (g) => g.id === game.id
-                    )}
-                  />
-                ))}
+                {useCollectionGamesQuery.data
+                  .sort((a, b) =>
+                    (String(a.release_date) || "").localeCompare(
+                      String(b.release_date) || ""
+                    )
+                  )
+                  .map((game) => (
+                    <GameItem
+                      key={game.id}
+                      game={game}
+                      onAdd={() => addGameMutation.mutate(game)}
+                      inWishlist={firebaseGamesQuery.data?.some(
+                        (g) => g.id === game.id
+                      )}
+                      itemSelected={game.id === item.game.id}
+                    />
+                  ))}
               </div>
             </div>
           )}

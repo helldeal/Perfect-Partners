@@ -17,10 +17,12 @@ export const MovieWatchItem = ({
   movie,
   inWishlist = true,
   onAdd,
+  itemSelected = false,
 }: {
   movie: Movie;
   inWishlist?: boolean;
   onAdd?: () => void;
+  itemSelected?: boolean;
 }) => {
   const deleteMovieMutation = useDeleteMovie();
   const updateMovieMutation = useUpdateMovie();
@@ -67,6 +69,7 @@ export const MovieWatchItem = ({
       payload={modalContent}
       onAdd={onAdd}
       inList={inWishlist}
+      itemSelected={itemSelected}
     />
   );
 };
