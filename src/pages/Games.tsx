@@ -1,4 +1,4 @@
-import { useSearchGames } from "../api/rawg";
+import { useSearchGames } from "../api/igdb";
 import { Game } from "../api/models/games";
 import { MainLayout } from "../components/MainLayout";
 import useSearchStore from "../store/searchStore";
@@ -23,7 +23,7 @@ export const GamesPage = () => {
               {searchList.map((item: Game) => (
                 <ItemLayout
                   name={item.name}
-                  image={item.background_image}
+                  image={item.cover || ""}
                   key={item.id}
                   payload={item}
                 />
