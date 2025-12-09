@@ -396,15 +396,21 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           <div className="mt-6 relative">
             <h2 className="text-2xl mb-4">{collectionsQuery.data.name}</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
-              {collectionsQuery.data.parts.map((item: any) => (
-                <MediaItemSearch
-                  key={item.id}
-                  item={
-                    mediaItems.find((mediaItem) => mediaItem.id === item.id) ??
-                    item
-                  }
-                />
-              ))}
+              {collectionsQuery.data.parts
+                .sort((a: Movie, b: Movie) =>
+                  a.release_date.localeCompare(b.release_date)
+                )
+                .map((item: any) => (
+                  <MediaItemSearch
+                    key={item.id}
+                    item={
+                      mediaItems.find(
+                        (mediaItem) => mediaItem.id === item.id
+                      ) ?? item
+                    }
+                    itemSelected={item.id === displayItem.id}
+                  />
+                ))}
             </div>
             <img
               src={`https://image.tmdb.org/t/p/w1280${collectionsQuery.data.backdrop_path}`}
