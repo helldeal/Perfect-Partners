@@ -31,13 +31,13 @@ export const GamesPage = () => {
       if (payload.wishListed) {
         newPayload.wishListed = false;
       }
-    } else if (itemInList && !payload.wishListed) {
+    } else if (!payload.wishListed) {
       newPayload.wishListed = true;
     }
     if (Object.keys(newPayload).length > 0) {
       updatePayload(newPayload);
     }
-  }, [payload, firebaseGamesQuery.data]);
+  }, [payload, firebaseGamesQuery.data, updatePayload]);
 
   return (
     <MainLayout navSelected="games">
