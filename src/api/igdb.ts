@@ -8,14 +8,7 @@ export async function fetchIGDBGames(query: string): Promise<Game[]> {
     )}`
   );
   const data = await res.json();
-
-  return data.map((g: any) => ({
-    id: g.id,
-    name: g.name,
-    cover: g.cover,
-    overview: g.overview,
-    releaseDate: g.release_date,
-  }));
+  return data;
 }
 
 export function useSearchGames(query: string) {

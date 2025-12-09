@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import useModalStore from "../store/modalStore";
 import { WatchItemModalContent } from "../components/movies/WatchItemModalContent";
 import { WatchItemModal } from "../api/models/watchItemModal";
+import { GameItemModal } from "../api/models/gameItemModal";
+import { GameItemModalContent } from "./games/GameItemModalContent";
 
 export const MainLayout = ({
   children,
@@ -15,7 +17,9 @@ export const MainLayout = ({
 }) => {
   const isModalOpen = useModalStore((state) => state.isModalOpen);
   const closeModal = useModalStore((state) => state.closeModal);
-  const payload: WatchItemModal = useModalStore((state) => state.payload);
+  const payload: WatchItemModal | GameItemModal = useModalStore(
+    (state) => state.payload
+  );
 
   const showContent = useModalStore((state) => state.showContent);
   const setShowContent = useModalStore((state) => state.setShowContent);
@@ -50,7 +54,12 @@ export const MainLayout = ({
             >
               <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
                 <Close closeAction={exitModal} />
-                {payload && <WatchItemModalContent item={payload} />}
+                {payload && "videos" in payload && (
+                  <WatchItemModalContent item={payload} />
+                )}
+                {payload && "game" in payload && (
+                  <GameItemModalContent item={payload} />
+                )}
               </div>
             </motion.div>
           )}
