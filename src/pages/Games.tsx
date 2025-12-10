@@ -25,9 +25,15 @@ export const GamesPage = () => {
       a.name.localeCompare(b.name)
     );
 
-    const done = gamesSortedByName.filter((g) => g.status === "done");
-    const playing = gamesSortedByName.filter((g) => g.status === "playing");
-    const wishlist = gamesSortedByName.filter((g) => !g.status);
+    const { done, playing, wishlist } = gamesSortedByName.reduce(
+      (acc, game) => {
+        if (game.status === "done") acc.done.push(game);
+        else if (game.status === "playing") acc.playing.push(game);
+        else acc.wishlist.push(game);
+        return acc;
+      },
+      { done: [], playing: [], wishlist: [] }
+    );
 
     return { done, playing, wishlist };
   }, [firebaseGamesQuery.data]);
