@@ -30,7 +30,7 @@ export const GameItem = ({
     <div className="transform transition-transform duration-350 hover:scale-110 cursor-pointer">
       <ItemLayout
         name={game.name}
-        image={game.cover ? `${game.cover}` : ""}
+        image={game.cover ? `${game.cover.replace("cover_big", "720p")}` : ""}
         progress={0}
         payload={modalContent}
         onAdd={onAdd}

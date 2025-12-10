@@ -38,6 +38,11 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   );
   const { currentUser } = useAuth();
 
+  item.game.logoUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${item.game.websites?.stores
+    ?.find((w) => w.type === "Steam")
+    ?.url?.split("/")
+    .pop()}/logo.png`;
+
   const handleAddToList = (game: Game) => {
     addGameMutation.mutate(game);
   };
@@ -192,15 +197,27 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
           <div className="absolute bottom-1/10 mb-4 left-12 flex flex-col gap-4">
             {displayItem.logoUrl ? (
               <img
-                src={`https://image.tmdb.org/t/p/w300${displayItem.logoUrl}`}
+                src={displayItem.logoUrl}
                 alt={displayItem.name}
                 className="object-contain mb-6 max-w-xs"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.style.display = "none";
+                  const sibling = target.nextElementSibling;
+                  if (sibling && sibling instanceof HTMLElement)
+                    sibling.style.display = "block";
+                }}
               />
-            ) : (
-              <h1 className="text-4xl font-bold text-white">
-                {displayItem.name}
-              </h1>
-            )}
+            ) : null}
+            <h1
+              className="text-4xl font-bold text-white"
+              style={{
+                display: displayItem.logoUrl ? "none" : "block",
+              }}
+            >
+              {displayItem.name}
+            </h1>
             {item.wishListed ? (
               <div className="flex space-x-4">
                 {!item.game.status && (
