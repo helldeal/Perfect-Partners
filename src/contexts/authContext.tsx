@@ -37,10 +37,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // 🟦 Sauvegarde dans Realtime Database
+    // Save to Realtime Database
     await saveUserToRealtimeDB(user);
 
-    // 🔵 Mise à jour du context
+    // Update context
     setCurrentUser(user);
     setUserLoggedIn(!!user);
     setUserLoading(false);
