@@ -302,7 +302,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 className="object-contain mb-6 max-w-xs"
               />
             ) : (
-              <h1 className="text-4xl font-bold text-white">
+              <h1 className="text-4xl font-bold text-white mb-6 max-w-xs">
                 {displayItem.title}
               </h1>
             )}
@@ -393,7 +393,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           handleUnwatchItem={item.handleUnwatchItem}
         />
         {collectionsQuery && collectionsQuery.data && (
-          <div className="mt-6 relative">
+          <div className="mt-6 relative p-5">
             <h2 className="text-2xl mb-4">{collectionsQuery.data.name}</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {collectionsQuery.data.parts
@@ -401,21 +401,25 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                   a.release_date.localeCompare(b.release_date)
                 )
                 .map((item: any) => (
-                  <MediaItemSearch
+                  <div
+                    className="opacity-90 hover:opacity-100 transition-opacity"
                     key={item.id}
-                    item={
-                      mediaItems.find(
-                        (mediaItem) => mediaItem.id === item.id
-                      ) ?? item
-                    }
-                    itemSelected={item.id === displayItem.id}
-                  />
+                  >
+                    <MediaItemSearch
+                      item={
+                        mediaItems.find(
+                          (mediaItem) => mediaItem.id === item.id
+                        ) ?? item
+                      }
+                      itemSelected={item.id === displayItem.id}
+                    />
+                  </div>
                 ))}
             </div>
             <img
               src={`https://image.tmdb.org/t/p/w1280${collectionsQuery.data.backdrop_path}`}
               alt={collectionsQuery.data.name}
-              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
+              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-xl"
             />
           </div>
         )}
