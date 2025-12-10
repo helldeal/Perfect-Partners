@@ -393,13 +393,14 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 ))}
             </div>
             {(() => {
-              const collectionArtwork = collectionGamesQuery.data[0]?.artworks?.[0];
+              const collectionArtwork =
+                collectionGamesQuery.data[0]?.artworks?.[0];
               const displayArtwork = displayItem.artworks?.[0];
               const imageSrc = collectionArtwork ?? displayArtwork ?? "";
               return imageSrc ? (
                 <img
                   src={imageSrc}
-                  alt={"collection-bg"}
+                  alt=""
                   className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-xl "
                 />
               ) : null;
