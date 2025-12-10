@@ -367,8 +367,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
           </div>
         </div>
         {collectionGamesQuery.data && collectionGamesQuery.data.length > 0 && (
-          <div className="mt-6 relative">
-            <h2 className="text-2xl mb-4">Collection</h2>
+          <div className="mt-6 relative p-5">
+            <h2 className="text-2xl mb-4">Serie</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {collectionGamesQuery.data
                 .sort((a, b) =>
@@ -377,15 +377,19 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                   )
                 )
                 .map((game) => (
-                  <GameItem
+                  <div
+                    className="opacity-90 hover:opacity-100 transition-opacity"
                     key={game.id}
-                    game={game}
-                    onAdd={() => addGameMutation.mutate(game)}
-                    inWishlist={firebaseGamesQuery.data?.some(
-                      (g) => g.id === game.id
-                    )}
-                    itemSelected={game.id === item.game.id}
-                  />
+                  >
+                    <GameItem
+                      game={game}
+                      onAdd={() => addGameMutation.mutate(game)}
+                      inWishlist={firebaseGamesQuery.data?.some(
+                        (g) => g.id === game.id
+                      )}
+                      itemSelected={game.id === item.game.id}
+                    />
+                  </div>
                 ))}
             </div>
             <img
@@ -395,7 +399,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 ""
               }`}
               alt={"collection-bg"}
-              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
+              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-xl "
             />
           </div>
         )}

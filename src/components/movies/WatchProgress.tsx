@@ -1,9 +1,12 @@
 export const WatchProgress = ({ progress }: { progress: number }) => {
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
+    <div
+      className="absolute bottom-0 w-full"
+      style={{ display: "flex", alignItems: "center" }}
+    >
       <div
         style={{
-          height: "3px",
+          height: "4px",
           width: "100%",
           backgroundColor: "transparent",
           borderRadius: "5px",

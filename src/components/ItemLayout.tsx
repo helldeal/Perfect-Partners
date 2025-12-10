@@ -29,16 +29,17 @@ export const ItemLayout = ({
   };
   return (
     <div className="w-full h-full " onClick={openModalHandler}>
-      <div
-        className={`w-full h-full relative ${
-          itemSelected ? "border-2 border-blue-500" : ""
-        }`}
-      >
+      <div className="w-full h-full relative">
         <img
           src={image ? `${image}` : "/placeholder.png"}
           alt={name}
           className="w-full h-full rounded object-cover"
         />
+        <div
+          className={`absolute w-full h-full rounded top-0 left-0 ${
+            itemSelected ? "border-2 border-blue-500" : ""
+          }`}
+        ></div>
         {!!progress && <WatchProgress progress={progress} />}
         {inList && onAdd && (
           <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">
