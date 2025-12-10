@@ -55,7 +55,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
 
   const handlePossessedBy = (game: Game, userId: string) => {
     const updatedPossessedBy = (game.possessedBy || []).includes(userId)
-      ? game.possessedBy.filter((id) => id !== userId)
+      ? (game.possessedBy || []).filter((id) => id !== userId)
       : [...(game.possessedBy || []), userId];
 
     const updatedGame: Game = {
