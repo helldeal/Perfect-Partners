@@ -18,6 +18,8 @@ import { Game } from "../../api/models/games";
 import { formatYearRange } from "../../utils/dates";
 import { useCollectionGames, useSimilarGames } from "../../api/igdb";
 import { GameItem } from "./GameItem";
+import { useFirebaseUsers } from "../../api/firebase/user";
+import { useAuth } from "../../contexts/authContext";
 
 export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   const [muted, setMuted] = useState(true);
@@ -25,12 +27,16 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   const firebaseGamesQuery = useFirebaseGames();
   const addGameMutation = useAddGame();
   const updateGameMutation = useUpdateGame();
-  const useCollectionGamesQuery = useCollectionGames(
+  const collectionGamesQuery = useCollectionGames(
     item.game.collections ? item.game.collections[0] : null
   );
-  const useSimilarGamesQuery = useSimilarGames(
+  const similarGamesQuery = useSimilarGames(
     item.game.similar_games ? item.game.similar_games : []
   );
+  const possessedByFirebaseUsers = useFirebaseUsers(
+    item.game.possessedBy || []
+  );
+  const { currentUser } = useAuth();
 
   const handleAddToList = (game: Game) => {
     addGameMutation.mutate(game);
@@ -40,6 +46,21 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
     const updatedGame: Game = {
       ...game,
       status,
+    };
+    updateGameMutation.mutate({
+      firebaseId: game.id.toString(),
+      updatedData: updatedGame,
+    });
+  };
+
+  const handlePossessedBy = (game: Game, userId: string) => {
+    const updatedPossessedBy = (game.possessedBy || []).includes(userId)
+      ? game.possessedBy.filter((id) => id !== userId)
+      : [...(game.possessedBy || []), userId];
+
+    const updatedGame: Game = {
+      ...game,
+      possessedBy: updatedPossessedBy,
     };
     updateGameMutation.mutate({
       firebaseId: game.id.toString(),
@@ -125,6 +146,48 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             background: "linear-gradient(0deg, #181818, transparent 50%)",
           }}
         >
+          <div className="absolute top-9/10 left-12 flex flex-row items-center gap-2">
+            <p>Possédé par :</p>
+            {!possessedByFirebaseUsers.some(
+              (user) => user.uid === currentUser?.uid
+            ) &&
+              currentUser && (
+                <div className="relative group">
+                  <img
+                    src={currentUser.photoURL || ""}
+                    alt={currentUser.displayName || "User"}
+                    title={currentUser.displayName || "User"}
+                    className="object-contain w-8 h-8 rounded-full cursor-pointer opacity-50 group-hover:brightness-50 transition-all"
+                    onClick={() =>
+                      handlePossessedBy(item.game, currentUser.uid)
+                    }
+                  />
+                  <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <p className="text-white text-xl font-bold">+</p>
+                  </div>
+                </div>
+              )}
+            {possessedByFirebaseUsers.map((user) => (
+              <div className="relative group">
+                <img
+                  key={user.uid}
+                  src={user.photoURL || ""}
+                  alt={user.displayName || "User"}
+                  title={user.displayName || "User"}
+                  className="object-contain w-8 h-8 rounded-full cursor-pointer group-hover:brightness-50 transition-all"
+                  onClick={() =>
+                    currentUser?.uid === user.uid &&
+                    handlePossessedBy(item.game, user.uid)
+                  }
+                />
+                {user.uid === currentUser?.uid && (
+                  <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <p className="text-white text-xl font-bold">−</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
           <div className="absolute bottom-1/10 mb-4 left-12 flex flex-col gap-4">
             {displayItem.logoUrl ? (
               <img
@@ -282,41 +345,40 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             </div>
           </div>
         </div>
-        {useCollectionGamesQuery.data &&
-          useCollectionGamesQuery.data.length > 0 && (
-            <div className="mt-6 relative">
-              <h2 className="text-2xl mb-4">Collection</h2>
-              <div className="grid grid-cols-5 gap-4 pb-4">
-                {useCollectionGamesQuery.data
-                  .sort((a, b) =>
-                    (String(a.release_date) || "").localeCompare(
-                      String(b.release_date) || ""
-                    )
+        {collectionGamesQuery.data && collectionGamesQuery.data.length > 0 && (
+          <div className="mt-6 relative">
+            <h2 className="text-2xl mb-4">Collection</h2>
+            <div className="grid grid-cols-5 gap-4 pb-4">
+              {collectionGamesQuery.data
+                .sort((a, b) =>
+                  (String(a.release_date) || "").localeCompare(
+                    String(b.release_date) || ""
                   )
-                  .map((game) => (
-                    <GameItem
-                      key={game.id}
-                      game={game}
-                      onAdd={() => addGameMutation.mutate(game)}
-                      inWishlist={firebaseGamesQuery.data?.some(
-                        (g) => g.id === game.id
-                      )}
-                      itemSelected={game.id === item.game.id}
-                    />
-                  ))}
-              </div>
-              <img
-                src={`${useCollectionGamesQuery.data[0]?.artworks?.[0] ?? ""}`}
-                alt={"collection-bg"}
-                className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
-              />
+                )
+                .map((game) => (
+                  <GameItem
+                    key={game.id}
+                    game={game}
+                    onAdd={() => addGameMutation.mutate(game)}
+                    inWishlist={firebaseGamesQuery.data?.some(
+                      (g) => g.id === game.id
+                    )}
+                    itemSelected={game.id === item.game.id}
+                  />
+                ))}
             </div>
-          )}
-        {useSimilarGamesQuery.data && useSimilarGamesQuery.data.length > 0 && (
+            <img
+              src={`${collectionGamesQuery.data[0]?.artworks?.[0] ?? ""}`}
+              alt={"collection-bg"}
+              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
+            />
+          </div>
+        )}
+        {similarGamesQuery.data && similarGamesQuery.data.length > 0 && (
           <div className="mt-6">
             <h2 className="text-2xl mb-4">Similar Games</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
-              {useSimilarGamesQuery.data.map((game) => (
+              {similarGamesQuery.data.map((game) => (
                 <GameItem
                   key={game.id}
                   game={game}

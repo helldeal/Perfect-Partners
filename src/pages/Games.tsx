@@ -47,7 +47,10 @@ export const GamesPage = () => {
     } else if (!payload.wishListed) {
       newPayload.wishListed = true;
       newPayload.game = itemInList;
-    } else if (itemInList.status !== payload.game.status) {
+    } else if (
+      itemInList.status !== payload.game.status ||
+      itemInList.possessedBy?.length !== payload.game.possessedBy?.length
+    ) {
       newPayload.game = itemInList;
     }
     if (Object.keys(newPayload).length > 0) {
