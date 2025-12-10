@@ -146,47 +146,49 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             background: "linear-gradient(0deg, #181818, transparent 50%)",
           }}
         >
-          <div className="absolute top-9/10 left-12 flex flex-row items-center gap-2">
-            <p>Possédé par :</p>
-            {!possessedByFirebaseUsers.some(
-              (user) => user.uid === currentUser?.uid
-            ) &&
-              currentUser && (
-                <div className="relative group">
-                  <img
-                    src={currentUser.photoURL || ""}
-                    alt={currentUser.displayName || "User"}
-                    title={currentUser.displayName || "User"}
-                    className="object-contain w-8 h-8 rounded-full cursor-pointer opacity-50 group-hover:brightness-50 transition-all"
-                    onClick={() =>
-                      handlePossessedBy(item.game, currentUser.uid)
-                    }
-                  />
-                  <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <p className="text-white text-xl font-bold">+</p>
-                  </div>
-                </div>
-              )}
-            {possessedByFirebaseUsers.map((user) => (
-              <div key={user.uid} className="relative group">
-                <img
-                  src={user.photoURL || ""}
-                  alt={user.displayName || "User"}
-                  title={user.displayName || "User"}
-                  className="object-contain w-8 h-8 rounded-full cursor-pointer group-hover:brightness-50 transition-all"
-                  onClick={() =>
-                    currentUser?.uid === user.uid &&
-                    handlePossessedBy(item.game, user.uid)
-                  }
-                />
-                {user.uid === currentUser?.uid && (
-                  <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <p className="text-white text-xl font-bold">−</p>
+          {item.wishListed && (
+            <div className="absolute top-9/10 left-12 flex flex-row items-center gap-2">
+              <p>Possédé par :</p>
+              {!possessedByFirebaseUsers.some(
+                (user) => user.uid === currentUser?.uid
+              ) &&
+                currentUser && (
+                  <div className="relative group">
+                    <img
+                      src={currentUser.photoURL || ""}
+                      alt={currentUser.displayName || "User"}
+                      title={currentUser.displayName || "User"}
+                      className="object-contain w-8 h-8 rounded-full cursor-pointer opacity-30 group-hover:brightness-50 transition-all"
+                      onClick={() =>
+                        handlePossessedBy(item.game, currentUser.uid)
+                      }
+                    />
+                    <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center pointer-events-none text-gray-300">
+                      <p className="text-xl font-bold">+</p>
+                    </div>
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
+              {possessedByFirebaseUsers.map((user) => (
+                <div key={user.uid} className="relative group">
+                  <img
+                    src={user.photoURL || ""}
+                    alt={user.displayName || "User"}
+                    title={user.displayName || "User"}
+                    className="object-contain w-8 h-8 rounded-full cursor-pointer group-hover:brightness-50 transition-all"
+                    onClick={() =>
+                      currentUser?.uid === user.uid &&
+                      handlePossessedBy(item.game, user.uid)
+                    }
+                  />
+                  {user.uid === currentUser?.uid && (
+                    <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      <p className="text-white text-xl font-bold">−</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           <div className="absolute bottom-1/10 mb-4 left-12 flex flex-col gap-4">
             {displayItem.logoUrl ? (
               <img

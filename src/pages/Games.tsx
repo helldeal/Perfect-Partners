@@ -7,6 +7,7 @@ import { useAddGame, useFirebaseGames } from "../api/firebase/games";
 import { useEffect, useMemo } from "react";
 import { GameItemModal } from "../api/models/gameItemModal";
 import useModalStore from "../store/modalStore";
+import { Game } from "../api/models/games";
 
 export const GamesPage = () => {
   const searchTerm = useSearchStore((state) => state.query);
@@ -32,7 +33,11 @@ export const GamesPage = () => {
         else acc.wishlist.push(game);
         return acc;
       },
-      { done: [], playing: [], wishlist: [] }
+      {
+        done: [] as Game[],
+        playing: [] as Game[],
+        wishlist: [] as Game[],
+      }
     );
 
     return { done, playing, wishlist };
