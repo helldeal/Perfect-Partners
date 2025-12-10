@@ -4,7 +4,7 @@ import useSearchStore from "../store/searchStore";
 import { useDebounce } from "../utils/useDebounce";
 import { GameItem } from "../components/games/GameItem";
 import { useAddGame, useFirebaseGames } from "../api/firebase/games";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { GameItemModal } from "../api/models/gameItemModal";
 import useModalStore from "../store/modalStore";
 
@@ -18,6 +18,19 @@ export const GamesPage = () => {
   const updatePayload = useModalStore((state) => state.updatePayload);
 
   const searchList = debouncedQuery.length > 0 ? searchGamesQuery.data : null;
+
+  const gameList = useMemo(() => {
+    const games = firebaseGamesQuery.data ?? [];
+    const gamesSortedByName = games.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    const done = gamesSortedByName.filter((g) => g.status === "done");
+    const playing = gamesSortedByName.filter((g) => g.status === "playing");
+    const wishlist = gamesSortedByName.filter((g) => !g.status);
+
+    return { done, playing, wishlist };
+  }, [firebaseGamesQuery.data]);
 
   useEffect(() => {
     if (!payload || payload.game.id === null) return;
@@ -33,6 +46,9 @@ export const GamesPage = () => {
       }
     } else if (!payload.wishListed) {
       newPayload.wishListed = true;
+      newPayload.game = itemInList;
+    } else if (itemInList.status !== payload.game.status) {
+      newPayload.game = itemInList;
     }
     if (Object.keys(newPayload).length > 0) {
       updatePayload(newPayload);
@@ -64,17 +80,38 @@ export const GamesPage = () => {
             </p>
           )
         ) : (
-          firebaseGamesQuery.data &&
-          firebaseGamesQuery.data.length > 0 && (
-            <>
-              <h2 className="text-2xl">Game List</h2>
-              <div className="grid grid-cols-6 gap-12 items-stretch">
-                {firebaseGamesQuery.data.map((game) => (
-                  <GameItem key={game.id} game={game} inWishlist={true} />
-                ))}
-              </div>
-            </>
-          )
+          <>
+            {gameList.playing && gameList.playing.length > 0 && (
+              <>
+                <h2 className="text-2xl">Playing</h2>
+                <div className="grid grid-cols-6 gap-12 items-stretch">
+                  {gameList.playing.map((game) => (
+                    <GameItem key={game.id} game={game} inWishlist={true} />
+                  ))}
+                </div>
+              </>
+            )}
+            {gameList.wishlist && gameList.wishlist.length > 0 && (
+              <>
+                <h2 className="text-2xl">Game List</h2>
+                <div className="grid grid-cols-6 gap-12 items-stretch">
+                  {gameList.wishlist.map((game) => (
+                    <GameItem key={game.id} game={game} inWishlist={true} />
+                  ))}
+                </div>
+              </>
+            )}
+            {gameList.done && gameList.done.length > 0 && (
+              <>
+                <h2 className="text-2xl">Completed Games</h2>
+                <div className="grid grid-cols-6 gap-12 items-stretch">
+                  {gameList.done.map((game) => (
+                    <GameItem key={game.id} game={game} inWishlist={true} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
     </MainLayout>

@@ -41,4 +41,5 @@ export type Game = {
   videoUrl?: string;
   logoUrl?: string;
   possessedBy: string[];
+  status?: "playing" | "done";
 };

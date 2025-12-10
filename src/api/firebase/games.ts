@@ -53,6 +53,7 @@ export const useFirebaseGames = () => {
 export const useAddGame = () => {
   const queryClient = useQueryClient();
   const addGame = async (game: Game): Promise<void> => {
+    game.status = undefined;
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${game.id}.json`,
       {

@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import {
   AddButtonIcon,
+  DoneIcon,
   MutedIcon,
+  PlayingIcon,
   RemoveButtonIcon,
   UnmutedIcon,
 } from "../../assets/svgs";
 import { ItemIconButton } from "../ItemIconButton";
 import { GameItemModal } from "../../api/models/gameItemModal";
-import { useAddGame, useFirebaseGames } from "../../api/firebase/games";
+import {
+  useAddGame,
+  useFirebaseGames,
+  useUpdateGame,
+} from "../../api/firebase/games";
 import { Game } from "../../api/models/games";
 import { formatYearRange } from "../../utils/dates";
 import { useCollectionGames, useSimilarGames } from "../../api/igdb";
@@ -18,6 +24,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const firebaseGamesQuery = useFirebaseGames();
   const addGameMutation = useAddGame();
+  const updateGameMutation = useUpdateGame();
   const useCollectionGamesQuery = useCollectionGames(
     item.game.collections ? item.game.collections[0] : null
   );
@@ -27,6 +34,17 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
 
   const handleAddToList = (game: Game) => {
     addGameMutation.mutate(game);
+  };
+
+  const handleStatus = (game: Game, status: "playing" | "done") => {
+    const updatedGame: Game = {
+      ...game,
+      status,
+    };
+    updateGameMutation.mutate({
+      firebaseId: game.id.toString(),
+      updatedData: updatedGame,
+    });
   };
 
   const displayItem = item.game;
@@ -121,6 +139,25 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             )}
             {item.wishListed ? (
               <div className="flex space-x-4">
+                {!item.game.status && (
+                  <ItemIconButton
+                    type="primary"
+                    title="Playing"
+                    handleClick={() => handleStatus(item.game, "playing")}
+                  >
+                    <PlayingIcon />
+                  </ItemIconButton>
+                )}
+                {item.game.status !== "done" && (
+                  <ItemIconButton
+                    type="primary"
+                    title="Done"
+                    handleClick={() => handleStatus(item.game, "done")}
+                  >
+                    <DoneIcon />
+                  </ItemIconButton>
+                )}
+
                 <ItemIconButton
                   type="secondary"
                   title="Remove"
@@ -247,7 +284,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
         </div>
         {useCollectionGamesQuery.data &&
           useCollectionGamesQuery.data.length > 0 && (
-            <div className="mt-6">
+            <div className="mt-6 relative">
               <h2 className="text-2xl mb-4">Collection</h2>
               <div className="grid grid-cols-5 gap-4 pb-4">
                 {useCollectionGamesQuery.data
@@ -268,6 +305,11 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                     />
                   ))}
               </div>
+              <img
+                src={`${useCollectionGamesQuery.data[0]?.artworks?.[0] ?? ""}`}
+                alt={"collection-bg"}
+                className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
+              />
             </div>
           )}
         {useSimilarGamesQuery.data && useSimilarGamesQuery.data.length > 0 && (
