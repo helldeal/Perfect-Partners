@@ -21,7 +21,7 @@ export const GamesPage = () => {
 
   const gameList = useMemo(() => {
     const games = firebaseGamesQuery.data ?? [];
-    const gamesSortedByName = games.sort((a, b) =>
+    const gamesSortedByName = [...games].sort((a, b) =>
       a.name.localeCompare(b.name)
     );
 
