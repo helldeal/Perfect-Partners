@@ -38,10 +38,13 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   );
   const { currentUser } = useAuth();
 
-  item.game.logoUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${item.game.websites?.stores
-    ?.find((w) => w.type === "Steam")
-    ?.url?.split("/")
-    .pop()}/logo.png`;
+  const steamUrl = item.game.websites?.stores?.find(
+    (w) => w.type === "Steam"
+  )?.url;
+  const steamAppId = steamUrl?.match(/\/app\/(\d+)/)?.[1];
+  if (steamAppId) {
+    item.game.logoUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${steamAppId}/logo.png`;
+  }
 
   const handleAddToList = (game: Game) => {
     addGameMutation.mutate(game);
@@ -211,7 +214,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
               />
             ) : null}
             <h1
-              className="text-4xl font-bold text-white"
+              className="text-4xl font-bold text-white mb-6 max-w-xs"
               style={{
                 display: displayItem.logoUrl ? "none" : "block",
               }}

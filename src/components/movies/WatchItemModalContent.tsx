@@ -302,7 +302,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 className="object-contain mb-6 max-w-xs"
               />
             ) : (
-              <h1 className="text-4xl font-bold text-white">
+              <h1 className="text-4xl font-bold text-white mb-6 max-w-xs">
                 {displayItem.title}
               </h1>
             )}
