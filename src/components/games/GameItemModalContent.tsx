@@ -368,7 +368,11 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 ))}
             </div>
             <img
-              src={`${collectionGamesQuery.data[0]?.artworks?.[0] ?? ""}`}
+              src={`${
+                collectionGamesQuery.data[0]?.artworks?.[0] ??
+                displayItem.artworks?.[0] ??
+                ""
+              }`}
               alt={"collection-bg"}
               className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-lg scale-105"
             />
