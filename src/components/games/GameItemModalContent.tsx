@@ -168,9 +168,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 </div>
               )}
             {possessedByFirebaseUsers.map((user) => (
-              <div className="relative group">
+              <div key={user.uid} className="relative group">
                 <img
-                  key={user.uid}
                   src={user.photoURL || ""}
                   alt={user.displayName || "User"}
                   title={user.displayName || "User"}
