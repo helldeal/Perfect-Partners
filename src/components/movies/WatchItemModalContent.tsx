@@ -360,7 +360,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             </div>
             <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
           </div>
-          <div className="col-span-1 sm:col-span-1 flex flex-row sm:flex-row justify-between sm:justify-end gap-4">
+          <div className="col-span-1 sm:col-span-1 flex flex-row justify-between sm:justify-end gap-4">
             <div className="flex flex-col mb-4">
               {displayItem.watch_providers ? (
                 displayItem.watch_providers?.slice(0, 3).map((provider) => {
