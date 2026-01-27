@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Header } from "../components/Header";
 import { Modal } from "@mui/material";
 import { Close } from "../components/Close";
@@ -7,6 +8,7 @@ import { WatchItemModalContent } from "../components/movies/WatchItemModalConten
 import { WatchItemModal } from "../api/models/watchItemModal";
 import { GameItemModal } from "../api/models/gameItemModal";
 import { GameItemModalContent } from "./games/GameItemModalContent";
+import { useEffect, useCallback } from "react";
 
 export const MainLayout = ({
   children,
@@ -24,10 +26,34 @@ export const MainLayout = ({
   const showContent = useModalStore((state) => state.showContent);
   const setShowContent = useModalStore((state) => state.setShowContent);
 
-  const exitModal = (e?: any) => {
-    e?.stopPropagation();
-    setShowContent(false);
-  };
+  const exitModal = useCallback(
+    (e?: any) => {
+      e?.stopPropagation();
+      setShowContent(false);
+    },
+    [setShowContent]
+  );
+
+  // Gérer le bouton retour du navigateur pour fermer la modal
+  useEffect(() => {
+    if (isModalOpen) {
+      // Ajouter un état à l'historique quand la modal s'ouvre
+      window.history.pushState({ modal: true }, "");
+
+      const handlePopState = (e: PopStateEvent) => {
+        if (isModalOpen) {
+          e.preventDefault();
+          exitModal();
+        }
+      };
+
+      window.addEventListener("popstate", handlePopState);
+
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [isModalOpen, exitModal]);
 
   return (
     <div className="min-h-screen bg-[#181818] text-slate-100 flex flex-col">
