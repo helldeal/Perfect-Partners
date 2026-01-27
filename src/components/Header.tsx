@@ -40,27 +40,33 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
 
   return (
     <header
-      className={`flex justify-between items-center p-3 gap-3 h-16 sticky top-0 z-10 ${
+      className={`flex justify-between items-center p-3 gap-2 sm:gap-3 h-16 sticky top-0 z-10 ${
         isScrolled ? "bg-[#181818]" : "bg-transparent"
-      } transition-colors duration-300 px-18`}
+      } transition-colors duration-300 px-4 sm:px-6 md:px-12 lg:px-18`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <div
-          className="flex items-center gap-2 cursor-pointer mr-8 text-center scale-110"
+          className="flex items-center gap-1 sm:gap-2 cursor-pointer mr-2 sm:mr-4 md:mr-8 text-center scale-100 sm:scale-105 md:scale-110 flex-shrink-0"
           onClick={() => {
             setSearchTerm("");
             navigate("/");
           }}
         >
-          <img src={logoImg} alt="Perfect Partners Logo" className="w-8 h-8" />
-          <h1 className="text-lg leading-none">Perfect Partners</h1>
+          <img
+            src={logoImg}
+            alt="Perfect Partners Logo"
+            className="w-6 h-6 sm:w-8 sm:h-8"
+          />
+          <h1 className="text-base sm:text-lg leading-none hidden sm:block">
+            Perfect Partners
+          </h1>
         </div>
 
-        <nav className=" cursor-pointer space-x-2 text-sm hidden md:flex">
+        <nav className=" cursor-pointer space-x-2 sm:space-x-3 text-xs sm:text-sm hidden md:flex">
           {navMenu.map((item) => (
             <span
               key={item.key}
-              className={`ml-4 ${navSelected === item.key ? "font-bold" : ""}`}
+              className={`ml-2 sm:ml-4 ${navSelected === item.key ? "font-bold" : ""}`}
               onClick={() => {
                 setSearchTerm("");
                 navigate(item.path);
@@ -72,8 +78,8 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
         </nav>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="relative flex-1 sm:flex-auto max-w-md">
           <input
             type="text"
             placeholder={(() => {
@@ -88,7 +94,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                   return "Rechercher...";
               }
             })()}
-            className="p-2 pr-8 w-full box-border"
+            className="p-2 pr-8 w-full box-border text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => {

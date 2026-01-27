@@ -71,12 +71,12 @@ export const GamesPage = () => {
 
   return (
     <MainLayout navSelected="games">
-      <div className=" flex flex-col gap-6 p-12">
+      <div className=" flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 md:p-8 lg:p-12">
         {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
           searchGamesQuery.isLoading ? (
             <p>Loading...</p>
           ) : searchList && searchList.length > 0 ? (
-            <div className="grid grid-cols-6 gap-12 items-stretch">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
               {searchList.map((item) => (
                 <GameItem
                   key={item.id}
@@ -97,8 +97,8 @@ export const GamesPage = () => {
           <>
             {gameList.playing && gameList.playing.length > 0 && (
               <>
-                <h2 className="text-2xl">Playing</h2>
-                <div className="grid grid-cols-6 gap-12 items-stretch">
+                <h2 className="text-lg sm:text-xl md:text-2xl">Playing</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
                   {gameList.playing.map((game) => (
                     <GameItem key={game.id} game={game} inWishlist={true} />
                   ))}
@@ -107,8 +107,8 @@ export const GamesPage = () => {
             )}
             {gameList.wishlist && gameList.wishlist.length > 0 && (
               <>
-                <h2 className="text-2xl">Game List</h2>
-                <div className="grid grid-cols-6 gap-12 items-stretch">
+                <h2 className="text-lg sm:text-xl md:text-2xl">Game List</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
                   {gameList.wishlist.map((game) => (
                     <GameItem key={game.id} game={game} inWishlist={true} />
                   ))}
@@ -117,8 +117,10 @@ export const GamesPage = () => {
             )}
             {gameList.done && gameList.done.length > 0 && (
               <>
-                <h2 className="text-2xl">Completed Games</h2>
-                <div className="grid grid-cols-6 gap-12 items-stretch">
+                <h2 className="text-lg sm:text-xl md:text-2xl">
+                  Completed Games
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
                   {gameList.done.map((game) => (
                     <GameItem key={game.id} game={game} inWishlist={true} />
                   ))}

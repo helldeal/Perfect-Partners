@@ -36,7 +36,7 @@ export const MainLayout = ({
       <Modal
         open={isModalOpen}
         onClose={exitModal}
-        className="flex justify-center overflow-y-scroll"
+        className="flex justify-center overflow-y-scroll items-center p-4"
       >
         <AnimatePresence
           onExitComplete={() => {
