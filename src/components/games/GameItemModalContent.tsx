@@ -318,7 +318,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
             <p className="mb-2 line-clamp-4">{displayItem.storyline}</p>
           </div>
-          <div className="col-span-1 sm:col-span-1 flex flex-row sm:flex-row justify-between sm:justify-end gap-4">
+          <div className="col-span-1 flex flex-row sm:flex-row justify-between sm:justify-end gap-4">
             <div className="flex flex-col mb-4">
               {displayItem.companies ? (
                 <>
