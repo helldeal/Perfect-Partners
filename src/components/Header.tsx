@@ -26,10 +26,12 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
   };
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
+      setIsMobileMenuOpen(false);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -37,6 +39,12 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const handleNavClick = (path: string) => {
+    setSearchTerm("");
+    navigate(path);
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <header
@@ -46,7 +54,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
     >
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <div
-          className="flex items-center gap-1 sm:gap-2 cursor-pointer mr-2 sm:mr-4 md:mr-8 text-center scale-100 sm:scale-105 md:scale-110 flex-shrink-0"
+          className="flex items-center gap-1 sm:gap-2 cursor-pointer mr-2 sm:mr-4 md:mr-8 text-center scale-100 sm:scale-105 md:scale-110 shrink-0"
           onClick={() => {
             setSearchTerm("");
             navigate("/");
@@ -76,7 +84,45 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
             </span>
           ))}{" "}
         </nav>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden flex flex-col gap-1 cursor-pointer shrink-0"
+          aria-label="Basculer le menu mobile"
+        >
+          <span
+            className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+          ></span>
+          <span
+            className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? "opacity-0" : ""}`}
+          ></span>
+          <span
+            className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
+          ></span>
+        </button>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-16 left-0 right-0 bg-[#181818] border-b border-gray-700 md:hidden">
+          <nav className="flex flex-col p-4 gap-3">
+            {navMenu.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => handleNavClick(item.path)}
+                className={`text-left px-4 py-2 rounded transition-colors ${
+                  navSelected === item.key
+                    ? "font-bold bg-gray-700"
+                    : "hover:bg-gray-800"
+                }`}
+              >
+                {item.name}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
 
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <div className="relative flex-1 sm:flex-auto max-w-md">
@@ -116,7 +162,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
             {currentUser?.photoURL ? (
               <img
                 src={currentUser.photoURL}
-                alt={currentUser.displayName || "profile"}
+                alt={currentUser.displayName || "profil"}
                 referrerPolicy="no-referrer"
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -134,7 +180,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
               className="mt-2 w-full p-2 bg-red-600 text-white rounded-md cursor-pointer text-sm"
               type="button"
             >
-              Sign out
+              Se déconnecter
             </button>
           </div>
         </details>

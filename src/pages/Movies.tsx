@@ -104,7 +104,7 @@ export const MoviesPage = () => {
       <div className=" flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 md:p-8 lg:p-12">
         {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
           searchMultiQuery.isLoading ? (
-            <p>Loading...</p>
+            <p>Chargement...</p>
           ) : searchList && searchList.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
               {searchList.map((item: MediaItem) => (
@@ -118,13 +118,13 @@ export const MoviesPage = () => {
               ))}
             </div>
           ) : (
-            <p>No results found.</p>
+            <p>Aucun résultat trouvé.</p>
           )
         ) : (
           <>
             {watching.length > 0 && (
               <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">Continue</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl">Continuer</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
                   {watching.map((itemList, index) => (
                     <div key={index}>
@@ -136,9 +136,7 @@ export const MoviesPage = () => {
             )}
             {planToWatch.length > 0 && (
               <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">
-                  Plan to Watch
-                </h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl">À regarder</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
                   {planToWatch.map((itemList, index) => (
                     <WatchItemMapping key={index} itemList={itemList} />
@@ -148,7 +146,7 @@ export const MoviesPage = () => {
             )}
             {completed.length > 0 && (
               <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">Completed</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl">Complété</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
                   {completed.map((itemList) => (
                     <WatchItemMapping itemList={itemList} key={itemList.id} />

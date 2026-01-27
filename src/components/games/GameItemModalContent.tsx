@@ -164,8 +164,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                   <div className="relative group">
                     <img
                       src={currentUser.photoURL || ""}
-                      alt={currentUser.displayName || "User"}
-                      title={currentUser.displayName || "User"}
+                      alt={currentUser.displayName || "Utilisateur"}
+                      title={currentUser.displayName || "Utilisateur"}
                       className="object-contain w-8 h-8 rounded-full cursor-pointer opacity-30 group-hover:brightness-50 transition-all"
                       onClick={() =>
                         handlePossessedBy(item.game, currentUser.uid)
@@ -180,8 +180,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 <div key={user.uid} className="relative group">
                   <img
                     src={user.photoURL || ""}
-                    alt={user.displayName || "User"}
-                    title={user.displayName || "User"}
+                    alt={user.displayName || "Utilisateur"}
+                    title={user.displayName || "Utilisateur"}
                     className="object-contain w-8 h-8 rounded-full cursor-pointer group-hover:brightness-50 transition-all"
                     onClick={() =>
                       currentUser?.uid === user.uid &&
@@ -226,7 +226,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 {!item.game.status && (
                   <ItemIconButton
                     type="primary"
-                    title="Playing"
+                    title="En cours de jeu"
                     handleClick={() => handleStatus(item.game, "playing")}
                   >
                     <PlayingIcon />
@@ -235,7 +235,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 {item.game.status !== "done" && (
                   <ItemIconButton
                     type="primary"
-                    title="Done"
+                    title="Terminé"
                     handleClick={() => handleStatus(item.game, "done")}
                   >
                     <DoneIcon />
@@ -244,7 +244,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
 
                 <ItemIconButton
                   type="secondary"
-                  title="Remove"
+                  title="Supprimer"
                   handleClick={item.handleDelete}
                 >
                   <RemoveButtonIcon />
@@ -264,7 +264,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             <div className="absolute bottom-1/10 mb-4 right-12 flex">
               <ItemIconButton
                 type="secondary"
-                title={muted ? "Unmute" : "Mute"}
+                title={muted ? "Augmenter le son" : "Couper le son"}
                 handleClick={() => setMuted(!muted)}
               >
                 {muted ? <MutedIcon /> : <UnmutedIcon />}
@@ -342,7 +342,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-gray-400">N/A</p>
+                <p className="text-sm text-gray-400">Non disponible</p>
               )}
             </div>
             <div className="flex flex-col items-end">
@@ -368,7 +368,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
         </div>
         {collectionGamesQuery.data && collectionGamesQuery.data.length > 0 && (
           <div className="mt-6 relative p-5">
-            <h2 className="text-2xl mb-4">Serie</h2>
+            <h2 className="text-2xl mb-4">Série</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {collectionGamesQuery.data
                 .sort((a, b) =>
@@ -409,7 +409,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
         )}
         {similarGamesQuery.data && similarGamesQuery.data.length > 0 && (
           <div className="mt-6">
-            <h2 className="text-2xl mb-4">Similar Games</h2>
+            <h2 className="text-2xl mb-4">Jeux similaires</h2>
             <div className="grid grid-cols-5 gap-4 pb-4">
               {similarGamesQuery.data.map((game) => (
                 <GameItem

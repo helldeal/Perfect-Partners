@@ -311,7 +311,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 {!displayItem.allWatched && (
                   <ItemIconButton
                     type="primary"
-                    title="Watch"
+                    title="Marquer comme regardé"
                     handleClick={displayItem.handleAllWatch}
                   >
                     <WatchButtonIcon />
@@ -319,7 +319,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                 )}
                 <ItemIconButton
                   type="secondary"
-                  title="Remove"
+                  title="Supprimer"
                   handleClick={displayItem.handleDelete}
                 >
                   <RemoveButtonIcon />
@@ -339,7 +339,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             <div className="absolute bottom-1/10 mb-4 right-12 flex">
               <ItemIconButton
                 type="secondary"
-                title={muted ? "Unmute" : "Mute"}
+                title={muted ? "Augmenter le son" : "Couper le son"}
                 handleClick={() => setMuted(!muted)}
               >
                 {muted ? <MutedIcon /> : <UnmutedIcon />}
@@ -452,7 +452,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
                     src={
                       person.profile_path
                         ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
-                        : "https://via.placeholder.com/185x278?text=No+Image"
+                        : "https://via.placeholder.com/185x278?text=Pas+d%27image"
                     }
                     alt={person.name}
                     className="w-24 h-36 object-cover rounded mb-2"

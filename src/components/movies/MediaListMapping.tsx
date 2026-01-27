@@ -50,7 +50,7 @@ export const MediaListMapping = ({
                                   seasons
                                 )
                               }
-                              title={"Mark as Unwatched"}
+                              title={"Marquer comme non regardé"}
                               type={"secondary"}
                             >
                               <RemoveButtonIcon />
@@ -66,7 +66,7 @@ export const MediaListMapping = ({
                             handleClick={() =>
                               handleWatchItem!(episode.id.toString(), seasons)
                             }
-                            title={"Mark as Watched"}
+                            title={"Marquer comme regardé"}
                             type={"primary"}
                           >
                             <WatchButtonIcon />
@@ -113,7 +113,7 @@ export const MediaListMapping = ({
                       handleClick={() =>
                         handleUnwatchItem!(movie.id.toString())
                       }
-                      title={"Mark as Unwatched"}
+                      title={"Marquer comme non regardé"}
                       type={"secondary"}
                     >
                       <RemoveButtonIcon />
@@ -127,7 +127,7 @@ export const MediaListMapping = ({
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                   <ItemIconButton
                     handleClick={() => handleWatchItem!(movie.id.toString())}
-                    title={"Mark as Watched"}
+                    title={"Marquer comme regardé"}
                     type={"primary"}
                   >
                     <WatchButtonIcon />
