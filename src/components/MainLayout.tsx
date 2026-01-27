@@ -36,7 +36,7 @@ export const MainLayout = ({
       <Modal
         open={isModalOpen}
         onClose={exitModal}
-        className="flex justify-center overflow-y-scroll"
+        className="flex justify-center items-start sm:items-center overflow-y-auto sm:overflow-y-scroll p-0 sm:p-4 max-h-screen!"
       >
         <AnimatePresence
           onExitComplete={() => {
@@ -50,9 +50,9 @@ export const MainLayout = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute top-8 pb-8 left-1/2 transform -translate-x-1/2 max-w-5xl w-full outline-none z-10"
+              className="fixed sm:absolute top-0 sm:top-8 sm:pb-8 sm:left-1/2 sm:transform sm:-translate-x-1/2 max-h-screen sm:max-h-none sm:h-auto w-full sm:w-full sm:max-w-5xl outline-none z-10 overflow-y-auto sm:overflow-y-visible"
             >
-              <div className="w-full bg-[#181818] rounded-xl overflow-hidden shadow-lg outline-none relative">
+              <div className="w-full h-auto bg-[#181818] sm:rounded-xl overflow-hidden shadow-lg outline-none relative flex flex-col">
                 <Close closeAction={exitModal} />
                 {payload && "videos" in payload && (
                   <WatchItemModalContent item={payload} />

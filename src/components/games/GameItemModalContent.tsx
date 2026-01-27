@@ -155,8 +155,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
           }}
         >
           {item.wishListed && (
-            <div className="absolute top-9/10 left-12 flex flex-row items-center gap-2">
-              <p>Possédé par :</p>
+            <div className="absolute top-9/10 left-4 sm:left-12 flex flex-row items-center gap-2 text-xs sm:text-base overflow-x-auto">
+              <p className="whitespace-nowrap">Possédé par :</p>
               {!possessedByFirebaseUsers.some(
                 (user) => user.uid === currentUser?.uid
               ) &&
@@ -164,8 +164,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                   <div className="relative group">
                     <img
                       src={currentUser.photoURL || ""}
-                      alt={currentUser.displayName || "User"}
-                      title={currentUser.displayName || "User"}
+                      alt={currentUser.displayName || "Utilisateur"}
+                      title={currentUser.displayName || "Utilisateur"}
                       className="object-contain w-8 h-8 rounded-full cursor-pointer opacity-30 group-hover:brightness-50 transition-all"
                       onClick={() =>
                         handlePossessedBy(item.game, currentUser.uid)
@@ -180,15 +180,19 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 <div key={user.uid} className="relative group">
                   <img
                     src={user.photoURL || ""}
-                    alt={user.displayName || "User"}
-                    title={user.displayName || "User"}
-                    className="object-contain w-8 h-8 rounded-full cursor-pointer group-hover:brightness-50 transition-all"
+                    alt={user.displayName || "Utilisateur"}
+                    title={user.displayName || "Utilisateur"}
+                    className={`object-contain w-8 h-8 rounded-full cursor-pointer transition-all ${
+                      currentUser?.uid === user.uid
+                        ? "group-hover:brightness-50"
+                        : ""
+                    }`}
                     onClick={() =>
                       currentUser?.uid === user.uid &&
                       handlePossessedBy(item.game, user.uid)
                     }
                   />
-                  {user.uid === currentUser?.uid && (
+                  {currentUser?.uid === user.uid && (
                     <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                       <p className="text-white text-xl font-bold">−</p>
                     </div>
@@ -197,12 +201,12 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
               ))}
             </div>
           )}
-          <div className="absolute bottom-1/10 mb-4 left-12 flex flex-col gap-4">
+          <div className="absolute bottom-1/10 mb-2 sm:mb-4 left-4 sm:left-12 right-auto flex flex-col gap-2 sm:gap-4">
             {displayItem.logoUrl ? (
               <img
                 src={displayItem.logoUrl}
                 alt={displayItem.name}
-                className="object-contain mb-6 max-w-xs"
+                className="object-contain sm:mb-6 max-w-24 sm:max-w-xs h-16 sm:h-auto"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.onerror = null;
@@ -214,7 +218,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
               />
             ) : null}
             <h1
-              className="text-4xl font-bold text-white mb-6 max-w-xs"
+              className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-6 max-w-xs"
               style={{
                 display: displayItem.logoUrl ? "none" : "block",
               }}
@@ -226,7 +230,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 {!item.game.status && (
                   <ItemIconButton
                     type="primary"
-                    title="Playing"
+                    title="En cours de jeu"
                     handleClick={() => handleStatus(item.game, "playing")}
                   >
                     <PlayingIcon />
@@ -235,7 +239,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                 {item.game.status !== "done" && (
                   <ItemIconButton
                     type="primary"
-                    title="Done"
+                    title="Terminé"
                     handleClick={() => handleStatus(item.game, "done")}
                   >
                     <DoneIcon />
@@ -244,7 +248,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
 
                 <ItemIconButton
                   type="secondary"
-                  title="Remove"
+                  title="Supprimer"
                   handleClick={item.handleDelete}
                 >
                   <RemoveButtonIcon />
@@ -261,10 +265,10 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             )}
           </div>
           {item.game.video ? (
-            <div className="absolute bottom-1/10 mb-4 right-12 flex">
+            <div className="absolute bottom-1/10 mb-2 sm:mb-4 right-4 sm:right-12 flex">
               <ItemIconButton
                 type="secondary"
-                title={muted ? "Unmute" : "Mute"}
+                title={muted ? "Augmenter le son" : "Couper le son"}
                 handleClick={() => setMuted(!muted)}
               >
                 {muted ? <MutedIcon /> : <UnmutedIcon />}
@@ -273,9 +277,9 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
           ) : null}
         </div>
       </div>
-      <div className="px-12 py-3 pb-12 text-white z-30 relative flex flex-col gap-6">
-        <div className="grid grid-cols-3 gap-8">
-          <div className="col-span-2">
+      <div className="px-4 sm:px-12 py-3 pb-12 text-white z-30 relative flex flex-col gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
+          <div className="col-span-1 sm:col-span-2">
             <div className="flex space-x-4 mt-2 text-gray-400 items-center mb-4">
               <p>
                 {displayItem.release_date &&
@@ -314,7 +318,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
             <p className="mb-2 line-clamp-4">{displayItem.storyline}</p>
           </div>
-          <div className="col-span-1 flex flex-row justify-end gap-4">
+          <div className="col-span-1 flex flex-row sm:flex-row justify-between sm:justify-end gap-4">
             <div className="flex flex-col mb-4">
               {displayItem.companies ? (
                 <>
@@ -342,7 +346,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-gray-400">N/A</p>
+                <p className="text-sm text-gray-400">Non disponible</p>
               )}
             </div>
             <div className="flex flex-col items-end">
@@ -367,9 +371,9 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
           </div>
         </div>
         {collectionGamesQuery.data && collectionGamesQuery.data.length > 0 && (
-          <div className="mt-6 relative p-5">
-            <h2 className="text-2xl mb-4">Serie</h2>
-            <div className="grid grid-cols-5 gap-4 pb-4">
+          <div className="mt-6 relative p-4 sm:p-5">
+            <h2 className="text-xl sm:text-2xl mb-4">Série</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 pb-4">
               {collectionGamesQuery.data
                 .sort((a, b) =>
                   (String(a.release_date) || "").localeCompare(
@@ -409,8 +413,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
         )}
         {similarGamesQuery.data && similarGamesQuery.data.length > 0 && (
           <div className="mt-6">
-            <h2 className="text-2xl mb-4">Similar Games</h2>
-            <div className="grid grid-cols-5 gap-4 pb-4">
+            <h2 className="text-xl sm:text-2xl mb-4">Jeux similaires</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 pb-4">
               {similarGamesQuery.data.map((game) => (
                 <GameItem
                   key={game.id}

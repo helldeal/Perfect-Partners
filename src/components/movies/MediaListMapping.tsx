@@ -26,61 +26,62 @@ export const MediaListMapping = ({
                 {season.episodes?.map((episode) => (
                   <div
                     key={episode.id}
-                    className="border-b rounded border-gray-500 pb-2 flex items-center gap-4 px-4"
+                    className="border-b rounded border-gray-500 pb-2 flex gap-2 sm:gap-4 px-2 sm:px-4 items-center"
                   >
-                    <p
-                      className="text-2xl text-center"
-                      style={{ flex: "0 0 7%" }}
-                    >
-                      {episode.episode_number}
-                    </p>
-                    <div className="relative">
-                      <img
-                        src={`https://image.tmdb.org/t/p/w185${episode.still_path}`}
-                        alt={episode.name}
-                        className="w-32 h-18 object-cover rounded"
-                      />
-                      {episode.watched ? (
-                        <>
+                    <div className="shrink-0 flex items-center min-w-0">
+                      <p className="text-xs sm:text-lg font-semibold text-gray-400 w-10 sm:w-16">
+                        Ep {episode.episode_number}
+                      </p>
+                      <div className="relative shrink-0">
+                        <img
+                          src={`https://image.tmdb.org/t/p/w185${episode.still_path}`}
+                          alt={episode.name}
+                          className="w-24 sm:w-32 h-auto object-cover rounded"
+                        />
+                        {episode.watched ? (
+                          <>
+                            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
+                              <ItemIconButton
+                                handleClick={() =>
+                                  handleUnwatchItem!(
+                                    episode.id.toString(),
+                                    seasons
+                                  )
+                                }
+                                title={"Marquer comme non regardé"}
+                                type={"secondary"}
+                              >
+                                <RemoveButtonIcon />
+                              </ItemIconButton>
+                            </div>
+                            <div className="absolute left-0 right-0 bottom-0">
+                              <WatchProgress progress={100} />
+                            </div>
+                          </>
+                        ) : (
                           <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                             <ItemIconButton
                               handleClick={() =>
-                                handleUnwatchItem!(
-                                  episode.id.toString(),
-                                  seasons
-                                )
+                                handleWatchItem!(episode.id.toString(), seasons)
                               }
-                              title={"Mark as Unwatched"}
-                              type={"secondary"}
+                              title={"Marquer comme regardé"}
+                              type={"primary"}
                             >
-                              <RemoveButtonIcon />
+                              <WatchButtonIcon />
                             </ItemIconButton>
                           </div>
-                          <div className="absolute left-0 right-0 bottom-0">
-                            <WatchProgress progress={100} />
-                          </div>
-                        </>
-                      ) : (
-                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
-                          <ItemIconButton
-                            handleClick={() =>
-                              handleWatchItem!(episode.id.toString(), seasons)
-                            }
-                            title={"Mark as Watched"}
-                            type={"primary"}
-                          >
-                            <WatchButtonIcon />
-                          </ItemIconButton>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: "0 0 70%" }}>
-                      <div className="flex items-center gap-4 mb-1 justify-between">
-                        <h4 className="text-lg">{`Episode ${episode.episode_number}: ${episode.name}`}</h4>
-                        <p>{formatRuntime(episode.runtime!)}</p>
+                        )}
                       </div>
-                      <p className="text-gray-300 text-sm line-clamp-3 mb-2">
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs sm:text-base font-semibold line-clamp-1 sm:line-clamp-2">
+                        {episode.name}
+                      </h4>
+                      <p className="text-gray-300 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 mb-1">
                         {episode.overview}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-400">
+                        {formatRuntime(episode.runtime!)}
                       </p>
                     </div>
                   </div>
@@ -98,13 +99,13 @@ export const MediaListMapping = ({
         {movies.map((movie) => (
           <div
             key={movie.id}
-            className="border-b rounded border-gray-500 pb-4 flex items-center gap-4 px-4"
+            className="border-b rounded border-gray-500 pb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 px-2 sm:px-4"
           >
-            <div className=" relative shrink-0">
+            <div className="relative shrink-0 w-full sm:w-auto">
               <img
                 src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
                 alt={movie.title}
-                className="w-32 h-48 object-cover rounded"
+                className="w-20 sm:w-32 h-32 sm:h-48 object-cover rounded"
               />
               {movie.watched ? (
                 <>
@@ -113,7 +114,7 @@ export const MediaListMapping = ({
                       handleClick={() =>
                         handleUnwatchItem!(movie.id.toString())
                       }
-                      title={"Mark as Unwatched"}
+                      title={"Marquer comme non regardé"}
                       type={"secondary"}
                     >
                       <RemoveButtonIcon />
@@ -127,7 +128,7 @@ export const MediaListMapping = ({
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-70 transition-opacity">
                   <ItemIconButton
                     handleClick={() => handleWatchItem!(movie.id.toString())}
-                    title={"Mark as Watched"}
+                    title={"Marquer comme regardé"}
                     type={"primary"}
                   >
                     <WatchButtonIcon />
@@ -135,13 +136,19 @@ export const MediaListMapping = ({
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <p>{formatYearRange([movie.release_date])}</p>
-              <div className="flex items-center gap-4 mb-1 justify-between">
-                <h3 className="text-xl">{movie.title}</h3>
-                <p>{formatRuntime(movie.runtime!)}</p>
+            <div className="flex flex-col gap-2 flex-1 w-full">
+              <p className="text-xs sm:text-base text-gray-400">
+                {formatYearRange([movie.release_date])}
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-4 mb-1 sm:justify-between">
+                <h3 className="text-base sm:text-xl font-semibold">
+                  {movie.title}
+                </h3>
+                <p className="text-xs sm:text-base text-gray-400 whitespace-nowrap">
+                  {formatRuntime(movie.runtime!)}
+                </p>
               </div>
-              <p className="text-gray-300 text-sm line-clamp-4">
+              <p className="text-gray-300 text-xs sm:text-sm line-clamp-2 sm:line-clamp-4">
                 {movie.overview}
               </p>
             </div>
