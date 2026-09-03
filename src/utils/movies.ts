@@ -53,6 +53,7 @@ export const filterMovieFields = (movie: any): Movie => {
     watch_providers: movie.watch_providers,
     collection: movie.collection,
     videos: movie.videos,
+    updatedAt: movie.updatedAt,
   };
 };
 
@@ -69,6 +70,7 @@ export const filterTVShowFields = (tvShow: any): TVShow => {
     videos: tvShow.videos,
     seasons:
       tvShow.seasons?.map((season: any) => filterTVSeasonFields(season)) ?? [],
+    updatedAt: tvShow.updatedAt,
   };
 };
 
@@ -168,14 +170,26 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
     }
   });
 
-  const sortByName = (a: MediaItem | MovieSaga, b: MediaItem | MovieSaga) =>
-    (isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name).localeCompare(
-      isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name
-    );
+  const getUpdatedAt = (item: MediaItem | MovieSaga) =>
+    isMovieSaga(item)
+      ? Math.max(...item.movies.map((movie) => movie.updatedAt ?? 0))
+      : (item.updatedAt ?? 0);
+
+  const sortByLatestUpdate = (
+    a: MediaItem | MovieSaga,
+    b: MediaItem | MovieSaga
+  ) => {
+    const dateDifference = getUpdatedAt(b) - getUpdatedAt(a);
+    if (dateDifference !== 0) return dateDifference;
+
+    const aName = isMovieSaga(a) ? a.name : isMovie(a) ? a.title : a.name;
+    const bName = isMovieSaga(b) ? b.name : isMovie(b) ? b.title : b.name;
+    return aName.localeCompare(bName);
+  };
 
   return {
-    planToWatch: planToWatch.sort(sortByName),
-    watching: watching.sort(sortByName),
-    completed: completed.sort(sortByName),
+    planToWatch: planToWatch.sort(sortByLatestUpdate),
+    watching: watching.sort(sortByLatestUpdate),
+    completed: completed.sort(sortByLatestUpdate),
   };
 };

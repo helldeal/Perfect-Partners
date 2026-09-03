@@ -53,13 +53,13 @@ export const useFirebaseGames = () => {
 export const useAddGame = () => {
   const queryClient = useQueryClient();
   const addGame = async (game: Game): Promise<void> => {
-    game.status = undefined;
+    const gameToAdd = { ...game, status: undefined, updatedAt: Date.now() };
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${game.id}.json`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(game),
+        body: JSON.stringify(gameToAdd),
       }
     );
     if (!response.ok) {
@@ -112,7 +112,7 @@ export const useUpdateGame = () => {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({ ...updatedData, updatedAt: Date.now() }),
       }
     );
     if (!response.ok) {

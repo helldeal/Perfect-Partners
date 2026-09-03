@@ -90,6 +90,7 @@ export const useAddTVShow = () => {
       watch_providers: providersFR?.flatrate ?? [],
       videos: videos.results ?? [],
       logo,
+      updatedAt: Date.now(),
     };
     // filtrer pour ne garder QUE les champs voulus
     const cleanTVShow = filterTVShowFields(enrichedTVShow);
@@ -129,7 +130,7 @@ export const useUpdateTVShow = () => {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({ ...updatedData, updatedAt: Date.now() }),
       }
     );
     if (!response.ok) {

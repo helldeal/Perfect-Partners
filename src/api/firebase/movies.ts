@@ -81,6 +81,7 @@ export const useAddMovie = () => {
       collection: details.belongs_to_collection ?? undefined,
       runtime: details.runtime ?? undefined,
       watched: false,
+      updatedAt: Date.now(),
     };
 
     // filtrer pour ne garder QUE les champs voulus
@@ -123,7 +124,7 @@ export const useUpdateMovie = () => {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({ ...updatedData, updatedAt: Date.now() }),
       }
     );
     if (!response.ok) {
