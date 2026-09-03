@@ -7,7 +7,7 @@ import { WatchItemModalContent } from "../components/movies/WatchItemModalConten
 import { WatchItemModal } from "../api/models/watchItemModal";
 import { GameItemModal } from "../api/models/gameItemModal";
 import { GameItemModalContent } from "./games/GameItemModalContent";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
 export const MainLayout = ({
   children,
@@ -24,6 +24,7 @@ export const MainLayout = ({
 
   const showContent = useModalStore((state) => state.showContent);
   const setShowContent = useModalStore((state) => state.setShowContent);
+  const modalContentRef = useRef<HTMLDivElement>(null);
 
   const exitModal = useCallback(
     (e?: any) => {
@@ -61,6 +62,11 @@ export const MainLayout = ({
       <Modal
         open={isModalOpen}
         onClose={exitModal}
+        onMouseDown={(event) => {
+          if (!modalContentRef.current?.contains(event.target as Node)) {
+            event.preventDefault();
+          }
+        }}
         className="flex justify-center items-start sm:items-center overflow-y-auto sm:overflow-y-scroll p-0 sm:p-4 max-h-screen!"
       >
         <div tabIndex={-1} className="outline-none">
@@ -71,6 +77,7 @@ export const MainLayout = ({
           >
             {showContent && (
               <motion.div
+                ref={modalContentRef}
                 key="modal-animation"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
