@@ -5,6 +5,8 @@ import { db } from "../../firebase/firebase";
 import { filterTVShowFields } from "../../utils/movies";
 import { TVShow } from "../models/movies";
 import { TMDB } from "../tmdb";
+import { useAuth } from "../../contexts/authContext";
+import { notifyOtherUsers } from "./notifications";
 
 export const useFirebaseTVShows = () => {
   const queryClient = useQueryClient();
@@ -53,6 +55,7 @@ export const useFirebaseTVShows = () => {
 
 export const useAddTVShow = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
   const addTVShow = async (id: number): Promise<void> => {
     const [details, watchProviders, videos, images] = await Promise.all([
       TMDB.fetchTVDetails(id.toString()),
@@ -105,6 +108,13 @@ export const useAddTVShow = () => {
     if (!response.ok) {
       throw new Error("Failed to add TV show");
     }
+    await notifyOtherUsers(currentUser, {
+      action: "added",
+      category: "movies",
+      itemId: cleanTVShow.id,
+      itemName: cleanTVShow.name,
+      image: cleanTVShow.poster_path,
+    });
   };
   const mutation = useMutation({
     mutationFn: addTVShow,
@@ -149,7 +159,11 @@ export const useUpdateTVShow = () => {
 
 export const useDeleteTVShow = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
   const deleteTVShow = async (tvShowId: string): Promise<void> => {
+    const tvShow = queryClient
+      .getQueryData<TVShow[]>(["firebaseTVShows"])
+      ?.find((item) => item.id.toString() === tvShowId);
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${tvShowId}.json`,
       {
@@ -158,6 +172,15 @@ export const useDeleteTVShow = () => {
     );
     if (!response.ok) {
       throw new Error("Failed to delete TV show");
+    }
+    if (tvShow) {
+      await notifyOtherUsers(currentUser, {
+        action: "deleted",
+        category: "movies",
+        itemId: tvShow.id,
+        itemName: tvShow.name,
+        image: tvShow.poster_path,
+      });
     }
   };
   const mutation = useMutation({

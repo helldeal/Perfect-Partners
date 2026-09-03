@@ -5,6 +5,8 @@ import { db } from "../../firebase/firebase";
 import { filterMovieFields } from "../../utils/movies";
 import { Movie } from "../models/movies";
 import { TMDB } from "../tmdb";
+import { useAuth } from "../../contexts/authContext";
+import { notifyOtherUsers } from "./notifications";
 
 export const useFirebaseMovies = () => {
   const queryClient = useQueryClient();
@@ -54,6 +56,7 @@ export const useFirebaseMovies = () => {
 
 export const useAddMovie = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
 
   const addMovie = async (id: number): Promise<void> => {
     const [details, watchProviders, videos, images] = await Promise.all([
@@ -99,6 +102,13 @@ export const useAddMovie = () => {
     if (!response.ok) {
       throw new Error("Failed to add movie");
     }
+    await notifyOtherUsers(currentUser, {
+      action: "added",
+      category: "movies",
+      itemId: cleanMovie.id,
+      itemName: cleanMovie.title,
+      image: cleanMovie.poster_path,
+    });
   };
   const mutation = useMutation({
     mutationFn: addMovie,
@@ -143,7 +153,11 @@ export const useUpdateMovie = () => {
 
 export const useDeleteMovie = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
   const deleteMovie = async (movieId: string): Promise<void> => {
+    const movie = queryClient
+      .getQueryData<Movie[]>(["firebaseMovies"])
+      ?.find((item) => item.id.toString() === movieId);
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${movieId}.json`,
       {
@@ -152,6 +166,15 @@ export const useDeleteMovie = () => {
     );
     if (!response.ok) {
       throw new Error("Failed to delete movie");
+    }
+    if (movie) {
+      await notifyOtherUsers(currentUser, {
+        action: "deleted",
+        category: "movies",
+        itemId: movie.id,
+        itemName: movie.title,
+        image: movie.poster_path,
+      });
     }
   };
   const mutation = useMutation({

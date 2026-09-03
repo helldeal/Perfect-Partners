@@ -2,6 +2,8 @@ import { AddButtonIcon } from "../assets/svgs";
 import useModalStore from "../store/modalStore";
 import { ItemIconButton } from "./ItemIconButton";
 import { WatchProgress } from "./movies/WatchProgress";
+import { useNotifications } from "../contexts/notificationsContext";
+import { NotificationCategory } from "../api/models/notifications";
 
 export const ItemLayout = ({
   name,
@@ -22,8 +24,19 @@ export const ItemLayout = ({
 }) => {
   const openModal = useModalStore((state) => state.openModal);
   const setShowContent = useModalStore((state) => state.setShowContent);
+  const { unreadNotifications, markItemAsRead } = useNotifications();
+  const itemId = payload && "game" in payload ? payload.game.id : payload?.id;
+  const category: NotificationCategory =
+    payload && "game" in payload ? "games" : "movies";
+  const hasUnreadNotification = unreadNotifications.some(
+    (notification) =>
+      notification.category === category && notification.itemId === itemId
+  );
 
   const openModalHandler = () => {
+    if (itemId !== undefined) {
+      void markItemAsRead(category, itemId);
+    }
     openModal(payload);
     setShowContent(true);
   };
@@ -41,6 +54,12 @@ export const ItemLayout = ({
           }`}
         ></div>
         {!!progress && <WatchProgress progress={progress} />}
+        {hasUnreadNotification && (
+          <span
+            className="absolute left-2 top-2 h-3 w-3 rounded-full bg-red-400 shadow-lg shadow-red-500/40 ring-2 ring-[#181818]"
+            aria-label="Nouvelle activité sur cette œuvre"
+          />
+        )}
         {inList && onAdd && (
           <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">
             <svg

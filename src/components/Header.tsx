@@ -3,6 +3,8 @@ import logoImg from "../assets/logo.png";
 import { useState, useEffect } from "react";
 import useSearchStore from "../store/searchStore";
 import { ProfileMenu } from "./ProfileMenu";
+import { NotificationMenu } from "./NotificationMenu";
+import { useNotifications } from "../contexts/notificationsContext";
 
 const navMenu = [
   { name: "Cinéma", path: "/movies", key: "movies" },
@@ -12,6 +14,7 @@ const navMenu = [
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
   const navigate = useNavigate();
+  const { unreadNotifications } = useNotifications();
 
   const searchTerm = useSearchStore((state) => state.query);
   const setSearchTerm = useSearchStore((state) => state.setQuery);
@@ -71,7 +74,14 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                 navigate(item.path);
               }}
             >
-              {item.name}
+              <span className="relative">
+                {item.name}
+                {unreadNotifications.some(
+                  (notification) => notification.category === item.key
+                ) && (
+                  <span className="absolute -right-2 -top-1 h-1.5 w-1.5 rounded-full bg-red-400" />
+                )}
+              </span>
             </span>
           ))}{" "}
         </nav>
@@ -108,7 +118,12 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                     : "hover:bg-gray-800"
                 }`}
               >
-                {item.name}
+                <span className="flex items-center justify-between">
+                  {item.name}
+                  {unreadNotifications.some(
+                    (notification) => notification.category === item.key
+                  ) && <span className="h-2 w-2 rounded-full bg-red-400" />}
+                </span>
               </button>
             ))}
           </nav>
@@ -148,6 +163,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
             </span>
           )}
         </div>
+        <NotificationMenu />
         <ProfileMenu />
       </div>
     </header>

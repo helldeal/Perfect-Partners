@@ -62,7 +62,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
   };
 
   const handlePossessedBy = (game: Game, userId: string) => {
-    const updatedPossessedBy = (game.possessedBy || []).includes(userId)
+    const wasPossessed = (game.possessedBy || []).includes(userId);
+    const updatedPossessedBy = wasPossessed
       ? (game.possessedBy || []).filter((id) => id !== userId)
       : [...(game.possessedBy || []), userId];
 
@@ -73,6 +74,13 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
     updateGameMutation.mutate({
       firebaseId: game.id.toString(),
       updatedData: updatedGame,
+      notification: {
+        action: wasPossessed ? "unpossessed" : "possessed",
+        category: "games",
+        itemId: game.id,
+        itemName: game.name,
+        image: game.cover,
+      },
     });
   };
 
