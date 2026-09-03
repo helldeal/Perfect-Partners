@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/authContext";
-import { doSignOut } from "../firebase/auth";
 import logoImg from "../assets/logo.png";
 import { useState, useEffect } from "react";
 import useSearchStore from "../store/searchStore";
+import { ProfileMenu } from "./ProfileMenu";
 
 const navMenu = [
   { name: "Cinéma", path: "/movies", key: "movies" },
@@ -12,15 +11,10 @@ const navMenu = [
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
-  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   const searchTerm = useSearchStore((state) => state.query);
   const setSearchTerm = useSearchStore((state) => state.setQuery);
-
-  const handleSignOut = async () => {
-    await doSignOut();
-  };
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -154,33 +148,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
             </span>
           )}
         </div>
-        <details className="relative">
-          <summary className="list-none cursor-pointer p-0 m-0 flex items-center">
-            {currentUser?.photoURL ? (
-              <img
-                src={currentUser.photoURL}
-                alt={currentUser.displayName || "profil"}
-                referrerPolicy="no-referrer"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-300" />
-            )}
-          </summary>
-
-          <div className="absolute right-0 top-full bg-black border border-gray-300 rounded-lg p-2 shadow-lg min-w-40 z-50">
-            <div className="p-2 border-b border-gray-200 text-sm">
-              {currentUser?.displayName}
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="mt-2 w-full p-2 bg-red-600 text-white rounded-md cursor-pointer text-sm"
-              type="button"
-            >
-              Se déconnecter
-            </button>
-          </div>
-        </details>
+        <ProfileMenu />
       </div>
     </header>
   );

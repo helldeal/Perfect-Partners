@@ -63,32 +63,34 @@ export const MainLayout = ({
         onClose={exitModal}
         className="flex justify-center items-start sm:items-center overflow-y-auto sm:overflow-y-scroll p-0 sm:p-4 max-h-screen!"
       >
-        <AnimatePresence
-          onExitComplete={() => {
-            closeModal();
-          }}
-        >
-          {showContent && (
-            <motion.div
-              key="modal-animation"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed sm:absolute top-0 sm:top-8 sm:pb-8 sm:left-1/2 sm:transform sm:-translate-x-1/2 max-h-screen sm:max-h-none sm:h-auto w-full sm:w-full sm:max-w-5xl outline-none z-10 overflow-y-auto sm:overflow-y-visible"
-            >
-              <div className="w-full h-auto bg-[#181818] sm:rounded-xl overflow-hidden shadow-lg outline-none relative flex flex-col">
-                <Close closeAction={exitModal} />
-                {payload && "videos" in payload && (
-                  <WatchItemModalContent item={payload} />
-                )}
-                {payload && "game" in payload && (
-                  <GameItemModalContent item={payload} />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div tabIndex={-1} className="outline-none">
+          <AnimatePresence
+            onExitComplete={() => {
+              closeModal();
+            }}
+          >
+            {showContent && (
+              <motion.div
+                key="modal-animation"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="fixed sm:absolute top-0 sm:top-8 sm:pb-8 sm:left-1/2 sm:transform sm:-translate-x-1/2 max-h-screen sm:max-h-none sm:h-auto w-full sm:w-full sm:max-w-5xl outline-none z-10 overflow-y-auto sm:overflow-y-visible"
+              >
+                <div className="w-full h-auto bg-[#181818] sm:rounded-xl overflow-hidden shadow-lg outline-none relative flex flex-col">
+                  <Close closeAction={exitModal} />
+                  {payload && "videos" in payload && (
+                    <WatchItemModalContent item={payload} />
+                  )}
+                  {payload && "game" in payload && (
+                    <GameItemModalContent item={payload} />
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </Modal>
     </div>
   );
