@@ -16,6 +16,23 @@ export const WatchButtonIcon = () => (
   </svg>
 );
 
+export const UnwatchButtonIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-6 h-6"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.98 8.223A10.477 10.477 0 0 0 1.5 12s3.75 7 10.5 7a10.45 10.45 0 0 0 4.02-.777M6.228 6.228A10.45 10.45 0 0 1 12 5c6.75 0 10.5 7 10.5 7a16.27 16.27 0 0 1-2.228 3.272M9.88 9.88a3 3 0 0 0 4.24 4.24M3 3l18 18"
+    />
+  </svg>
+);
+
 export const RemoveButtonIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

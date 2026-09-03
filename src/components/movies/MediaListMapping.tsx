@@ -1,7 +1,7 @@
 import { TVSeason, Movie } from "../../api/models/movies";
 import { formatRuntime, formatYearRange } from "../../utils/dates";
 import { ItemIconButton } from "../ItemIconButton";
-import { RemoveButtonIcon, WatchButtonIcon } from "../../assets/svgs";
+import { UnwatchButtonIcon, WatchButtonIcon } from "../../assets/svgs";
 import { WatchProgress } from "./WatchProgress";
 import { useState } from "react";
 
@@ -57,7 +57,7 @@ export const MediaListMapping = ({
                       title={"Marquer comme non regardé"}
                       type={"secondary"}
                     >
-                      <RemoveButtonIcon />
+                      <UnwatchButtonIcon />
                     </ItemIconButton>
                   </div>
                   <div className="absolute left-0 right-0 bottom-0">
@@ -164,7 +164,7 @@ const SeasonSection = ({
                     type={episode.watched ? "secondary" : "primary"}
                   >
                     {episode.watched ? (
-                      <RemoveButtonIcon />
+                      <UnwatchButtonIcon />
                     ) : (
                       <WatchButtonIcon />
                     )}

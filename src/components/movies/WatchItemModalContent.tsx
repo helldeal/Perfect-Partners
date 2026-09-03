@@ -4,6 +4,7 @@ import {
   AddButtonIcon,
   MutedIcon,
   RemoveButtonIcon,
+  UnwatchButtonIcon,
   UnmutedIcon,
   WatchButtonIcon,
 } from "../../assets/svgs";
@@ -308,13 +309,26 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
             )}
             {displayItem.wishListed ? (
               <div className="flex space-x-4">
-                {!displayItem.allWatched && (
+                {(!displayItem.allWatched ||
+                  displayItem.handleAllUnwatch) && (
                   <ItemIconButton
-                    type="primary"
-                    title="Marquer comme regardé"
-                    handleClick={displayItem.handleAllWatch}
+                    type={displayItem.allWatched ? "secondary" : "primary"}
+                    title={
+                      displayItem.allWatched
+                        ? "Marquer comme non regardé"
+                        : "Marquer comme regardé"
+                    }
+                    handleClick={
+                      displayItem.allWatched
+                        ? displayItem.handleAllUnwatch!
+                        : displayItem.handleAllWatch
+                    }
                   >
-                    <WatchButtonIcon />
+                    {displayItem.allWatched ? (
+                      <UnwatchButtonIcon />
+                    ) : (
+                      <WatchButtonIcon />
+                    )}
                   </ItemIconButton>
                 )}
                 <ItemIconButton

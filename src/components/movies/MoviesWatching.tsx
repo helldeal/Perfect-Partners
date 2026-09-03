@@ -36,6 +36,12 @@ export const MovieWatchItem = ({
       updatedData: { watched: true },
     });
   };
+  const handleUnwatchItem = () => {
+    updateMovieMutation.mutate({
+      movieId: movie.id.toString(),
+      updatedData: { watched: false },
+    });
+  };
 
   const modalContent: WatchItemModal = {
     id: movie.id,
@@ -57,6 +63,7 @@ export const MovieWatchItem = ({
     watch_providers: movie.watch_providers ?? [],
     handleDelete: handleDeleteMovie,
     handleAllWatch: handleWatchItem,
+    handleAllUnwatch: handleUnwatchItem,
     allWatched: movie.watched,
     wishListed: inWishlist,
   };
