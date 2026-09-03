@@ -71,7 +71,10 @@ export const MainLayout = ({
         }}
         className="flex justify-center items-start sm:items-center overflow-y-auto sm:overflow-y-scroll p-0 sm:p-4 max-h-screen!"
       >
-        <div tabIndex={-1} className="outline-none">
+        <div
+          tabIndex={-1}
+          className="fixed inset-x-0 top-0 max-h-screen w-full overflow-y-auto outline-none sm:absolute sm:inset-x-auto sm:top-8 sm:left-1/2 sm:max-h-none sm:max-w-5xl sm:-translate-x-1/2 sm:overflow-y-visible sm:pb-8"
+        >
           <AnimatePresence
             onExitComplete={() => {
               closeModal();
@@ -85,7 +88,7 @@ export const MainLayout = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="fixed sm:absolute top-0 sm:top-8 sm:pb-8 sm:left-1/2 sm:transform sm:-translate-x-1/2 max-h-screen sm:max-h-none sm:h-auto w-full sm:w-full sm:max-w-5xl outline-none z-10 overflow-y-auto sm:overflow-y-visible"
+                className="w-full origin-center outline-none"
               >
                 <div className="w-full h-auto bg-[#181818] sm:rounded-xl overflow-hidden shadow-lg outline-none relative flex flex-col">
                   <Close closeAction={exitModal} />
