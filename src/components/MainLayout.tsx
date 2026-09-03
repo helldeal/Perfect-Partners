@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Header } from "../components/Header";
 import { Modal } from "@mui/material";
 import { Close } from "../components/Close";

@@ -1,14 +1,14 @@
-import { HashRouter } from "react-router";
+import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes/routes";
 import { AuthProvider } from "./contexts/authContext";
 
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 

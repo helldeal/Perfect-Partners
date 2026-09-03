@@ -8,6 +8,7 @@ export const doSignInWithGoogle = async () => {
     return await signInWithPopup(auth, provider);
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 

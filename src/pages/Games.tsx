@@ -50,7 +50,7 @@ export const GamesPage = () => {
       return item.id === payload.game.id;
     });
 
-    let newPayload: Partial<GameItemModal> = {};
+    const newPayload: Partial<GameItemModal> = {};
     if (!itemInList) {
       if (payload.wishListed) {
         newPayload.wishListed = false;

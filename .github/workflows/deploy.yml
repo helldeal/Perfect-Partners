@@ -4,67 +4,72 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  audit:
-    name: Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
   build:
-    name: Build
-    needs: audit
+    name: Validate and build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
-        uses: bahmutov/npm-install@v1
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+      - name: Lint project
+        run: npm run lint
 
       - name: Build project
         run: npm run build
         env:
-            VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
-            VITE_TMDB_URL: ${{ secrets.VITE_TMDB_URL }}
-            VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}    
-            VITE_FIREBASE_DB_URL: ${{ secrets.VITE_FIREBASE_DB_URL }}
-      - name: Upload production-ready build files
+          VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
+          VITE_TMDB_URL: ${{ secrets.VITE_TMDB_URL }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_DB_URL: ${{ secrets.VITE_FIREBASE_DB_URL }}
+
+      - name: Add GitHub Pages SPA fallback
+        run: cp dist/index.html dist/404.html
+
+      - name: Upload production files
         uses: actions/upload-artifact@v4
         with:
           name: production-files
-          path: ./dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
 
   deploy:
-    name: Deploy
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
 
     steps:
-      - name: Download artifact
+      - name: Download production files
         uses: actions/download-artifact@v4
         with:
           name: production-files
-          path: ./dist
+          path: dist
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Publish gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: dist

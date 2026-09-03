@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/authContext";
 import { doSignOut } from "../firebase/auth";
 import logoImg from "../assets/logo.png";
@@ -12,11 +12,8 @@ const navMenu = [
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
-  const { userLoggedIn, userLoading, currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
-  {
-    !userLoggedIn && !userLoading && navigate("/login", { replace: true });
-  }
 
   const searchTerm = useSearchStore((state) => state.query);
   const setSearchTerm = useSearchStore((state) => state.setQuery);
