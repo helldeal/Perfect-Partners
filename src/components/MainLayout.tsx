@@ -8,6 +8,7 @@ import { WatchItemModal } from "../api/models/watchItemModal";
 import { GameItemModal } from "../api/models/gameItemModal";
 import { GameItemModalContent } from "./games/GameItemModalContent";
 import { useEffect, useCallback, useRef } from "react";
+import { Footer } from "./Footer";
 
 export const MainLayout = ({
   children,
@@ -59,6 +60,7 @@ export const MainLayout = ({
     <div className="min-h-screen bg-[#181818] text-slate-100 flex flex-col">
       <Header navSelected={navSelected} />
       {children}
+      <Footer />
       <Modal
         open={isModalOpen}
         onClose={exitModal}
