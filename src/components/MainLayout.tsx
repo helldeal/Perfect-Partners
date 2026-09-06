@@ -57,7 +57,7 @@ export const MainLayout = ({
   }, [isModalOpen, exitModal]);
 
   return (
-    <div className="min-h-screen bg-[#181818] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-app-bg text-app-text flex flex-col">
       <Header navSelected={navSelected} />
       {children}
       <Footer />
@@ -90,7 +90,7 @@ export const MainLayout = ({
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className="w-full origin-center outline-none"
               >
-                <div className="w-full h-auto bg-[#181818] sm:rounded-xl overflow-hidden shadow-lg outline-none relative flex flex-col">
+                <div className="w-full h-auto bg-app-bg sm:rounded-xl overflow-hidden shadow-lg outline-none relative flex flex-col">
                   <Close closeAction={exitModal} />
                   {payload && "videos" in payload && (
                     <WatchItemModalContent item={payload} />

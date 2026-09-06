@@ -159,7 +159,8 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
         <div
           className="absolute top-0 left-0 w-full h-full z-30"
           style={{
-            background: "linear-gradient(0deg, #181818, transparent 50%)",
+            background:
+              "linear-gradient(0deg, var(--app-bg), transparent 50%)",
           }}
         >
           {item.wishListed && (

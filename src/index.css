@@ -1,16 +1,58 @@
 @import "tailwindcss";
 
 :root {
+  --app-bg: #0b1120;
+  --app-surface: #111827;
+  --app-surface-elevated: #172033;
+  --app-border: #26334d;
+  --app-text: #f8fafc;
+  --app-text-muted: #94a3b8;
+  --app-primary: #3b82f6;
+  --app-primary-soft: #172d52;
+  --app-accent: #a78bfa;
+  --app-accent-soft: #2c2350;
+  --app-success: #34d399;
+  --app-success-soft: #113b34;
+  --app-danger: #fb7185;
+  --app-danger-soft: #481d2a;
+  --app-warning: #fbbf24;
+  --app-warning-soft: #453511;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--app-text);
+  background-color: var(--app-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@theme inline {
+  --color-app-bg: var(--app-bg);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-elevated: var(--app-surface-elevated);
+  --color-app-border: var(--app-border);
+  --color-app-text: var(--app-text);
+  --color-app-muted: var(--app-text-muted);
+  --color-app-primary: var(--app-primary);
+  --color-app-primary-soft: var(--app-primary-soft);
+  --color-app-accent: var(--app-accent);
+  --color-app-accent-soft: var(--app-accent-soft);
+  --color-app-success: var(--app-success);
+  --color-app-success-soft: var(--app-success-soft);
+  --color-app-danger: var(--app-danger);
+  --color-app-danger-soft: var(--app-danger-soft);
+  --color-app-warning: var(--app-warning);
+  --color-app-warning-soft: var(--app-warning-soft);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--app-bg);
 }

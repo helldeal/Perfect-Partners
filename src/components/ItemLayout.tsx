@@ -50,13 +50,13 @@ export const ItemLayout = ({
         />
         <div
           className={`absolute w-full h-full rounded top-0 left-0 ${
-            itemSelected ? "border-2 border-blue-500" : ""
+            itemSelected ? "border-2 border-app-primary" : ""
           }`}
         ></div>
         {!!progress && <WatchProgress progress={progress} />}
         {hasUnreadNotification && (
           <span
-            className="absolute left-2 top-2 h-3 w-3 rounded-full bg-red-400 shadow-lg shadow-red-500/40 ring-2 ring-[#181818]"
+            className="absolute left-2 top-2 h-3 w-3 rounded-full bg-app-primary shadow-lg shadow-app-primary/40 ring-2 ring-app-bg"
             aria-label="Nouvelle activité sur cette œuvre"
           />
         )}

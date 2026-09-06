@@ -38,10 +38,10 @@ const LoginPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-[#181818] text-slate-100 flex items-center justify-center p-6">
+    <main className="min-h-screen bg-app-bg text-app-text flex items-center justify-center p-6">
       <div className="text-center">
         <h1 className="text-2xl mb-3">Perfect Partners</h1>
-        <p className="text-gray-400 mb-6">
+        <p className="text-app-muted mb-6">
           {userLoading || isSigningIn
             ? "Connexion avec Google en cours…"
             : "Connectez-vous pour accéder à vos listes."}

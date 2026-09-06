@@ -42,11 +42,11 @@ export const Footer = () => {
 
   return (
     <>
-      <footer className="mt-auto border-t border-white/10 px-4 py-5 text-center text-sm text-slate-500 sm:px-8">
+      <footer className="mt-auto border-t border-app-border px-4 py-5 text-center text-sm text-app-muted sm:px-8">
         <button
           type="button"
           onClick={openHistory}
-          className="rounded-md px-3 py-2 transition-colors hover:bg-white/5 hover:text-slate-200 cursor-pointer"
+          className="rounded-full border border-app-border bg-app-surface px-4 py-2 transition-colors hover:border-app-primary/50 hover:bg-app-primary-soft hover:text-app-primary cursor-pointer"
         >
           Notes de version
         </button>

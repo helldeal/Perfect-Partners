@@ -292,7 +292,8 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
         <div
           className="absolute top-0 left-0 w-full h-full z-30"
           style={{
-            background: "linear-gradient(0deg, #181818, transparent 50%)",
+            background:
+              "linear-gradient(0deg, var(--app-bg), transparent 50%)",
           }}
         >
           <div className="absolute bottom-1/10 mb-2 sm:mb-4 left-4 sm:left-12 flex flex-col gap-2 sm:gap-4">

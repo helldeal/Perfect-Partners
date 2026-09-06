@@ -43,7 +43,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
   return (
     <header
       className={`flex justify-between items-center p-3 gap-2 sm:gap-3 h-16 sticky top-0 z-10 ${
-        isScrolled ? "bg-[#181818]" : "bg-transparent"
+        isScrolled ? "bg-app-bg/95 backdrop-blur-md" : "bg-transparent"
       } transition-colors duration-300 px-4 sm:px-6 md:px-12 lg:px-18`}
     >
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -78,8 +78,8 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                 {item.name}
                 {unreadNotifications.some(
                   (notification) => notification.category === item.key
-                ) && (
-                  <span className="absolute -right-2 -top-1 h-1.5 w-1.5 rounded-full bg-red-400" />
+                  ) && (
+                  <span className="absolute -right-2 -top-1 h-1.5 w-1.5 rounded-full bg-app-primary" />
                 )}
               </span>
             </span>
@@ -106,7 +106,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-[#181818] border-b border-gray-700 md:hidden">
+        <div className="absolute top-16 left-0 right-0 bg-app-surface border-b border-app-border md:hidden">
           <nav className="flex flex-col p-4 gap-3">
             {navMenu.map((item) => (
               <button
@@ -122,7 +122,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                   {item.name}
                   {unreadNotifications.some(
                     (notification) => notification.category === item.key
-                  ) && <span className="h-2 w-2 rounded-full bg-red-400" />}
+                  ) && <span className="h-2 w-2 rounded-full bg-app-primary" />}
                 </span>
               </button>
             ))}
