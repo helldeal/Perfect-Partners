@@ -1,11 +1,11 @@
 import { Modal } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { PatchNote } from "../data/patchNotes";
+import { PatchNote, PatchNoteCategory } from "../data/patchNotes";
 import { Close } from "./Close";
 
 const categoryStyles: Record<
-  PatchNote["category"],
+  PatchNoteCategory,
   { label: string; className: string }
 > = {
   interface: {
@@ -87,15 +87,22 @@ export const PatchNotesModal = ({
 
               <div className="space-y-8 px-5 py-6 sm:px-8">
                 {notes.map((note, index) => {
-                  const categoryStyle = categoryStyles[note.category];
-
                   return (
                     <article key={note.id} className="relative pl-5">
-                      <span
-                        className={`mb-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${categoryStyle.className}`}
-                      >
-                        {categoryStyle.label}
-                      </span>
+                      <div className="mb-2 flex flex-wrap gap-1.5">
+                        {note.categories.map((category) => {
+                          const categoryStyle = categoryStyles[category];
+
+                          return (
+                            <span
+                              key={category}
+                              className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${categoryStyle.className}`}
+                            >
+                              {categoryStyle.label}
+                            </span>
+                          );
+                        })}
+                      </div>
                     <span
                       aria-hidden="true"
                       className="absolute left-0 top-2 h-2 w-2 rounded-full bg-app-primary"

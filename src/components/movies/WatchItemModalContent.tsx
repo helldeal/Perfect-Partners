@@ -1,23 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Movie, TVSeason } from "../../api/models/movies";
-import {
-  AddButtonIcon,
-  MutedIcon,
-  RemoveButtonIcon,
-  UnwatchButtonIcon,
-  UnmutedIcon,
-  WatchButtonIcon,
-} from "../../assets/svgs";
-import { ItemIconButton } from "../ItemIconButton";
-import { streamingLinks } from "../../utils/movies";
-import { formatRuntime, formatYearRange } from "../../utils/dates";
+import { formatYearRange } from "../../utils/dates";
 import { useAddMovie, useFirebaseMovies } from "../../api/firebase/movies";
 import { useAddTVShow, useFirebaseTVShows } from "../../api/firebase/tvshows";
-import { MediaListIndicator } from "./MediaListIndicator";
 import { MediaListMapping } from "./MediaListMapping";
 import { WatchItemModal } from "../../api/models/watchItemModal";
 import { TMDB } from "../../api/tmdb";
-import { MediaItemSearch } from "./MediaItemSearch";
+import { MediaModalHero } from "./modal/MediaModalHero";
+import { MediaModalRelated } from "./modal/MediaModalRelated";
+import { MediaModalSummary } from "./modal/MediaModalSummary";
 
 export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const [enrichedItemState, setEnrichedItemState] =
@@ -242,248 +233,30 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
       );
     }
   }, [muted]);
+
   return (
     <>
-      <div className="relative">
-        <div
-          style={{
-            position: "relative",
-            paddingBottom: "56.25%" /* 16:9 */,
-            paddingTop: "25px",
-            width: "300%" /* enlarge beyond browser width */,
-            left: "-100%" /* center */,
-            zIndex: 20,
-          }}
-        >
-          {displayItem.videos && displayItem.videos.length > 0 ? (
-            <iframe
-              ref={iframeRef}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-              }}
-              className=" pointer-events-none"
-              src={`https://www.youtube.com/embed/${displayItem.videos[0]?.key}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&loop=1&playlist=${displayItem.videos[0]?.key}&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1&mute=1`}
-              title={displayItem.title}
-              frameBorder="0"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            ></iframe>
-          ) : (
-            displayItem.background_path && (
-              <img
-                src={`https://image.tmdb.org/t/p/w780${displayItem.background_path}`}
-                alt={displayItem.title}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                }}
-                className=" pointer-events-none object-contain"
-              />
-            )
-          )}
-        </div>
-        <div
-          className="absolute top-0 left-0 w-full h-full z-30"
-          style={{
-            background:
-              "linear-gradient(0deg, var(--app-bg), transparent 50%)",
-          }}
-        >
-          <div className="absolute bottom-1/10 mb-2 sm:mb-4 left-4 sm:left-12 flex flex-col gap-2 sm:gap-4">
-            {displayItem.logo ? (
-              <img
-                src={`https://image.tmdb.org/t/p/w300${displayItem.logo}`}
-                alt={displayItem.title}
-                className="object-contain sm:mb-6 max-w-24 sm:max-w-xs h-16 sm:h-auto"
-              />
-            ) : (
-              <h1 className="text-2xl sm:text-4xl font-bold text-white sm:mb-6 max-w-xs">
-                {displayItem.title}
-              </h1>
-            )}
-            {displayItem.wishListed ? (
-              <div className="flex space-x-4">
-                {(!displayItem.allWatched ||
-                  displayItem.handleAllUnwatch) && (
-                  <ItemIconButton
-                    type={displayItem.allWatched ? "secondary" : "primary"}
-                    title={
-                      displayItem.allWatched
-                        ? "Marquer comme non regardé"
-                        : "Marquer comme regardé"
-                    }
-                    handleClick={
-                      displayItem.allWatched
-                        ? displayItem.handleAllUnwatch!
-                        : displayItem.handleAllWatch
-                    }
-                  >
-                    {displayItem.allWatched ? (
-                      <UnwatchButtonIcon />
-                    ) : (
-                      <WatchButtonIcon />
-                    )}
-                  </ItemIconButton>
-                )}
-                <ItemIconButton
-                  type="secondary"
-                  title="Supprimer"
-                  handleClick={displayItem.handleDelete}
-                >
-                  <RemoveButtonIcon />
-                </ItemIconButton>
-              </div>
-            ) : (
-              <button
-                className="w-fit bg-white text-black px-4 py-2 rounded flex items-center space-x-2 hover:bg-gray-200 cursor-pointer"
-                onClick={() => handleAddToList(displayItem)}
-              >
-                <AddButtonIcon />
-                <span className="leading-none mb-0.5">Ajouter à la liste</span>
-              </button>
-            )}
-          </div>
-          {displayItem.videos && displayItem.videos.length > 0 ? (
-            <div className="absolute bottom-1/10 mb-2 sm:mb-4 right-4 sm:right-12 flex">
-              <ItemIconButton
-                type="secondary"
-                title={muted ? "Augmenter le son" : "Couper le son"}
-                handleClick={() => setMuted(!muted)}
-              >
-                {muted ? <MutedIcon /> : <UnmutedIcon />}
-              </ItemIconButton>
-            </div>
-          ) : null}
-        </div>
-      </div>
+      <MediaModalHero
+        item={displayItem}
+        iframeRef={iframeRef}
+        muted={muted}
+        onAdd={handleAddToList}
+        onToggleMuted={() => setMuted((currentMuted) => !currentMuted)}
+      />
       <div className="px-4 sm:px-12 py-3 pb-12 text-white z-30 relative flex flex-col gap-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
-          <div className="col-span-1 sm:col-span-2">
-            <div className="flex space-x-4 mt-2 text-gray-400 items-center mb-4 flex-wrap gap-2">
-              <p>{displayItem.date}</p>
-              <MediaListIndicator list={displayItem.list ?? []} />
-              {displayItem.runtime && (
-                <p>{formatRuntime(displayItem.runtime)}</p>
-              )}
-            </div>
-            <p className="mb-2 line-clamp-4">{displayItem.overview}</p>
-          </div>
-          <div className="col-span-1 sm:col-span-1 flex flex-row justify-between sm:justify-end gap-4">
-            <div className="flex flex-col mb-4">
-              {displayItem.watch_providers ? (
-                displayItem.watch_providers?.slice(0, 3).map((provider) => {
-                  const link = streamingLinks[provider.provider_id] || null;
-                  return (
-                    <img
-                      key={provider.provider_id}
-                      src={`https://image.tmdb.org/t/p/w92${provider.logo_path}`}
-                      alt={provider.provider_name}
-                      className={`mb-2 ml-2 object-contain w-8 h-8 ${
-                        link ? "cursor-pointer" : "cursor-not-allowed"
-                      }`}
-                      onClick={() => {
-                        if (link) {
-                          window.open(link, "_blank");
-                        }
-                      }}
-                    />
-                  );
-                })
-              ) : (
-                <p className="text-sm text-gray-400">
-                  Aucun fournisseur de streaming disponible
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <MediaModalSummary item={displayItem} />
         <MediaListMapping
           list={displayItem.list ?? []}
           handleWatchItem={item.handleWatchItem}
           handleUnwatchItem={item.handleUnwatchItem}
         />
-        {collectionsQuery && collectionsQuery.data && (
-          <div className="mt-6 relative p-4 sm:p-5">
-            <h2 className="text-xl sm:text-2xl mb-4">
-              {collectionsQuery.data.name}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 pb-4">
-              {collectionsQuery.data.parts
-                .sort((a: Movie, b: Movie) =>
-                  a.release_date.localeCompare(b.release_date)
-                )
-                .map((item: any) => (
-                  <div
-                    className="opacity-90 hover:opacity-100 transition-opacity"
-                    key={item.id}
-                  >
-                    <MediaItemSearch
-                      item={
-                        mediaItems.find(
-                          (mediaItem) => mediaItem.id === item.id
-                        ) ?? item
-                      }
-                      itemSelected={item.id === displayItem.id}
-                    />
-                  </div>
-                ))}
-            </div>
-            <img
-              src={`https://image.tmdb.org/t/p/w1280${collectionsQuery.data.backdrop_path}`}
-              alt={collectionsQuery.data.name}
-              className="absolute top-0 left-0 w-full h-full object-cover opacity-70 -z-10 rounded-xl"
-            />
-          </div>
-        )}
-        {recommendationsQueryResult && recommendationsQueryResult.data && (
-          <div className="mt-6">
-            <h2 className="text-xl sm:text-2xl mb-4">Recommandations</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 pb-4">
-              {recommendationsQueryResult.data.results
-                .slice(0, 10)
-                .map((item: any) => (
-                  <MediaItemSearch
-                    key={item.id}
-                    item={
-                      mediaItems.find(
-                        (mediaItem) => mediaItem.id === item.id
-                      ) ?? item
-                    }
-                  />
-                ))}
-            </div>
-          </div>
-        )}
-        {creditsQueryResult && creditsQueryResult.data && (
-          <div className="mt-6">
-            <h2 className="text-xl sm:text-2xl mb-4">Crédits</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 pb-4">
-              {creditsQueryResult.data.cast.slice(0, 10).map((person: any) => (
-                <div key={person.id} className="flex flex-col items-center">
-                  <img
-                    src={
-                      person.profile_path
-                        ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
-                        : "https://via.placeholder.com/185x278?text=Pas+d%27image"
-                    }
-                    alt={person.name}
-                    className="w-16 sm:w-24 h-24 sm:h-36 object-cover rounded mb-1 sm:mb-2"
-                  />
-                  <p className="text-xs sm:text-sm text-center line-clamp-2">
-                    {person.name}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <MediaModalRelated
+          currentItemId={displayItem.id}
+          mediaItems={mediaItems}
+          collection={collectionsQuery.data}
+          recommendations={recommendationsQueryResult?.data}
+          credits={creditsQueryResult?.data}
+        />
       </div>
     </>
   );
