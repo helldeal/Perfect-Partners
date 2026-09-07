@@ -2,14 +2,15 @@ import { WatchItemModal } from "../../../api/models/watchItemModal";
 import { formatRuntime } from "../../../utils/dates";
 import { streamingLinks } from "../../../utils/movies";
 import { MediaListIndicator } from "../MediaListIndicator";
+import { NewSeasonTag } from "../../NewSeasonTag";
 
 export const MediaModalSummary = ({ item }: { item: WatchItemModal }) => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-8">
     <div className="col-span-1 sm:col-span-2">
       {!!item.newSeasonAt &&
         Date.now() - item.newSeasonAt < 14 * 24 * 60 * 60 * 1000 && (
-          <span className="mb-2 inline-flex rounded-full bg-app-primary-soft px-2.5 py-1 text-xs font-semibold text-app-primary ring-1 ring-app-primary/40">
-            Nouvelle saison
+          <span className="mb-2 inline-flex">
+            <NewSeasonTag />
           </span>
         )}
       <div className="mb-4 mt-2 flex flex-wrap items-center gap-2 space-x-4 text-gray-400">

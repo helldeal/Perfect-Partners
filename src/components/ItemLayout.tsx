@@ -4,6 +4,8 @@ import { ItemIconButton } from "./ItemIconButton";
 import { WatchProgress } from "./movies/WatchProgress";
 import { useNotifications } from "../contexts/notificationsContext";
 import { NotificationCategory } from "../api/models/notifications";
+import { NewSeasonTag } from "./NewSeasonTag";
+import { NotificationPing } from "./NotificationPing";
 
 export const ItemLayout = ({
   name,
@@ -57,14 +59,19 @@ export const ItemLayout = ({
         ></div>
         {!!progress && <WatchProgress progress={progress} />}
         {hasUnreadNotification && (
-          <span
-            className="absolute left-2 top-2 h-3 w-3 rounded-full bg-app-primary shadow-lg shadow-app-primary/40 ring-2 ring-app-bg"
-            aria-label="Nouvelle activité sur cette œuvre"
+          <NotificationPing
+            className="absolute left-2 top-2"
+            size="medium"
+            label="Nouvelle activité sur cette œuvre"
           />
         )}
         {specialTag && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-app-primary-soft px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-app-primary ring-1 ring-app-primary/40">
-            {specialTag}
+          <span className="absolute right-2 top-2 max-w-[70%]">
+            {specialTag === "Nouvelle saison" ? (
+              <NewSeasonTag compact />
+            ) : (
+              specialTag
+            )}
           </span>
         )}
         {inList && onAdd && (

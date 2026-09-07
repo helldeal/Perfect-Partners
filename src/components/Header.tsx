@@ -5,6 +5,7 @@ import useSearchStore from "../store/searchStore";
 import { ProfileMenu } from "./ProfileMenu";
 import { NotificationMenu } from "./NotificationMenu";
 import { useNotifications } from "../contexts/notificationsContext";
+import { NotificationPing } from "./NotificationPing";
 
 const navMenu = [
   { name: "Cinéma", path: "/movies", key: "movies" },
@@ -79,7 +80,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                 {unreadNotifications.some(
                   (notification) => notification.category === item.key
                   ) && (
-                  <span className="absolute -right-2 -top-1 h-1.5 w-1.5 rounded-full bg-app-primary" />
+                  <NotificationPing className="absolute -right-2.5 -top-1" />
                 )}
               </span>
             </span>
@@ -122,7 +123,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                   {item.name}
                   {unreadNotifications.some(
                     (notification) => notification.category === item.key
-                  ) && <span className="h-2 w-2 rounded-full bg-app-primary" />}
+                  ) && <NotificationPing />}
                 </span>
               </button>
             ))}
