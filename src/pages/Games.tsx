@@ -8,6 +8,7 @@ import { useEffect, useMemo } from "react";
 import { GameItemModal } from "../api/models/gameItemModal";
 import useModalStore from "../store/modalStore";
 import { Game } from "../api/models/games";
+import { refreshGameOnOpen } from "../hooks/useSystemUpdates";
 
 export const GamesPage = () => {
   const searchTerm = useSearchStore((state) => state.query);
@@ -22,11 +23,14 @@ export const GamesPage = () => {
 
   const gameList = useMemo(() => {
     const games = firebaseGamesQuery.data ?? [];
-    const gamesSortedByName = [...games].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+    const gamesSortedByLatestUpdate = [...games].sort((a, b) => {
+      const dateDifference = (b.userUpdatedAt ?? 0) - (a.userUpdatedAt ?? 0);
+      return dateDifference !== 0
+        ? dateDifference
+        : a.name.localeCompare(b.name);
+    });
 
-    const { done, playing, wishlist } = gamesSortedByName.reduce(
+    const { done, playing, wishlist } = gamesSortedByLatestUpdate.reduce(
       (acc, game) => {
         if (game.status === "done") acc.done.push(game);
         else if (game.status === "playing") acc.playing.push(game);
@@ -50,7 +54,9 @@ export const GamesPage = () => {
       return item.id === payload.game.id;
     });
 
-    let newPayload: Partial<GameItemModal> = {};
+    if (itemInList) void refreshGameOnOpen(itemInList);
+
+    const newPayload: Partial<GameItemModal> = {};
     if (!itemInList) {
       if (payload.wishListed) {
         newPayload.wishListed = false;

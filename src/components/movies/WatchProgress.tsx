@@ -17,7 +17,7 @@ export const WatchProgress = ({ progress }: { progress: number }) => {
           style={{
             height: "100%",
             width: `${progress}%`,
-            backgroundColor: "#3b82f6",
+            backgroundColor: "var(--app-primary)",
           }}
         ></div>
       </div>

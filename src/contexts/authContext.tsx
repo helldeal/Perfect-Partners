@@ -13,6 +13,8 @@ const AuthContext = createContext<{
   userLoading: false,
 });
 
+// Le hook reste avec le Provider afin de partager ce contexte privé au module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -23,41 +25,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, initializeUser);
-    return () => unsubscribe();
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (
+        !user ||
+        (user.email !== "mrhelldeal@gmail.com" &&
+          user.email !== "grandbardematthieu@gmail.com")
+      ) {
+        setCurrentUser(null);
+        setUserLoggedIn(false);
+        setUserLoading(false);
+        return;
+      }
 
-  async function initializeUser(user: User | null) {
-    if (
-      !user ||
-      (user.email !== "mrhelldeal@gmail.com" &&
-        user.email !== "grandbardematthieu@gmail.com")
-    ) {
+      const userRef = ref(db, "users/" + user.uid);
+      await update(userRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        provider: user.providerData[0]?.providerId,
+        lastLogin: Date.now(),
+      });
+
+      setCurrentUser(user);
+      setUserLoggedIn(true);
       setUserLoading(false);
-      return;
-    }
-
-    // Save to Realtime Database
-    await saveUserToRealtimeDB(user);
-
-    // Update context
-    setCurrentUser(user);
-    setUserLoggedIn(!!user);
-    setUserLoading(false);
-  }
-
-  async function saveUserToRealtimeDB(user: User) {
-    const userRef = ref(db, "users/" + user.uid);
-
-    await update(userRef, {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      provider: user.providerData[0]?.providerId,
-      lastLogin: Date.now(),
     });
-  }
+
+    return unsubscribe;
+  }, []);
 
   const value = {
     currentUser,

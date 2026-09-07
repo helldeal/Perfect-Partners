@@ -3,6 +3,9 @@ import { Game } from "../models/games";
 import { ref, onValue } from "firebase/database";
 import { useEffect } from "react";
 import { db } from "../../firebase/firebase";
+import { useAuth } from "../../contexts/authContext";
+import { notifyOtherUsers } from "./notifications";
+import { NotificationEvent } from "../models/notifications";
 
 export const useFirebaseGames = () => {
   const queryClient = useQueryClient();
@@ -52,19 +55,33 @@ export const useFirebaseGames = () => {
 
 export const useAddGame = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
   const addGame = async (game: Game): Promise<void> => {
-    game.status = undefined;
+    const now = Date.now();
+    const gameToAdd = {
+      ...game,
+      status: undefined,
+      userUpdatedAt: now,
+      updatedAt: now,
+    };
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${game.id}.json`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(game),
+        body: JSON.stringify(gameToAdd),
       }
     );
     if (!response.ok) {
       throw new Error("Failed to add game");
     }
+    await notifyOtherUsers(currentUser, {
+      action: "added",
+      category: "games",
+      itemId: game.id,
+      itemName: game.name,
+      image: game.cover,
+    });
   };
   const mutation = useMutation({
     mutationFn: addGame,
@@ -77,7 +94,11 @@ export const useAddGame = () => {
 
 export const useDeleteGame = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
   const removeGame = async (firebaseId: string): Promise<void> => {
+    const game = queryClient
+      .getQueryData<Game[]>(["firebaseGames"])
+      ?.find((item) => item.id.toString() === firebaseId);
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${firebaseId}.json`,
       {
@@ -86,6 +107,15 @@ export const useDeleteGame = () => {
     );
     if (!response.ok) {
       throw new Error("Failed to delete game");
+    }
+    if (game) {
+      await notifyOtherUsers(currentUser, {
+        action: "deleted",
+        category: "games",
+        itemId: game.id,
+        itemName: game.name,
+        image: game.cover,
+      });
     }
   };
   const mutation = useMutation({
@@ -100,23 +130,33 @@ export const useDeleteGame = () => {
 
 export const useUpdateGame = () => {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
   const updateGame = async ({
     firebaseId,
     updatedData,
+    notification,
   }: {
     firebaseId: string;
     updatedData: Partial<Game>;
+    notification?: NotificationEvent;
   }): Promise<void> => {
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${firebaseId}.json`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({
+          ...updatedData,
+          userUpdatedAt: Date.now(),
+          updatedAt: Date.now(),
+        }),
       }
     );
     if (!response.ok) {
       throw new Error("Failed to update game");
+    }
+    if (notification) {
+      await notifyOtherUsers(currentUser, notification);
     }
   };
   const mutation = useMutation({

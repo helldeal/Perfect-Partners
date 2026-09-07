@@ -2,6 +2,10 @@ import { AddButtonIcon } from "../assets/svgs";
 import useModalStore from "../store/modalStore";
 import { ItemIconButton } from "./ItemIconButton";
 import { WatchProgress } from "./movies/WatchProgress";
+import { useNotifications } from "../contexts/notificationsContext";
+import { NotificationCategory } from "../api/models/notifications";
+import { NewSeasonTag } from "./NewSeasonTag";
+import { NotificationPing } from "./NotificationPing";
 
 export const ItemLayout = ({
   name,
@@ -11,6 +15,7 @@ export const ItemLayout = ({
   onAdd,
   inList = false,
   itemSelected = false,
+  specialTag,
 }: {
   name: string;
   image: string;
@@ -19,11 +24,23 @@ export const ItemLayout = ({
   onAdd?: () => void;
   inList?: boolean;
   itemSelected?: boolean;
+  specialTag?: string;
 }) => {
   const openModal = useModalStore((state) => state.openModal);
   const setShowContent = useModalStore((state) => state.setShowContent);
+  const { unreadNotifications, markItemAsRead } = useNotifications();
+  const itemId = payload && "game" in payload ? payload.game.id : payload?.id;
+  const category: NotificationCategory =
+    payload && "game" in payload ? "games" : "movies";
+  const hasUnreadNotification = unreadNotifications.some(
+    (notification) =>
+      notification.category === category && notification.itemId === itemId
+  );
 
   const openModalHandler = () => {
+    if (itemId !== undefined) {
+      void markItemAsRead(category, itemId);
+    }
     openModal(payload);
     setShowContent(true);
   };
@@ -37,10 +54,26 @@ export const ItemLayout = ({
         />
         <div
           className={`absolute w-full h-full rounded top-0 left-0 ${
-            itemSelected ? "border-2 border-blue-500" : ""
+            itemSelected ? "border-2 border-app-primary" : ""
           }`}
         ></div>
         {!!progress && <WatchProgress progress={progress} />}
+        {hasUnreadNotification && (
+          <NotificationPing
+            className="absolute left-2 top-2"
+            size="medium"
+            label="Nouvelle activité sur cette œuvre"
+          />
+        )}
+        {specialTag && (
+          <span className="absolute right-2 top-2 max-w-[70%]">
+            {specialTag === "Nouvelle saison" ? (
+              <NewSeasonTag compact />
+            ) : (
+              specialTag
+            )}
+          </span>
+        )}
         {inList && onAdd && (
           <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">
             <svg

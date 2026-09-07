@@ -19,6 +19,8 @@ export type Movie = {
   watch_providers?: WatchProvider[];
   collection?: MovieCollection;
   videos?: Video[];
+  userUpdatedAt?: number;
+  updatedAt?: number;
 };
 
 export type TVShow = {
@@ -32,6 +34,10 @@ export type TVShow = {
   watch_providers?: WatchProvider[];
   videos?: Video[];
   seasons?: TVSeason[];
+  userUpdatedAt?: number;
+  updatedAt?: number;
+  newSeasonAt?: number;
+  seasonCheckedAt?: number;
 };
 
 export type TVSeason = {

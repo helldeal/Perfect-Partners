@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router";
-import { useAuth } from "../contexts/authContext";
-import { doSignOut } from "../firebase/auth";
+import { useNavigate } from "react-router-dom";
 import logoImg from "../assets/logo.png";
 import { useState, useEffect } from "react";
 import useSearchStore from "../store/searchStore";
+import { ProfileMenu } from "./ProfileMenu";
+import { NotificationMenu } from "./NotificationMenu";
+import { useNotifications } from "../contexts/notificationsContext";
+import { NotificationPing } from "./NotificationPing";
 
 const navMenu = [
   { name: "Cinéma", path: "/movies", key: "movies" },
@@ -12,18 +14,11 @@ const navMenu = [
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
-  const { userLoggedIn, userLoading, currentUser } = useAuth();
   const navigate = useNavigate();
-  {
-    !userLoggedIn && !userLoading && navigate("/login", { replace: true });
-  }
+  const { unreadNotifications } = useNotifications();
 
   const searchTerm = useSearchStore((state) => state.query);
   const setSearchTerm = useSearchStore((state) => state.setQuery);
-
-  const handleSignOut = async () => {
-    await doSignOut();
-  };
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -49,7 +44,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
   return (
     <header
       className={`flex justify-between items-center p-3 gap-2 sm:gap-3 h-16 sticky top-0 z-10 ${
-        isScrolled ? "bg-[#181818]" : "bg-transparent"
+        isScrolled ? "bg-app-bg/95 backdrop-blur-md" : "bg-transparent"
       } transition-colors duration-300 px-4 sm:px-6 md:px-12 lg:px-18`}
     >
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -80,7 +75,14 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                 navigate(item.path);
               }}
             >
-              {item.name}
+              <span className="relative">
+                {item.name}
+                {unreadNotifications.some(
+                  (notification) => notification.category === item.key
+                  ) && (
+                  <NotificationPing className="absolute -right-2.5 -top-1" />
+                )}
+              </span>
             </span>
           ))}{" "}
         </nav>
@@ -105,7 +107,7 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-[#181818] border-b border-gray-700 md:hidden">
+        <div className="absolute top-16 left-0 right-0 bg-app-surface border-b border-app-border md:hidden">
           <nav className="flex flex-col p-4 gap-3">
             {navMenu.map((item) => (
               <button
@@ -117,7 +119,12 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                     : "hover:bg-gray-800"
                 }`}
               >
-                {item.name}
+                <span className="flex items-center justify-between">
+                  {item.name}
+                  {unreadNotifications.some(
+                    (notification) => notification.category === item.key
+                  ) && <NotificationPing />}
+                </span>
               </button>
             ))}
           </nav>
@@ -157,33 +164,8 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
             </span>
           )}
         </div>
-        <details className="relative">
-          <summary className="list-none cursor-pointer p-0 m-0 flex items-center">
-            {currentUser?.photoURL ? (
-              <img
-                src={currentUser.photoURL}
-                alt={currentUser.displayName || "profil"}
-                referrerPolicy="no-referrer"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-300" />
-            )}
-          </summary>
-
-          <div className="absolute right-0 top-full bg-black border border-gray-300 rounded-lg p-2 shadow-lg min-w-40 z-50">
-            <div className="p-2 border-b border-gray-200 text-sm">
-              {currentUser?.displayName}
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="mt-2 w-full p-2 bg-red-600 text-white rounded-md cursor-pointer text-sm"
-              type="button"
-            >
-              Se déconnecter
-            </button>
-          </div>
-        </details>
+        <NotificationMenu />
+        <ProfileMenu />
       </div>
     </header>
   );
