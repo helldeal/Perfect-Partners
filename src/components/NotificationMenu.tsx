@@ -14,6 +14,8 @@ const getNotificationText = (notification: AppNotification) => {
       return `possède maintenant ${notification.itemName}`;
     case "unpossessed":
       return `ne possède plus ${notification.itemName}`;
+    case "new_season":
+      return `a détecté une nouvelle saison pour ${notification.itemName}`;
   }
 };
 
@@ -36,6 +38,10 @@ const actionStyles: Record<
   unpossessed: {
     label: "Retrait",
     className: "bg-app-surface-elevated text-app-muted",
+  },
+  new_season: {
+    label: "Nouvelle saison",
+    className: "bg-app-primary-soft text-app-primary",
   },
 };
 

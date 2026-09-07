@@ -38,3 +38,30 @@ export const notifyOtherUsers = async (
     console.error("Impossible d'envoyer la notification", error);
   }
 };
+
+export const notifyAllUsersFromSystem = async (
+  event: NotificationEvent,
+  eventId: string
+) => {
+  try {
+    const usersSnapshot = await get(ref(db, "users"));
+    const updates: Record<string, unknown> = {};
+
+    Object.keys(usersSnapshot.val() ?? {}).forEach((userId) => {
+      updates[`notifications/${userId}/system-${eventId}`] = {
+        ...event,
+        actorId: "system",
+        actorName: "Perfect Partners",
+        actorPhoto: null,
+        createdAt: Date.now(),
+        read: false,
+      };
+    });
+
+    if (Object.keys(updates).length > 0) {
+      await update(ref(db), updates);
+    }
+  } catch (error) {
+    console.error("Impossible d'envoyer la notification système", error);
+  }
+};

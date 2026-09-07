@@ -79,6 +79,9 @@ export const TVShowWatchItem = ({
       (tvShow.seasons?.flatMap((season) => season.episodes ?? []).length ??
         1)) *
     100;
+  const hasRecentSeason =
+    !!tvShow.newSeasonAt &&
+    Date.now() - tvShow.newSeasonAt < 14 * 24 * 60 * 60 * 1000;
 
   const modalContent: WatchItemModal = {
     id: tvShow.id,
@@ -108,6 +111,7 @@ export const TVShowWatchItem = ({
       season.episodes?.every((episode) => episode.watched) ? true : false
     ),
     wishListed: inWishlist,
+    newSeasonAt: tvShow.newSeasonAt,
   };
 
   return (
@@ -118,6 +122,7 @@ export const TVShowWatchItem = ({
       payload={modalContent}
       onAdd={onAdd}
       inList={inWishlist}
+      specialTag={hasRecentSeason ? "Nouvelle saison" : undefined}
     />
   );
 };

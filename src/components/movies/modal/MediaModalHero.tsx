@@ -9,6 +9,7 @@ import {
   WatchButtonIcon,
 } from "../../../assets/svgs";
 import { ItemIconButton } from "../../ItemIconButton";
+import { getTrailerVideos } from "../../../utils/movies";
 
 type MediaModalHeroProps = {
   item: WatchItemModal;
@@ -24,8 +25,11 @@ export const MediaModalHero = ({
   muted,
   onAdd,
   onToggleMuted,
-}: MediaModalHeroProps) => (
-  <div className="relative">
+}: MediaModalHeroProps) => {
+  const trailer = getTrailerVideos(item.videos)[0];
+
+  return (
+    <div className="relative">
     <div
       style={{
         position: "relative",
@@ -36,7 +40,7 @@ export const MediaModalHero = ({
         zIndex: 20,
       }}
     >
-      {item.videos.length > 0 ? (
+      {trailer ? (
         <iframe
           ref={iframeRef}
           style={{
@@ -47,7 +51,7 @@ export const MediaModalHero = ({
             height: "100%",
           }}
           className="pointer-events-none"
-          src={`https://www.youtube.com/embed/${item.videos[0]?.key}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&loop=1&playlist=${item.videos[0]?.key}&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1&mute=1`}
+          src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&loop=1&playlist=${trailer.key}&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1&mute=1`}
           title={item.title}
           frameBorder="0"
           allow="autoplay; encrypted-media"
@@ -119,7 +123,7 @@ export const MediaModalHero = ({
         )}
       </div>
 
-      {item.videos.length > 0 && (
+      {trailer && (
         <div className="absolute bottom-1/10 right-4 mb-2 flex sm:right-12 sm:mb-4">
           <ItemIconButton
             type="secondary"
@@ -131,5 +135,6 @@ export const MediaModalHero = ({
         </div>
       )}
     </div>
-  </div>
-);
+    </div>
+  );
+};

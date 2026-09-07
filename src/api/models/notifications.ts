@@ -3,7 +3,8 @@ export type NotificationAction =
   | "added"
   | "deleted"
   | "possessed"
-  | "unpossessed";
+  | "unpossessed"
+  | "new_season";
 
 export type AppNotification = {
   id: string;

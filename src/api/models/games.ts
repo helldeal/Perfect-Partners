@@ -42,5 +42,6 @@ export type Game = {
   logoUrl?: string;
   possessedBy: string[];
   status?: "playing" | "done";
+  userUpdatedAt?: number;
   updatedAt?: number;
 };

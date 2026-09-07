@@ -9,6 +9,7 @@ import { GameItemModal } from "../api/models/gameItemModal";
 import { GameItemModalContent } from "./games/GameItemModalContent";
 import { useEffect, useCallback, useRef } from "react";
 import { Footer } from "./Footer";
+import { SystemUpdateToast } from "./SystemUpdateToast";
 
 export const MainLayout = ({
   children,
@@ -61,6 +62,7 @@ export const MainLayout = ({
       <Header navSelected={navSelected} />
       {children}
       <Footer />
+      <SystemUpdateToast />
       <Modal
         open={isModalOpen}
         onClose={exitModal}

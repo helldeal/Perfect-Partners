@@ -7,8 +7,14 @@ async function fetchIGDBGames(query: string): Promise<Game[]> {
       query
     )}`
   );
+  if (!res.ok) throw new Error("Impossible de charger les jeux IGDB");
   const data = await res.json();
   return data;
+}
+
+export async function fetchIGDBGame(id: number, name: string) {
+  const games = await fetchIGDBGames(name);
+  return games.find((game) => game.id === id) ?? null;
 }
 async function fetchIGDBSimilarGames(gameIds: number[]): Promise<Game[]> {
   const res = await fetch(

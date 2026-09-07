@@ -84,6 +84,7 @@ export const useAddMovie = () => {
       collection: details.belongs_to_collection ?? undefined,
       runtime: details.runtime ?? undefined,
       watched: false,
+      userUpdatedAt: Date.now(),
       updatedAt: Date.now(),
     };
 
@@ -134,7 +135,11 @@ export const useUpdateMovie = () => {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...updatedData, updatedAt: Date.now() }),
+        body: JSON.stringify({
+          ...updatedData,
+          userUpdatedAt: Date.now(),
+          updatedAt: Date.now(),
+        }),
       }
     );
     if (!response.ok) {

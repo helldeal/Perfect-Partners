@@ -6,7 +6,13 @@ import {
   TVEpisode,
   TVSeason,
   TVShow,
+  Video,
 } from "../api/models/movies";
+
+export const getTrailerVideos = (videos: Video[] = []) =>
+  videos.filter(
+    (video) => video.site.toLowerCase() === "youtube" && video.type === "Trailer"
+  );
 
 export function isMovie(item: MediaItem): item is Movie {
   return "title" in item;
@@ -53,6 +59,7 @@ export const filterMovieFields = (movie: any): Movie => {
     watch_providers: movie.watch_providers,
     collection: movie.collection,
     videos: movie.videos,
+    userUpdatedAt: movie.userUpdatedAt,
     updatedAt: movie.updatedAt,
   };
 };
@@ -70,7 +77,10 @@ export const filterTVShowFields = (tvShow: any): TVShow => {
     videos: tvShow.videos,
     seasons:
       tvShow.seasons?.map((season: any) => filterTVSeasonFields(season)) ?? [],
+    userUpdatedAt: tvShow.userUpdatedAt,
     updatedAt: tvShow.updatedAt,
+    newSeasonAt: tvShow.newSeasonAt,
+    seasonCheckedAt: tvShow.seasonCheckedAt,
   };
 };
 
@@ -172,8 +182,10 @@ export const getMediaListFromMediaItems = (items: MediaItem[]) => {
 
   const getUpdatedAt = (item: MediaItem | MovieSaga) =>
     isMovieSaga(item)
-      ? Math.max(...item.movies.map((movie) => movie.updatedAt ?? 0))
-      : (item.updatedAt ?? 0);
+      ? Math.max(
+          ...item.movies.map((movie) => movie.userUpdatedAt ?? 0)
+        )
+      : (item.userUpdatedAt ?? 0);
 
   const sortByLatestUpdate = (
     a: MediaItem | MovieSaga,

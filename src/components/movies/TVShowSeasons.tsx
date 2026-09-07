@@ -23,7 +23,12 @@ const SeasonSection = ({ season, seasons, handleWatchItem, handleUnwatchItem }: 
   const episodes = season.episodes ?? [];
   const watchedCount = episodes.filter((episode) => episode.watched).length;
   const isInProgress = watchedCount > 0 && watchedCount < episodes.length;
-  const [isOpen, setIsOpen] = useState(isInProgress);
+  const hasWatchedEpisode = seasons.some((item) =>
+    item.episodes?.some((episode) => episode.watched)
+  );
+  const [isOpen, setIsOpen] = useState(
+    isInProgress || (!hasWatchedEpisode && season.season_number === 1)
+  );
 
   return (
     <details open={isOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)} className="group/season overflow-hidden rounded-lg border border-white/10 bg-white/3">

@@ -57,7 +57,13 @@ export const useAddGame = () => {
   const queryClient = useQueryClient();
   const { currentUser } = useAuth();
   const addGame = async (game: Game): Promise<void> => {
-    const gameToAdd = { ...game, status: undefined, updatedAt: Date.now() };
+    const now = Date.now();
+    const gameToAdd = {
+      ...game,
+      status: undefined,
+      userUpdatedAt: now,
+      updatedAt: now,
+    };
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${game.id}.json`,
       {
@@ -139,7 +145,11 @@ export const useUpdateGame = () => {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...updatedData, updatedAt: Date.now() }),
+        body: JSON.stringify({
+          ...updatedData,
+          userUpdatedAt: Date.now(),
+          updatedAt: Date.now(),
+        }),
       }
     );
     if (!response.ok) {

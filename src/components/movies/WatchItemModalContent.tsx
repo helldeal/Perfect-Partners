@@ -9,6 +9,7 @@ import { TMDB } from "../../api/tmdb";
 import { MediaModalHero } from "./modal/MediaModalHero";
 import { MediaModalRelated } from "./modal/MediaModalRelated";
 import { MediaModalSummary } from "./modal/MediaModalSummary";
+import { getTrailerVideos } from "../../utils/movies";
 
 export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
   const [enrichedItemState, setEnrichedItemState] =
@@ -90,7 +91,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
 
     // VIDEOS manquantes
     if (videosQuery?.data?.results) {
-      newItem.videos = videosQuery.data.results;
+      newItem.videos = getTrailerVideos(videosQuery.data.results);
     }
 
     // WATCH PROVIDERS manquants (adaptation : providersQuery structure peut varier)

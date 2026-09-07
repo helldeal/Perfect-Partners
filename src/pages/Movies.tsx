@@ -23,6 +23,10 @@ import { MediaItemSearch } from "../components/movies/MediaItemSearch";
 import useSearchStore from "../store/searchStore";
 import { MainLayout } from "../components/MainLayout";
 import { MovieSagaWatchItem } from "../components/movies/MovieSagasWatching";
+import {
+  refreshMediaOnOpen,
+  useTVShowSeasonUpdates,
+} from "../hooks/useSystemUpdates";
 
 export const MoviesPage = () => {
   const searchTerm = useSearchStore((state) => state.query);
@@ -43,6 +47,7 @@ export const MoviesPage = () => {
     ],
     [firebaseMoviesQuery.data, firebaseTVShowsQuery.data]
   );
+  useTVShowSeasonUpdates(firebaseTVShowsQuery.data ?? []);
 
   const { planToWatch, watching, completed } = useMemo(
     () => getMediaListFromMediaItems(mediaItems),
@@ -55,6 +60,8 @@ export const MoviesPage = () => {
     const itemInList = mediaItems.find((item) => {
       return item.id === payload.id;
     });
+
+    if (itemInList) void refreshMediaOnOpen(itemInList);
 
     let newPayload: Partial<WatchItemModal> = {};
 
@@ -88,9 +95,14 @@ export const MoviesPage = () => {
       );
       if (
         payload.allWatched !== allWatched ||
-        payload.list !== (itemInList as TVShow).seasons
+        payload.list !== (itemInList as TVShow).seasons ||
+        payload.newSeasonAt !== (itemInList as TVShow).newSeasonAt
       ) {
-        newPayload = { list: (itemInList as TVShow).seasons, allWatched };
+        newPayload = {
+          list: (itemInList as TVShow).seasons,
+          allWatched,
+          newSeasonAt: (itemInList as TVShow).newSeasonAt,
+        };
       }
     }
 

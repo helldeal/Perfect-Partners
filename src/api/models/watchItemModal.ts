@@ -26,4 +26,5 @@ export type WatchItemModal = {
   handleUnwatchItem?: (id: string, list?: any) => void;
   allWatched?: boolean;
   wishListed: boolean;
+  newSeasonAt?: number;
 };

@@ -13,6 +13,7 @@ export const ItemLayout = ({
   onAdd,
   inList = false,
   itemSelected = false,
+  specialTag,
 }: {
   name: string;
   image: string;
@@ -21,6 +22,7 @@ export const ItemLayout = ({
   onAdd?: () => void;
   inList?: boolean;
   itemSelected?: boolean;
+  specialTag?: string;
 }) => {
   const openModal = useModalStore((state) => state.openModal);
   const setShowContent = useModalStore((state) => state.setShowContent);
@@ -59,6 +61,11 @@ export const ItemLayout = ({
             className="absolute left-2 top-2 h-3 w-3 rounded-full bg-app-primary shadow-lg shadow-app-primary/40 ring-2 ring-app-bg"
             aria-label="Nouvelle activité sur cette œuvre"
           />
+        )}
+        {specialTag && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-app-primary-soft px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-app-primary ring-1 ring-app-primary/40">
+            {specialTag}
+          </span>
         )}
         {inList && onAdd && (
           <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">
