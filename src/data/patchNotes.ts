@@ -17,6 +17,20 @@ export type PatchNote = {
 // L'identifiant reprend le début du SHA afin de rester stable et vérifiable.
 export const patchNotes: PatchNote[] = [
   {
+    id: "07d9eaa",
+    date: "7 septembre 2026",
+    title: "Une bibliothèque vivante et partagée",
+    categories: ["cinema", "games", "interface", "infrastructure"],
+    changes: [
+      "Ajout d'un centre de notifications partagé pour suivre les ajouts, suppressions et possessions des utilisateurs.",
+      "Mise en place d'actualisations système intelligentes pour synchroniser les textes, images, bandes-annonces, plateformes et épisodes depuis TMDB et IGDB.",
+      "Détection automatique des nouvelles saisons avec notification et indicateur « Nouveaux épisodes » pendant deux semaines.",
+      "Séparation des mises à jour utilisateur et système afin que le tri reflète uniquement l'activité des utilisateurs.",
+      "Refonte du thème, des modales et des composants cinéma pour une interface plus cohérente sur mobile et ordinateur.",
+      "Ajout des notes de version, amélioration du profil et fiabilisation du déploiement GitHub Pages.",
+    ],
+  },
+  {
     id: "4c86a4a",
     date: "27 janvier 2026",
     title: "Une expérience mobile complète",
