@@ -56,3 +56,30 @@ body {
   min-height: 100vh;
   background: var(--app-bg);
 }
+
+@keyframes notification-item-card-shadow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--app-primary) 70%, transparent),
+      0 0 10px 1px color-mix(in srgb, var(--app-primary) 45%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--app-primary) 90%, transparent),
+      0 0 22px 5px color-mix(in srgb, var(--app-primary) 70%, transparent);
+  }
+}
+
+.notification-item-card-shadow {
+  animation: notification-item-card-shadow 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-item-card-shadow {
+    animation: none;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--app-primary) 85%, transparent),
+      0 0 16px 3px color-mix(in srgb, var(--app-primary) 55%, transparent);
+  }
+}

@@ -78,9 +78,11 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
                 <button key={item.key} type="button" onClick={() => handleNavClick(item.path)} aria-current={active ? "page" : undefined} className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition-all cursor-pointer lg:px-4 ${active ? "bg-app-primary-soft text-app-primary shadow-sm" : "text-app-muted hover:bg-app-surface-elevated hover:text-app-text"}`}>
                   <span className="relative h-4 w-4">
                     <NavIcon section={item.key} />
-                    {hasNotification && <NotificationPing className="absolute -right-1.5 -top-1.5" />}
                   </span>
                   <span className={active ? "font-semibold" : "font-medium"}>{item.name}</span>
+                  {hasNotification && (
+                    <NotificationPing className="absolute right-1.5 top-1" />
+                  )}
                   {active && <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-app-primary" />}
                 </button>
               );
@@ -109,12 +111,14 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
           const active = navSelected === item.key;
           const hasNotification = unreadNotifications.some((notification) => notification.category === item.key);
           return (
-            <button key={item.key} type="button" onClick={() => handleNavClick(item.path)} aria-current={active ? "page" : undefined} className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] transition-colors cursor-pointer ${active ? "bg-app-primary-soft font-semibold text-app-primary" : "text-app-muted hover:bg-app-surface-elevated hover:text-app-text"}`}>
+            <button key={item.key} type="button" onClick={() => handleNavClick(item.path)} aria-current={active ? "page" : undefined} className={`relative flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] transition-colors cursor-pointer ${active ? "bg-app-primary-soft font-semibold text-app-primary" : "text-app-muted hover:bg-app-surface-elevated hover:text-app-text"}`}>
               <span className="relative h-5 w-5">
                 <NavIcon section={item.key} />
-                {hasNotification && <NotificationPing className="absolute -right-1.5 -top-1" />}
               </span>
               <span className="truncate">{item.name}</span>
+              {hasNotification && (
+                <NotificationPing className="absolute right-2 top-1.5" />
+              )}
             </button>
           );
         })}

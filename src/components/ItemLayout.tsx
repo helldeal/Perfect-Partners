@@ -46,7 +46,11 @@ export const ItemLayout = ({
   };
   return (
     <div className="w-full h-full " onClick={openModalHandler}>
-      <div className="w-full h-full relative">
+      <div
+        className={`w-full h-full relative rounded ${
+          hasUnreadNotification ? "notification-item-card-shadow" : ""
+        }`}
+      >
         <img
           src={image ? `${image}` : "/placeholder.png"}
           alt={name}
