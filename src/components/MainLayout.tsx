@@ -60,7 +60,7 @@ export const MainLayout = ({
   return (
     <div className="min-h-screen bg-app-bg text-app-text flex flex-col">
       <Header navSelected={navSelected} />
-      {children}
+      <main className="flex flex-1 flex-col pb-20 md:pb-0">{children}</main>
       <Footer />
       <SystemUpdateToast />
       <Modal
