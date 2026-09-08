@@ -2,11 +2,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 export const SystemUpdateToast = () => {
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [pendingUpdates, setPendingUpdates] = useState(0);
 
   useEffect(() => {
-    const handleStart = () => setIsUpdating(true);
-    const handleFinish = () => setIsUpdating(false);
+    const handleStart = () => setPendingUpdates((count) => count + 1);
+    const handleFinish = () =>
+      setPendingUpdates((count) => Math.max(0, count - 1));
 
     window.addEventListener("system-update-started", handleStart);
     window.addEventListener("system-update-finished", handleFinish);
@@ -18,7 +19,7 @@ export const SystemUpdateToast = () => {
 
   return (
     <AnimatePresence>
-      {isUpdating && (
+      {pendingUpdates > 0 && (
         <motion.div
           role="status"
           aria-label="Actualisation des données en cours"

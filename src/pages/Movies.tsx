@@ -27,6 +27,13 @@ import {
   refreshMediaOnOpen,
   useTVShowSeasonUpdates,
 } from "../hooks/useSystemUpdates";
+import { formatYearRange } from "../utils/dates";
+
+const payloadValueChanged = (current: unknown, next: unknown) =>
+  current !== next &&
+  (typeof current !== "object" ||
+    typeof next !== "object" ||
+    JSON.stringify(current) !== JSON.stringify(next));
 
 export const MoviesPage = () => {
   const searchTerm = useSearchStore((state) => state.query);
@@ -36,6 +43,7 @@ export const MoviesPage = () => {
   const firebaseTVShowsQuery = useFirebaseTVShows();
 
   const payload: WatchItemModal = useModalStore((state) => state.payload);
+  const isModalOpen = useModalStore((state) => state.isModalOpen);
   const updatePayload = useModalStore((state) => state.updatePayload);
 
   const searchList = debouncedQuery.length > 0 ? searchMultiQuery.data : null;
@@ -55,7 +63,7 @@ export const MoviesPage = () => {
   );
 
   useEffect(() => {
-    if (!payload || payload.id === null) return;
+    if (!isModalOpen || !payload || payload.id === null) return;
 
     const itemInList = mediaItems.find((item) => {
       return item.id === payload.id;
@@ -85,31 +93,68 @@ export const MoviesPage = () => {
     } else if (itemInList && !payload.wishListed) {
       newPayload = { wishListed: true };
     } else if ("watched" in itemInList) {
-      const allWatched = (itemInList as Movie).watched;
-      if (payload.allWatched !== allWatched) {
-        newPayload = { allWatched };
+      const movie = itemInList as Movie;
+      const moviePayload = {
+        title: movie.title,
+        overview: movie.overview,
+        date: formatYearRange([movie.release_date]),
+        background_path: movie.backdrop_path,
+        videos: movie.videos ?? [],
+        runtime: movie.runtime,
+        logo: movie.logo,
+        watch_providers: movie.watch_providers ?? [],
+        collectionId: movie.collection?.id.toString(),
+        allWatched: movie.watched,
+      };
+      if (
+        Object.entries(moviePayload).some(
+          ([key, value]) =>
+            payloadValueChanged(
+              payload[key as keyof WatchItemModal],
+              value
+            )
+        )
+      ) {
+        newPayload = moviePayload;
       }
     } else {
-      const allWatched = (itemInList as TVShow).seasons?.every((season) =>
+      const tvShow = itemInList as TVShow;
+      const allWatched = tvShow.seasons?.every((season) =>
         season.episodes?.every((episode) => episode.watched)
       );
+      const tvPayload = {
+        title: tvShow.name,
+        overview: tvShow.overview,
+        date: formatYearRange(
+          tvShow.seasons
+            ?.map((season) => season.air_date)
+            .filter((date) => date !== undefined) ?? []
+        ),
+        background_path: tvShow.backdrop_path,
+        list: tvShow.seasons,
+        videos: tvShow.videos ?? [],
+        logo: tvShow.logo,
+        watch_providers: tvShow.watch_providers ?? [],
+        allWatched,
+        newSeasonAt: tvShow.newSeasonAt,
+      };
       if (
-        payload.allWatched !== allWatched ||
-        payload.list !== (itemInList as TVShow).seasons ||
-        payload.newSeasonAt !== (itemInList as TVShow).newSeasonAt
+        Object.entries(tvPayload).some(
+          ([key, value]) =>
+            payloadValueChanged(
+              payload[key as keyof WatchItemModal],
+              value
+            )
+        )
       ) {
-        newPayload = {
-          list: (itemInList as TVShow).seasons,
-          allWatched,
-          newSeasonAt: (itemInList as TVShow).newSeasonAt,
-        };
+        newPayload = tvPayload;
       }
     }
 
     if (Object.keys(newPayload).length > 0) {
       updatePayload(newPayload);
     }
-  }, [mediaItems, payload, updatePayload]);
+  }, [isModalOpen, mediaItems, payload, updatePayload]);
 
   return (
     <MainLayout navSelected="movies">

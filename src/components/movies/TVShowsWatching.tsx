@@ -1,4 +1,4 @@
-import { TVSeason, TVShow } from "../../api/models/movies";
+import { TVShow } from "../../api/models/movies";
 import { ItemLayout } from "../ItemLayout";
 import { formatYearRange } from "../../utils/dates";
 import { useDeleteTVShow, useUpdateTVShow } from "../../api/firebase/tvshows";
@@ -28,47 +28,23 @@ export const TVShowWatchItem = ({
     deleteTVShowMutation.mutate(tvShow.id.toString());
   };
   const handleAllWatch = () => {
-    const updatedSeasons = tvShow.seasons?.map((season) => ({
-      ...season,
-      episodes: season.episodes?.map((episode) => ({
-        ...episode,
-        watched: true,
-      })),
-    }));
-
     updateTVShowMutation.mutate({
       tvShowId: tvShow.id.toString(),
-      updatedData: { seasons: updatedSeasons },
+      progress: { watched: true },
     });
   };
 
-  const handleWatchItem = (id: string, list: TVSeason[]) => {
+  const handleWatchItem = (id: string) => {
     updateTVShowMutation.mutate({
       tvShowId: tvShow.id.toString(),
-      updatedData: {
-        ...tvShow,
-        seasons: list.map((season) => ({
-          ...season,
-          episodes: season.episodes?.map((episode) =>
-            episode.id === Number(id) ? { ...episode, watched: true } : episode
-          ),
-        })),
-      },
+      progress: { episodeId: Number(id), watched: true },
     });
   };
 
-  const handleUnwatchItem = (id: string, list: TVSeason[]) => {
+  const handleUnwatchItem = (id: string) => {
     updateTVShowMutation.mutate({
       tvShowId: tvShow.id.toString(),
-      updatedData: {
-        ...tvShow,
-        seasons: list.map((season) => ({
-          ...season,
-          episodes: season.episodes?.map((episode) =>
-            episode.id === Number(id) ? { ...episode, watched: false } : episode
-          ),
-        })),
-      },
+      progress: { episodeId: Number(id), watched: false },
     });
   };
 

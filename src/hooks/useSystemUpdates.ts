@@ -9,8 +9,10 @@ import {
 } from "../api/systemUpdates";
 
 const HOUR = 60 * 60 * 1000;
+const inFlightUpdates = new Map<string, Promise<boolean>>();
 
 const runThrottled = async (
+  key: string,
   lastUpdatedAt: number | undefined,
   interval: number,
   action: () => Promise<boolean>,
@@ -19,15 +21,21 @@ const runThrottled = async (
 ) => {
   if (Date.now() - (lastUpdatedAt ?? 0) < interval) return false;
 
+  const existingUpdate = inFlightUpdates.get(key);
+  if (existingUpdate) return existingUpdate;
+
   onStart?.();
-  try {
-    return await action();
-  } catch (error) {
-    console.error("Échec d'une mise à jour système", error);
-    return false;
-  } finally {
-    onFinish?.();
-  }
+  const update = action()
+    .catch((error) => {
+      console.error("Échec d'une mise à jour système", error);
+      return false;
+    })
+    .finally(() => {
+      inFlightUpdates.delete(key);
+      onFinish?.();
+    });
+  inFlightUpdates.set(key, update);
+  return update;
 };
 
 export const useTVShowSeasonUpdates = (tvShows: TVShow[]) => {
@@ -41,6 +49,7 @@ export const useTVShowSeasonUpdates = (tvShows: TVShow[]) => {
       try {
         for (const tvShow of tvShows) {
           await runThrottled(
+            `tv-season:${tvShow.id}`,
             tvShow.seasonCheckedAt,
             24 * HOUR,
             () => checkTVShowForNewSeasons(tvShow)
@@ -63,6 +72,7 @@ const announceUpdateFinished = () =>
 
 export const refreshMediaOnOpen = async (item: Movie | TVShow) => {
   await runThrottled(
+    `${"title" in item ? "movie" : "tv"}:${item.id}`,
     item.updatedAt,
     24 * HOUR,
     () =>
@@ -76,6 +86,7 @@ export const refreshMediaOnOpen = async (item: Movie | TVShow) => {
 
 export const refreshGameOnOpen = async (game: Game) => {
   await runThrottled(
+    `game:${game.id}`,
     game.updatedAt,
     24 * HOUR,
     () => refreshGameMetadata(game),

@@ -17,6 +17,7 @@ export const GamesPage = () => {
   const firebaseGamesQuery = useFirebaseGames();
   const addGameMutation = useAddGame();
   const payload: GameItemModal = useModalStore((state) => state.payload);
+  const isModalOpen = useModalStore((state) => state.isModalOpen);
   const updatePayload = useModalStore((state) => state.updatePayload);
 
   const searchList = debouncedQuery.length > 0 ? searchGamesQuery.data : null;
@@ -48,7 +49,7 @@ export const GamesPage = () => {
   }, [firebaseGamesQuery.data]);
 
   useEffect(() => {
-    if (!payload || payload.game.id === null) return;
+    if (!isModalOpen || !payload || payload.game.id === null) return;
 
     const itemInList = firebaseGamesQuery.data?.find((item) => {
       return item.id === payload.game.id;
@@ -64,16 +65,13 @@ export const GamesPage = () => {
     } else if (!payload.wishListed) {
       newPayload.wishListed = true;
       newPayload.game = itemInList;
-    } else if (
-      itemInList.status !== payload.game.status ||
-      itemInList.possessedBy?.length !== payload.game.possessedBy?.length
-    ) {
+    } else if (itemInList !== payload.game) {
       newPayload.game = itemInList;
     }
     if (Object.keys(newPayload).length > 0) {
       updatePayload(newPayload);
     }
-  }, [payload, firebaseGamesQuery.data, updatePayload]);
+  }, [isModalOpen, payload, firebaseGamesQuery.data, updatePayload]);
 
   return (
     <MainLayout navSelected="games">

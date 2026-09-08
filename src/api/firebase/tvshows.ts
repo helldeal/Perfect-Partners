@@ -1,5 +1,5 @@
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, runTransaction } from "firebase/database";
 import { useEffect } from "react";
 import { db } from "../../firebase/firebase";
 import { filterTVShowFields } from "../../utils/movies";
@@ -132,25 +132,40 @@ export const useUpdateTVShow = () => {
   const updateTVShow = async ({
     tvShowId,
     updatedData,
+    progress,
   }: {
     tvShowId: string;
-    updatedData: Partial<TVShow>;
+    updatedData?: Partial<TVShow>;
+    progress?: {
+      episodeId?: number;
+      watched: boolean;
+    };
   }): Promise<void> => {
-    const response = await fetch(
-      `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${tvShowId}.json`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...updatedData,
-          userUpdatedAt: Date.now(),
-          updatedAt: Date.now(),
-        }),
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Failed to update TV show");
-    }
+    const updatedAt = Date.now();
+    await runTransaction(ref(db, `tvshows/${tvShowId}`), (value) => {
+      if (!value) return value;
+
+      const current = value as TVShow;
+      const seasons = progress
+        ? current.seasons?.map((season) => ({
+            ...season,
+            episodes: season.episodes?.map((episode) =>
+              progress.episodeId === undefined ||
+              episode.id === progress.episodeId
+                ? { ...episode, watched: progress.watched }
+                : episode
+            ),
+          }))
+        : updatedData?.seasons;
+
+      return {
+        ...current,
+        ...updatedData,
+        ...(seasons ? { seasons } : {}),
+        userUpdatedAt: updatedAt,
+        updatedAt,
+      };
+    });
   };
   const mutation = useMutation({
     mutationFn: updateTVShow,
