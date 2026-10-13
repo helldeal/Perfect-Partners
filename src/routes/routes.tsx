@@ -10,12 +10,13 @@ import { MoviesPage } from "../pages/Movies";
 import { GamesPage } from "../pages/Games";
 import { LegosPage } from "../pages/Legos";
 import { useAuth } from "../contexts/authContext";
+import { LoadingScreen } from "../components/LoadingScreen";
 
 const ProtectedRoutes = () => {
   const { userLoggedIn, userLoading } = useAuth();
   const location = useLocation();
 
-  if (userLoading) return null;
+  if (userLoading) return <LoadingScreen />;
 
   if (!userLoggedIn) {
     return (

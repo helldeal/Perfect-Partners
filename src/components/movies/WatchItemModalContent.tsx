@@ -61,7 +61,7 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
 
   const detailsQuery = item.detailsQuery
     ? item.detailsQuery(item.id, { enabled: shouldFetchDetails })
-    : { data: null };
+    : { data: null, isLoading: false };
 
   const videosQuery = item.videosQuery
     ? item.videosQuery(item.id, { enabled: shouldFetchVideos })
@@ -257,6 +257,9 @@ export const WatchItemModalContent = ({ item }: { item: WatchItemModal }) => {
           collection={collectionsQuery.data}
           recommendations={recommendationsQueryResult?.data}
           credits={creditsQueryResult?.data}
+          collectionLoading={collectionsQuery.isLoading}
+          recommendationsLoading={recommendationsQueryResult?.isLoading}
+          creditsLoading={creditsQueryResult?.isLoading}
         />
       </div>
     </>

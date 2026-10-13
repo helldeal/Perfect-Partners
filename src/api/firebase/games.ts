@@ -14,6 +14,7 @@ export const useFirebaseGames = () => {
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games.json`
     );
+    if (!response.ok) throw new Error("Impossible de charger les jeux");
     const data = (await response.json()) as Record<string, Game>;
     return data
       ? Object.entries(data).map(([key, game]) => ({

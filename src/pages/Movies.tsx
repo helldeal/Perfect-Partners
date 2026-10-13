@@ -1,3 +1,5 @@
+import { LibrarySection } from "../components/LibrarySection";
+import { CardGridSkeleton } from "../components/Skeleton";
 import { useEffect, useMemo } from "react";
 import { useSearchMultiQuery } from "../api/tmdb";
 import { useDebounce } from "../utils/useDebounce";
@@ -113,10 +115,23 @@ export const MoviesPage = () => {
 
   return (
     <MainLayout navSelected="movies">
-      <div className=" flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 md:p-8 lg:p-12">
-        {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
-          searchMultiQuery.isLoading ? (
-            <p>Chargement...</p>
+      <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-10 p-4 sm:gap-12 sm:p-6 md:p-8 lg:p-12">
+        <header className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-app-primary">Votre bibliothèque partagée</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{searchTerm ? "Recherche" : "Films et séries"}</h1>
+          <p className="text-sm text-app-muted sm:text-base">{searchTerm ? `Résultats pour « ${searchTerm} »` : "Vos prochaines séances, vos séries en cours et vos souvenirs de cinéma."}</p>
+        </header>
+        {firebaseMoviesQuery.isLoading || firebaseTVShowsQuery.isLoading ? (
+          <>
+            <LibrarySection title="Continuer" loading />
+            <LibrarySection title="À regarder" loading />
+            <LibrarySection title="Terminés" loading />
+          </>
+        ) : searchTerm.length > 0 ? (
+          searchTerm !== debouncedQuery || searchMultiQuery.isLoading ? (
+            <CardGridSkeleton />
+          ) : searchMultiQuery.isError ? (
+            <p role="alert">Impossible de charger les résultats. <button type="button" className="text-app-primary underline" onClick={() => void searchMultiQuery.refetch()}>Réessayer</button></p>
           ) : searchList && searchList.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
               {searchList.map((item: MediaItem) => (
@@ -132,39 +147,38 @@ export const MoviesPage = () => {
           ) : (
             <p>Aucun résultat trouvé.</p>
           )
+        ) : (firebaseMoviesQuery.isError || firebaseTVShowsQuery.isError) ? (
+          <p role="alert">Impossible de charger la bibliothèque. <button type="button" className="text-app-primary underline" onClick={() => { void firebaseMoviesQuery.refetch(); void firebaseTVShowsQuery.refetch(); }}>Réessayer</button></p>
+        ) : (mediaItems).length === 0 ? (
+          <p className="text-app-muted">Votre bibliothèque est vide. Recherchez un film ou une série pour commencer.</p>
         ) : (
           <>
             {watching.length > 0 && (
-              <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">Continuer</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
-                  {watching.map((itemList, index) => (
-                    <div key={index}>
-                      <WatchItemMapping itemList={itemList} />
-                    </div>
+              <LibrarySection title="Continuer" count={watching.length}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 lg:gap-12 xl:grid-cols-6 items-stretch">
+                  {watching.map((itemList) => (
+                    <WatchItemMapping key={itemList.id} itemList={itemList} />
                   ))}
                 </div>
-              </>
+              </LibrarySection>
             )}
             {planToWatch.length > 0 && (
-              <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">À regarder</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
-                  {planToWatch.map((itemList, index) => (
-                    <WatchItemMapping key={index} itemList={itemList} />
+              <LibrarySection title="À regarder" count={planToWatch.length}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 lg:gap-12 xl:grid-cols-6 items-stretch">
+                  {planToWatch.map((itemList) => (
+                    <WatchItemMapping key={itemList.id} itemList={itemList} />
                   ))}
                 </div>
-              </>
+              </LibrarySection>
             )}
             {completed.length > 0 && (
-              <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">Terminés</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
+              <LibrarySection title="Terminés" count={completed.length}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 lg:gap-12 xl:grid-cols-6 items-stretch">
                   {completed.map((itemList) => (
-                    <WatchItemMapping itemList={itemList} key={itemList.id} />
+                    <WatchItemMapping key={itemList.id} itemList={itemList} />
                   ))}
                 </div>
-              </>
+              </LibrarySection>
             )}
           </>
         )}

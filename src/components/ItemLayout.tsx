@@ -6,6 +6,8 @@ import { useNotifications } from "../contexts/notificationsContext";
 import { NotificationCategory } from "../api/models/notifications";
 import { NewSeasonTag } from "./NewSeasonTag";
 import { NotificationPing } from "./NotificationPing";
+import { useState } from "react";
+import { Skeleton } from "./Skeleton";
 
 export const ItemLayout = ({
   name,
@@ -27,6 +29,8 @@ export const ItemLayout = ({
   specialTag?: string;
 }) => {
   const openModal = useModalStore((state) => state.openModal);
+  const [settledImage, setSettledImage] = useState<string | null>(null);
+  const imageLoading = settledImage !== image;
   const setShowContent = useModalStore((state) => state.setShowContent);
   const { unreadNotifications, markItemAsRead } = useNotifications();
   const itemId = payload && "game" in payload ? payload.game.id : payload?.id;
@@ -47,10 +51,13 @@ export const ItemLayout = ({
   return (
     <div className="w-full h-full " onClick={openModalHandler}>
       <div className="w-full h-full relative">
+        {imageLoading && <Skeleton className="absolute inset-0 aspect-[2/3] w-full" />}
         <img
           src={image ? `${image}` : "/placeholder.png"}
           alt={name}
-          className="w-full h-full rounded object-cover"
+          onLoad={() => setSettledImage(image)}
+          onError={() => setSettledImage(image)}
+          className={`w-full h-full rounded object-cover transition-opacity ${imageLoading ? "opacity-0" : "opacity-100"}`}
         />
         <div
           className={`absolute w-full h-full rounded top-0 left-0 ${

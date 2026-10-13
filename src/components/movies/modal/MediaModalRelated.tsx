@@ -1,3 +1,4 @@
+import { RelatedSkeleton } from "../../Skeleton";
 import { MediaItem, Movie } from "../../../api/models/movies";
 import { MediaItemSearch } from "../MediaItemSearch";
 
@@ -27,6 +28,9 @@ type MediaModalRelatedProps = {
   collection?: CollectionData | null;
   recommendations?: RecommendationData | null;
   credits?: CreditsData | null;
+  collectionLoading?: boolean;
+  recommendationsLoading?: boolean;
+  creditsLoading?: boolean;
 };
 
 const findStoredItem = (item: MediaItem, mediaItems: MediaItem[]) =>
@@ -38,8 +42,14 @@ export const MediaModalRelated = ({
   collection,
   recommendations,
   credits,
+  collectionLoading,
+  recommendationsLoading,
+  creditsLoading,
 }: MediaModalRelatedProps) => (
   <>
+    {collectionLoading && <RelatedSkeleton title="Collection" />}
+    {recommendationsLoading && <RelatedSkeleton title="Recommandations" />}
+    {creditsLoading && <RelatedSkeleton title="Crédits" />}
     {collection && (
       <div className="relative mt-6 p-4 sm:p-5">
         <h2 className="mb-4 text-xl sm:text-2xl">{collection.name}</h2>
