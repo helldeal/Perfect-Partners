@@ -5,12 +5,19 @@ export type PatchNoteCategory =
   | "security"
   | "infrastructure";
 
+export type PatchNoteChangeType = "fix" | "improvement" | "feature";
+
+export type PatchNoteChange = {
+  type: PatchNoteChangeType;
+  text: string;
+};
+
 export type PatchNote = {
   id: string;
   date: string;
   title: string;
   categories: PatchNoteCategory[];
-  changes: string[];
+  changes: PatchNoteChange[];
 };
 
 // Une entrée par merge présent dans l'historique first-parent de main.
@@ -22,12 +29,30 @@ export const patchNotes: PatchNote[] = [
     title: "Une bibliothèque vivante et partagée",
     categories: ["cinema", "games", "interface", "infrastructure"],
     changes: [
-      "Ajout d'un centre de notifications partagé pour suivre les ajouts, suppressions et possessions des utilisateurs.",
-      "Mise en place d'actualisations système intelligentes pour synchroniser les textes, images, bandes-annonces, plateformes et épisodes depuis TMDB et IGDB.",
-      "Détection automatique des nouvelles saisons avec notification et indicateur « Nouveaux épisodes » pendant deux semaines.",
-      "Séparation des mises à jour utilisateur et système afin que le tri reflète uniquement l'activité des utilisateurs.",
-      "Refonte du thème, des modales et des composants cinéma pour une interface plus cohérente sur mobile et ordinateur.",
-      "Ajout des notes de version, amélioration du profil et fiabilisation du déploiement GitHub Pages.",
+      {
+        type: "feature",
+        text: "Ajout d'un centre de notifications partagé pour suivre les ajouts, suppressions et possessions des utilisateurs.",
+      },
+      {
+        type: "improvement",
+        text: "Mise en place d'actualisations système intelligentes pour synchroniser les textes, images, bandes-annonces, plateformes et épisodes depuis TMDB et IGDB.",
+      },
+      {
+        type: "feature",
+        text: "Détection automatique des nouvelles saisons avec notification et indicateur « Nouveaux épisodes » pendant deux semaines.",
+      },
+      {
+        type: "fix",
+        text: "Séparation des mises à jour utilisateur et système afin que le tri reflète uniquement l'activité des utilisateurs.",
+      },
+      {
+        type: "improvement",
+        text: "Refonte du thème, des modales et des composants cinéma pour une interface plus cohérente sur mobile et ordinateur.",
+      },
+      {
+        type: "feature",
+        text: "Ajout des notes de version, amélioration du profil et fiabilisation du déploiement GitHub Pages.",
+      },
     ],
   },
   {
@@ -36,9 +61,18 @@ export const patchNotes: PatchNote[] = [
     title: "Une expérience mobile complète",
     categories: ["interface"],
     changes: [
-      "Adaptation des pages, cartes et modales aux écrans mobiles.",
-      "Ajout d'un menu de navigation compact sur téléphone.",
-      "Amélioration du bouton retour et des libellés en français.",
+      {
+        type: "improvement",
+        text: "Adaptation des pages, cartes et modales aux écrans mobiles.",
+      },
+      {
+        type: "feature",
+        text: "Ajout d'un menu de navigation compact sur téléphone.",
+      },
+      {
+        type: "improvement",
+        text: "Amélioration du bouton retour et des libellés en français.",
+      },
     ],
   },
   {
@@ -47,9 +81,18 @@ export const patchNotes: PatchNote[] = [
     title: "Suivi partagé des jeux",
     categories: ["games", "interface"],
     changes: [
-      "Classement des jeux entre liste à faire, en cours et terminés.",
-      "Ajout des propriétaires d'un jeu avec leur profil utilisateur.",
-      "Amélioration des logos, arrière-plans et détails des collections.",
+      {
+        type: "feature",
+        text: "Classement des jeux entre liste à faire, en cours et terminés.",
+      },
+      {
+        type: "feature",
+        text: "Ajout des propriétaires d'un jeu avec leur profil utilisateur.",
+      },
+      {
+        type: "improvement",
+        text: "Amélioration des logos, arrière-plans et détails des collections.",
+      },
     ],
   },
   {
@@ -58,9 +101,18 @@ export const patchNotes: PatchNote[] = [
     title: "Arrivée des jeux vidéo",
     categories: ["games", "interface", "infrastructure"],
     changes: [
-      "Recherche et ajout de jeux depuis IGDB.",
-      "Création des cartes, listes et modales dédiées aux jeux.",
-      "Ajout des genres, plateformes, collections et jeux similaires.",
+      {
+        type: "feature",
+        text: "Recherche et ajout de jeux depuis IGDB.",
+      },
+      {
+        type: "feature",
+        text: "Création des cartes, listes et modales dédiées aux jeux.",
+      },
+      {
+        type: "feature",
+        text: "Ajout des genres, plateformes, collections et jeux similaires.",
+      },
     ],
   },
   {
@@ -69,8 +121,14 @@ export const patchNotes: PatchNote[] = [
     title: "Connexion fiabilisée",
     categories: ["security"],
     changes: [
-      "Correction du parcours d'authentification Google.",
-      "Amélioration de la gestion de session et de la déconnexion.",
+      {
+        type: "fix",
+        text: "Correction du parcours d'authentification Google.",
+      },
+      {
+        type: "improvement",
+        text: "Amélioration de la gestion de session et de la déconnexion.",
+      },
     ],
   },
   {
@@ -79,8 +137,14 @@ export const patchNotes: PatchNote[] = [
     title: "Navigation compatible GitHub Pages",
     categories: ["infrastructure", "interface"],
     changes: [
-      "Correction du routage et des redirections après connexion.",
-      "Adaptation de la navigation au déploiement GitHub Pages.",
+      {
+        type: "fix",
+        text: "Correction du routage et des redirections après connexion.",
+      },
+      {
+        type: "improvement",
+        text: "Adaptation de la navigation au déploiement GitHub Pages.",
+      },
     ],
   },
   {
@@ -89,9 +153,18 @@ export const patchNotes: PatchNote[] = [
     title: "Les sagas cinéma",
     categories: ["cinema", "interface"],
     changes: [
-      "Regroupement automatique des films appartenant à une collection.",
-      "Affichage de la progression globale d'une saga.",
-      "Amélioration du tri entre contenus à voir, en cours et terminés.",
+      {
+        type: "feature",
+        text: "Regroupement automatique des films appartenant à une collection.",
+      },
+      {
+        type: "feature",
+        text: "Affichage de la progression globale d'une saga.",
+      },
+      {
+        type: "improvement",
+        text: "Amélioration du tri entre contenus à voir, en cours et terminés.",
+      },
     ],
   },
   {
@@ -100,10 +173,22 @@ export const patchNotes: PatchNote[] = [
     title: "Films et séries partagés",
     categories: ["cinema", "interface", "infrastructure"],
     changes: [
-      "Création des listes communes de films et séries synchronisées avec Firebase.",
-      "Recherche TMDB, progression de visionnage et suivi des épisodes.",
-      "Ajout des modales détaillées avec vidéos, plateformes, crédits et recommandations.",
-      "Mise en place de l'interface, de la recherche et du déploiement.",
+      {
+        type: "feature",
+        text: "Création des listes communes de films et séries synchronisées avec Firebase.",
+      },
+      {
+        type: "feature",
+        text: "Recherche TMDB, progression de visionnage et suivi des épisodes.",
+      },
+      {
+        type: "feature",
+        text: "Ajout des modales détaillées avec vidéos, plateformes, crédits et recommandations.",
+      },
+      {
+        type: "feature",
+        text: "Mise en place de l'interface, de la recherche et du déploiement.",
+      },
     ],
   },
 ];

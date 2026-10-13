@@ -1,7 +1,7 @@
 import { Modal } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { PatchNote, PatchNoteCategory } from "../data/patchNotes";
+import { PatchNote, PatchNoteCategory, PatchNoteChangeType } from "../data/patchNotes";
 import { Close } from "./Close";
 
 const categoryStyles: Record<
@@ -27,6 +27,24 @@ const categoryStyles: Record<
   infrastructure: {
     label: "Technique",
     className: "bg-app-warning-soft text-app-warning",
+  },
+};
+
+const changeIcons: Record<
+  PatchNoteChangeType,
+  { label: string; emoji: string }
+> = {
+  fix: {
+    label: "Correction",
+    emoji: "🛠️",
+  },
+  improvement: {
+    label: "Amélioration",
+    emoji: "✨",
+  },
+  feature: {
+    label: "Nouveauté",
+    emoji: "🆕",
   },
 };
 
@@ -123,11 +141,16 @@ export const PatchNotesModal = ({
                     </div>
                     <ul className="mt-3 space-y-2 text-sm leading-6 text-app-text/80">
                       {note.changes.map((change) => (
-                        <li key={change} className="flex gap-2">
-                          <span aria-hidden="true" className="text-app-primary">
-                            —
+                        <li key={change.text} className="flex items-center gap-2">
+                          <span
+                            role="img"
+                            aria-label={changeIcons[change.type].label}
+                            title={changeIcons[change.type].label}
+                            className="shrink-0"
+                          >
+                            {changeIcons[change.type].emoji}
                           </span>
-                          <span>{change}</span>
+                          <span>{change.text}</span>
                         </li>
                       ))}
                     </ul>
