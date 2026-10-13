@@ -14,6 +14,7 @@ export const useFirebaseTVShows = () => {
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows.json`
     );
+    if (!response.ok) throw new Error("Impossible de charger les séries");
     const data = (await response.json()) as Record<string, TVShow>;
     return data
       ? Object.entries(data).map(([key, tvShow]) => ({

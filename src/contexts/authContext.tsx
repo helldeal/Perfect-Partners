@@ -45,6 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         photoURL: user.photoURL,
         provider: user.providerData[0]?.providerId,
         lastLogin: Date.now(),
+      }).catch((error: unknown) => {
+        console.error("Impossible de mettre à jour le profil utilisateur", error);
       });
 
       setCurrentUser(user);

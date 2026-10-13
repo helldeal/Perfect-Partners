@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { doSignInWithGoogle } from "../firebase/auth";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/authContext";
+import { LoadingScreen } from "../components/LoadingScreen";
 
 const LoginPage = () => {
   const { userLoggedIn, userLoading } = useAuth();
@@ -32,6 +33,8 @@ const LoginPage = () => {
     popupStarted.current = true;
     void signIn();
   }, [signIn, userLoading, userLoggedIn]);
+
+  if (userLoading) return <LoadingScreen />;
 
   if (userLoggedIn) {
     return <Navigate to={redirectTo} replace />;

@@ -1,3 +1,5 @@
+import { LibrarySection } from "../components/LibrarySection";
+import { CardGridSkeleton } from "../components/Skeleton";
 import { useSearchGames } from "../api/igdb";
 import { MainLayout } from "../components/MainLayout";
 import useSearchStore from "../store/searchStore";
@@ -77,10 +79,23 @@ export const GamesPage = () => {
 
   return (
     <MainLayout navSelected="games">
-      <div className=" flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 md:p-8 lg:p-12">
-        {searchTerm.length > 0 && debouncedQuery.length > 0 ? (
-          searchGamesQuery.isLoading ? (
-            <p>Chargement...</p>
+      <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-10 p-4 sm:gap-12 sm:p-6 md:p-8 lg:p-12">
+        <header className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-app-primary">Votre bibliothèque partagée</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{searchTerm ? "Recherche" : "Jeux vidéo"}</h1>
+          <p className="text-sm text-app-muted sm:text-base">{searchTerm ? `Résultats pour « ${searchTerm} »` : "Vos prochaines aventures, vos parties en cours et vos jeux terminés."}</p>
+        </header>
+        {firebaseGamesQuery.isLoading ? (
+          <>
+            <LibrarySection title="En cours" loading />
+            <LibrarySection title="Liste à faire" loading />
+            <LibrarySection title="Jeux terminés" loading />
+          </>
+        ) : searchTerm.length > 0 ? (
+          searchTerm !== debouncedQuery || searchGamesQuery.isLoading ? (
+            <CardGridSkeleton />
+          ) : searchGamesQuery.isError ? (
+            <p role="alert">Impossible de charger les résultats. <button type="button" className="text-app-primary underline" onClick={() => void searchGamesQuery.refetch()}>Réessayer</button></p>
           ) : searchList && searchList.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
               {searchList.map((item) => (
@@ -96,44 +111,41 @@ export const GamesPage = () => {
             </div>
           ) : (
             <p>
-              Pas de résultats (IGDP clc faut certainement être plus précis)
+              Aucun jeu trouvé. Essayez un titre plus précis.
             </p>
           )
+        ) : (firebaseGamesQuery.isError) ? (
+          <p role="alert">Impossible de charger la bibliothèque. <button type="button" className="text-app-primary underline" onClick={() => { void firebaseGamesQuery.refetch(); }}>Réessayer</button></p>
+        ) : (firebaseGamesQuery.data ?? []).length === 0 ? (
+          <p className="text-app-muted">Votre bibliothèque est vide. Recherchez un jeu pour commencer.</p>
         ) : (
           <>
-            {gameList.playing && gameList.playing.length > 0 && (
-              <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">En cours</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
+            {gameList.playing.length > 0 && (
+              <LibrarySection title="En cours" count={gameList.playing.length}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 lg:gap-12 xl:grid-cols-6 items-stretch">
                   {gameList.playing.map((game) => (
                     <GameItem key={game.id} game={game} inWishlist={true} />
                   ))}
                 </div>
-              </>
+              </LibrarySection>
             )}
-            {gameList.wishlist && gameList.wishlist.length > 0 && (
-              <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">
-                  Liste à faire
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
+            {gameList.wishlist.length > 0 && (
+              <LibrarySection title="Liste à faire" count={gameList.wishlist.length}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 lg:gap-12 xl:grid-cols-6 items-stretch">
                   {gameList.wishlist.map((game) => (
                     <GameItem key={game.id} game={game} inWishlist={true} />
                   ))}
                 </div>
-              </>
+              </LibrarySection>
             )}
-            {gameList.done && gameList.done.length > 0 && (
-              <>
-                <h2 className="text-lg sm:text-xl md:text-2xl">
-                  Jeux terminés
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-12 items-stretch">
+            {gameList.done.length > 0 && (
+              <LibrarySection title="Jeux terminés" count={gameList.done.length}>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 lg:gap-12 xl:grid-cols-6 items-stretch">
                   {gameList.done.map((game) => (
                     <GameItem key={game.id} game={game} inWishlist={true} />
                   ))}
                 </div>
-              </>
+              </LibrarySection>
             )}
           </>
         )}

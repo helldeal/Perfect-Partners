@@ -1,3 +1,4 @@
+import { RelatedSkeleton } from "../Skeleton";
 import { useEffect, useRef, useState } from "react";
 import {
   AddButtonIcon,
@@ -379,6 +380,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             </div>
           </div>
         </div>
+        {collectionGamesQuery.isLoading && <RelatedSkeleton title="S?rie" />}
         {collectionGamesQuery.data && collectionGamesQuery.data.length > 0 && (
           <div className="mt-6 relative p-4 sm:p-5">
             <h2 className="text-xl sm:text-2xl mb-4">Série</h2>
@@ -420,6 +422,7 @@ export const GameItemModalContent = ({ item }: { item: GameItemModal }) => {
             })()}
           </div>
         )}
+        {similarGamesQuery.isLoading && <RelatedSkeleton title="Jeux similaires" />}
         {similarGamesQuery.data && similarGamesQuery.data.length > 0 && (
           <div className="mt-6">
             <h2 className="text-xl sm:text-2xl mb-4">Jeux similaires</h2>

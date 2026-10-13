@@ -15,6 +15,7 @@ export const useFirebaseMovies = () => {
     const response = await fetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies.json`
     );
+    if (!response.ok) throw new Error("Impossible de charger les films");
     const data = (await response.json()) as Record<string, Movie>;
     return data
       ? Object.entries(data).map(([key, movie]) => ({
