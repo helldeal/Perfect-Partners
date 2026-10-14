@@ -41,6 +41,8 @@ jobs:
           VITE_TMDB_URL: ${{ secrets.VITE_TMDB_URL }}
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_DB_URL: ${{ secrets.VITE_FIREBASE_DB_URL }}
+          VITE_FIREBASE_VAPID_KEY: ${{ secrets.VITE_FIREBASE_VAPID_KEY }}
+          VITE_PUSH_WORKER_URL: ${{ secrets.VITE_PUSH_WORKER_URL }}
 
       - name: Add GitHub Pages SPA fallback
         run: cp dist/index.html dist/404.html

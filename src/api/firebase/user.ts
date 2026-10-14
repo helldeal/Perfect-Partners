@@ -1,9 +1,10 @@
+import { firebaseFetch } from "./rest";
 import { useQueries } from "@tanstack/react-query";
 import { User } from "firebase/auth";
 
 export const useFirebaseUsers = (ids: string[]) => {
   const fetchUserById = async (id: string): Promise<User> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/users/${id}.json`
     );
     if (!response.ok) {

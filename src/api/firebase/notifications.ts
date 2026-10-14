@@ -2,6 +2,7 @@ import { User } from "firebase/auth";
 import { get, push, ref, update } from "firebase/database";
 import { db } from "../../firebase/firebase";
 import { NotificationEvent } from "../models/notifications";
+import { PushTarget, sendActivityPush } from "../push";
 
 export const notifyOtherUsers = async (
   actor: User | null,
@@ -15,10 +16,12 @@ export const notifyOtherUsers = async (
       (userId) => userId !== actor.uid
     );
     const updates: Record<string, unknown> = {};
+    const pushTargets: PushTarget[] = [];
 
     userIds.forEach((userId) => {
       const notificationRef = push(ref(db, `notifications/${userId}`));
       if (!notificationRef.key) return;
+      pushTargets.push({ uid: userId, notificationId: notificationRef.key });
 
       updates[`notifications/${userId}/${notificationRef.key}`] = {
         ...event,
@@ -32,6 +35,7 @@ export const notifyOtherUsers = async (
 
     if (Object.keys(updates).length > 0) {
       await update(ref(db), updates);
+      await sendActivityPush(pushTargets);
     }
   } catch (error) {
     // Une notification ne doit jamais faire échouer l'action principale.
@@ -46,8 +50,10 @@ export const notifyAllUsersFromSystem = async (
   try {
     const usersSnapshot = await get(ref(db, "users"));
     const updates: Record<string, unknown> = {};
+    const pushTargets: PushTarget[] = [];
 
     Object.keys(usersSnapshot.val() ?? {}).forEach((userId) => {
+      pushTargets.push({ uid: userId, notificationId: `system-${eventId}` });
       updates[`notifications/${userId}/system-${eventId}`] = {
         ...event,
         actorId: "system",
@@ -60,6 +66,7 @@ export const notifyAllUsersFromSystem = async (
 
     if (Object.keys(updates).length > 0) {
       await update(ref(db), updates);
+      await sendActivityPush(pushTargets);
     }
   } catch (error) {
     console.error("Impossible d'envoyer la notification système", error);

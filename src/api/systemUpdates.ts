@@ -1,3 +1,4 @@
+import { firebaseFetch } from "./firebase/rest";
 import { notifyAllUsersFromSystem } from "./firebase/notifications";
 import { fetchIGDBGame } from "./igdb";
 import { Game } from "./models/games";
@@ -17,7 +18,7 @@ const patchStoredItem = async (
   id: number,
   data: object
 ) => {
-  const response = await fetch(`${databaseUrl}/${collection}/${id}.json`, {
+  const response = await firebaseFetch(`${databaseUrl}/${collection}/${id}.json`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

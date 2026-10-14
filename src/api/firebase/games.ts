@@ -1,3 +1,4 @@
+import { firebaseFetch } from "./rest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Game } from "../models/games";
 import { ref, onValue } from "firebase/database";
@@ -11,7 +12,7 @@ export const useFirebaseGames = () => {
   const queryClient = useQueryClient();
 
   const fetchStoredGames = async (): Promise<Game[]> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games.json`
     );
     if (!response.ok) throw new Error("Impossible de charger les jeux");
@@ -65,7 +66,7 @@ export const useAddGame = () => {
       userUpdatedAt: now,
       updatedAt: now,
     };
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${game.id}.json`,
       {
         method: "PUT",
@@ -100,7 +101,7 @@ export const useDeleteGame = () => {
     const game = queryClient
       .getQueryData<Game[]>(["firebaseGames"])
       ?.find((item) => item.id.toString() === firebaseId);
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${firebaseId}.json`,
       {
         method: "DELETE",
@@ -141,7 +142,7 @@ export const useUpdateGame = () => {
     updatedData: Partial<Game>;
     notification?: NotificationEvent;
   }): Promise<void> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/games/${firebaseId}.json`,
       {
         method: "PATCH",

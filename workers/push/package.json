@@ -1,0 +1,13 @@
+{
+  "name": "perfect-partners-push-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run",
+    "test": "node --test"
+  },
+  "dependencies": { "jose": "^6.2.12" },
+  "devDependencies": { "wrangler": "^4.151.0" }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Perfect Partners",
+  "short_name": "Perfect Partners",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "icons": [{ "src": "push-icon.png", "type": "image/png" }]
+}

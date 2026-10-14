@@ -1,3 +1,4 @@
+import { firebaseFetch } from "./rest";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { ref, onValue } from "firebase/database";
 import { useEffect } from "react";
@@ -12,7 +13,7 @@ export const useFirebaseMovies = () => {
   const queryClient = useQueryClient();
 
   const fetchStoredMovies = async (): Promise<Movie[]> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies.json`
     );
     if (!response.ok) throw new Error("Impossible de charger les films");
@@ -92,7 +93,7 @@ export const useAddMovie = () => {
     // filtrer pour ne garder QUE les champs voulus
     const cleanMovie = filterMovieFields(enrichedMovie);
 
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${cleanMovie.id}.json`,
       {
         method: "PUT",
@@ -131,7 +132,7 @@ export const useUpdateMovie = () => {
     movieId: string;
     updatedData: Partial<Movie>;
   }): Promise<void> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${movieId}.json`,
       {
         method: "PATCH",
@@ -164,7 +165,7 @@ export const useDeleteMovie = () => {
     const movie = queryClient
       .getQueryData<Movie[]>(["firebaseMovies"])
       ?.find((item) => item.id.toString() === movieId);
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/movies/${movieId}.json`,
       {
         method: "DELETE",
