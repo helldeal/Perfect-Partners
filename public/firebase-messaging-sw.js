@@ -8,8 +8,18 @@ self.addEventListener("notificationclick", (event) => {
   if (target.origin !== self.location.origin || !target.href.startsWith(self.registration.scope)) return;
   event.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (windows) => {
     const existing = windows.find((client) => client.url.startsWith(self.registration.scope));
-    if (existing) { await existing.navigate(target.href); return existing.focus(); }
-    return clients.openWindow(target.href);
+    if (existing) {
+      try {
+        // Donner le focus avant une navigation qui pourrait invalider le client.
+        await existing.focus();
+        if (existing.url !== target.href) await existing.navigate(target.href);
+        return;
+      } catch {
+        // Réessayer avec une fenêtre ouverte directement depuis le clic.
+      }
+    }
+    const opened = await clients.openWindow(target.href);
+    if (opened) await opened.focus().catch(() => {});
   }));
 });
 

@@ -7,7 +7,7 @@ FIREBASE_PROJECT_ID = "perfect-partners-930b2"
 # À remplacer par l'URL exacte de la Realtime Database (sans / final).
 FIREBASE_DATABASE_URL = "https://perfect-partners-930b2-default-rtdb.europe-west1.firebasedatabase.app"
 # Origine du site uniquement, sans /Perfect-Partners/ ni / final.
-ALLOWED_ORIGIN = "https://helldeal.github.io"
+ALLOWED_ORIGINS = "https://helldeal.github.io,http://localhost:5173,http://127.0.0.1:5173"
 
 # FIREBASE_SERVICE_ACCOUNT : secret contenant le JSON du compte de service.
 # À ajouter avec : npx wrangler secret put FIREBASE_SERVICE_ACCOUNT

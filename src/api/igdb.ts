@@ -1,9 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Game } from "./models/games";
 
+const igdbWorkerUrl = import.meta.env.VITE_IGDB_WORKER_URL?.replace(/\/+$/, "");
+
+const getIGDBEndpoint = (path: string) => {
+  if (!igdbWorkerUrl) throw new Error("L'adresse du service de jeux n'est pas configurée.");
+  return `${igdbWorkerUrl}/${path}`;
+};
+
 async function fetchIGDBGames(query: string): Promise<Game[]> {
   const res = await fetch(
-    `https://perfect-partners.mrhelldeal.workers.dev/search?q=${encodeURIComponent(
+    `${getIGDBEndpoint("search")}?q=${encodeURIComponent(
       query
     )}`
   );
@@ -18,7 +25,7 @@ export async function fetchIGDBGame(id: number, name: string) {
 }
 async function fetchIGDBSimilarGames(gameIds: number[]): Promise<Game[]> {
   const res = await fetch(
-    `https://perfect-partners.mrhelldeal.workers.dev/similar?ids=${encodeURIComponent(
+    `${getIGDBEndpoint("similar")}?ids=${encodeURIComponent(
       gameIds.join(",")
     )}`
   );
@@ -27,7 +34,7 @@ async function fetchIGDBSimilarGames(gameIds: number[]): Promise<Game[]> {
 }
 async function fetchIGDBCollection(id: number): Promise<Game[]> {
   const res = await fetch(
-    `https://perfect-partners.mrhelldeal.workers.dev/collection?id=${encodeURIComponent(
+    `${getIGDBEndpoint("collection")}?id=${encodeURIComponent(
       id
     )}`
   );

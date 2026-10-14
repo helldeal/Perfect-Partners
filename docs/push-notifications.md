@@ -76,9 +76,9 @@ Ouvrir `workers/push/wrangler.toml` et vérifier les valeurs préparées :
 | --- | --- |
 | `FIREBASE_PROJECT_ID` | `perfect-partners-930b2` |
 | `FIREBASE_DATABASE_URL` | URL exacte de la Realtime Database, sans slash final |
-| `ALLOWED_ORIGIN` | Origine du site, par exemple `https://votre-compte.github.io`, sans `/Perfect-Partners/` |
+| `ALLOWED_ORIGINS` | Origines autorisées séparées par des virgules, sans chemin ni slash final : site publié et adresses locales de Vite |
 
-Pour les essais locaux, utiliser une configuration distincte avec `ALLOWED_ORIGIN = "http://localhost:5173"` ; ne pas ouvrir l'origine de production à tous les sites.
+La configuration autorise explicitement `https://helldeal.github.io`, `http://localhost:5173` et `http://127.0.0.1:5173`. Si Vite utilise un autre port, ajouter son origine exacte à `ALLOWED_ORIGINS`, puis redéployer le Worker. Ne pas utiliser `*`. L'authentification Firebase reste obligatoire pour les envois. Une origine refusée produit une réponse 403 sans en-tête CORS. L'ancienne variable `ALLOWED_ORIGIN` reste compatible si aucune liste n'est définie.
 
 ### C. Installer et publier
 

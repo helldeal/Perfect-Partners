@@ -5,7 +5,9 @@ const validKey = (value) => typeof value === "string" && /^[A-Za-z0-9_-]{1,128}$
 
 export const handleRequest = async (request, env, services = {}) => {
   const origin = request.headers.get("Origin");
-  if (!origin || origin !== env.ALLOWED_ORIGIN) return new Response("Origin refused", { status: 403 });
+  const allowedOrigins = (env.ALLOWED_ORIGINS ?? env.ALLOWED_ORIGIN ?? "")
+    .split(",").map((value) => value.trim()).filter(Boolean);
+  if (!origin || !allowedOrigins.includes(origin)) return new Response("Origin refused", { status: 403 });
   const headers = {
     "Access-Control-Allow-Origin": origin, Vary: "Origin", "Cache-Control": "no-store",
     "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type",

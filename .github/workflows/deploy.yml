@@ -39,6 +39,7 @@ jobs:
         env:
           VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
           VITE_TMDB_URL: ${{ secrets.VITE_TMDB_URL }}
+          VITE_IGDB_WORKER_URL: ${{ secrets.VITE_IGDB_WORKER_URL }}
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_DB_URL: ${{ secrets.VITE_FIREBASE_DB_URL }}
           VITE_FIREBASE_VAPID_KEY: ${{ secrets.VITE_FIREBASE_VAPID_KEY }}

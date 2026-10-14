@@ -207,10 +207,10 @@ export const NotificationMenu = () => {
                       <img
                         src={imageUrl}
                         alt=""
-                        className="h-16 w-11 shrink-0 rounded object-cover"
+                        className="h-16 w-11 shrink-0 self-center rounded object-cover"
                       />
                     ) : (
-                      <div className="h-16 w-11 shrink-0 rounded bg-app-surface-elevated" />
+                      <div className="h-16 w-11 shrink-0 self-center rounded bg-app-surface-elevated" />
                     )}
                     <div className="min-w-0 pr-3">
                       <div className="mb-2 flex flex-wrap gap-1.5">

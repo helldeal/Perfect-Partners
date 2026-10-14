@@ -43,6 +43,16 @@ test("refuse une origine externe et une session absente", async () => {
   assert.equal((await handleRequest(request(undefined, { Origin: "https://other.example" }), env, services)).status, 403);
   assert.equal((await handleRequest(request(undefined, { Authorization: "" }), env, services)).status, 401);
 });
+test("autorise localhost uniquement lorsqu'il figure dans la liste et renvoie le bon CORS", async () => {
+  const localEnv = { ...env, ALLOWED_ORIGINS: "https://example.com, http://localhost:5173" };
+  const { services } = setup();
+  const preflight = new Request("https://worker.example/send", { method: "OPTIONS", headers: { Origin: "http://localhost:5173" } });
+  const response = await handleRequest(preflight, localEnv, services);
+  assert.equal(response.status, 204);
+  assert.equal(response.headers.get("Access-Control-Allow-Origin"), "http://localhost:5173");
+  assert.equal((await handleRequest(request(undefined, { Origin: "http://localhost:5173" }), localEnv, services)).status, 200);
+  assert.equal((await handleRequest(request(undefined, { Origin: "http://localhost:5174" }), localEnv, services)).status, 403);
+});
 test("refuse un jeton invalide", async () => {
   const { services } = setup();
   services.verifyUser = async () => { throw new HttpError(401, "Invalid token"); };

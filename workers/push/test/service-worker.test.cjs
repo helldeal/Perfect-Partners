@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { readFileSync } = require("node:fs");
 const vm = require("node:vm");
 
-function worker() {
+function worker(windows = []) {
   const events = {};
   const shown = [];
   const opened = [];
@@ -18,7 +18,7 @@ function worker() {
       registration: { scope, showNotification: async (title, options) => shown.push({ title, ...options }) },
       addEventListener: (name, handler) => { events[name] = handler; },
     },
-    clients: { matchAll: async () => [], openWindow: async (url) => opened.push(url) },
+    clients: { matchAll: async () => windows, openWindow: async (url) => { opened.push(url); return null; } },
   };
   vm.runInNewContext(readFileSync(require.resolve("../../../public/firebase-messaging-sw.js"), "utf8"), context);
   return { events, shown, opened, receive };
@@ -40,4 +40,20 @@ test("un clic ouvre la rubrique et refuse une URL externe", async () => {
   assert.equal(sw.opened[0], "https://example.com/Perfect-Partners/movies");
   click("https://other.example/");
   assert.equal(sw.opened.length, 1);
+});
+test("remet l'onglet au premier plan avant de naviguer", async () => {
+  const calls = [];
+  const sw = worker([{ url: "https://example.com/Perfect-Partners/movies", focus: async () => calls.push("focus"), navigate: async () => calls.push("navigate") }]);
+  let completion;
+  sw.events.notificationclick({ stopImmediatePropagation() {}, notification: { close() {}, data: { url: "https://example.com/Perfect-Partners/games" } }, waitUntil: (promise) => { completion = promise; } });
+  await completion;
+  assert.deepEqual(calls, ["focus", "navigate"]);
+  assert.equal(sw.opened.length, 0);
+});
+test("ouvre une fenêtre si le focus de l'onglet existant échoue", async () => {
+  const sw = worker([{ url: "https://example.com/Perfect-Partners/movies", focus: async () => { throw new Error("Focus refused"); } }]);
+  let completion;
+  sw.events.notificationclick({ stopImmediatePropagation() {}, notification: { close() {}, data: { url: "https://example.com/Perfect-Partners/games" } }, waitUntil: (promise) => { completion = promise; } });
+  await completion;
+  assert.equal(sw.opened[0], "https://example.com/Perfect-Partners/games");
 });
