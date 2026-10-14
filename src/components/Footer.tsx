@@ -42,7 +42,7 @@ export const Footer = () => {
 
   return (
     <>
-      <footer className="mt-auto border-t border-app-border px-4 py-5 text-center text-sm text-app-muted sm:px-8">
+      <footer className="mt-auto flex flex-wrap items-center justify-center gap-3 border-t border-app-border px-4 py-5 text-center text-sm text-app-muted sm:px-8">
         <button
           type="button"
           onClick={openHistory}
@@ -50,6 +50,15 @@ export const Footer = () => {
         >
           Notes de version
         </button>
+        <a
+          href="https://helldeal.betteruptime.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full border border-app-border bg-app-surface px-4 py-2 transition-colors hover:border-app-primary/50 hover:bg-app-primary-soft hover:text-app-primary"
+        >
+          Statut des services
+          <span className="sr-only"> (nouvel onglet)</span>
+        </a>
       </footer>
 
       <PatchNotesModal
