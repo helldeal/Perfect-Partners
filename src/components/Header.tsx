@@ -1,6 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logoImg from "../assets/logo.png";
-import { useState, useEffect } from "react";
 import useSearchStore from "../store/searchStore";
 import { ProfileMenu } from "./ProfileMenu";
 import { NotificationMenu } from "./NotificationMenu";
@@ -14,159 +13,60 @@ const navMenu = [
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
-  const navigate = useNavigate();
   const { unreadNotifications } = useNotifications();
-
   const searchTerm = useSearchStore((state) => state.query);
   const setSearchTerm = useSearchStore((state) => state.setQuery);
+  const placeholder = navSelected === "movies"
+    ? "Rechercher un film ou une série…"
+    : navSelected === "games" ? "Rechercher un jeu…" : "Rechercher…";
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-      setIsMobileMenuOpen(false);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  const handleNavClick = (path: string) => {
-    setSearchTerm("");
-    navigate(path);
-    setIsMobileMenuOpen(false);
-  };
+  const searchField = (
+    <div className="relative">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-app-muted">
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path strokeLinecap="round" d="m16 16 4.5 4.5" />
+      </svg>
+      <input
+        type="search"
+        aria-label={placeholder}
+        placeholder={placeholder}
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+        onKeyDown={(event) => { if (event.key === "Escape") setSearchTerm(""); }}
+        className="w-full rounded-full border border-app-border bg-app-surface/70 py-2.5 pl-10 pr-10 text-sm text-app-text outline-none transition-colors placeholder:text-app-muted focus:border-app-primary focus:ring-2 focus:ring-app-primary/15 [&::-webkit-search-cancel-button]:appearance-none"
+      />
+      {searchTerm && <button type="button" aria-label="Effacer la recherche" onClick={() => setSearchTerm("")} className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-app-muted hover:bg-app-surface-elevated hover:text-app-text focus-visible:outline-2 focus-visible:outline-app-primary">✕</button>}
+    </div>
+  );
 
   return (
-    <header
-      className={`flex justify-between items-center p-3 gap-2 sm:gap-3 h-16 sticky top-0 z-10 ${
-        isScrolled ? "bg-app-bg/95 backdrop-blur-md" : "bg-transparent"
-      } transition-colors duration-300 px-4 sm:px-6 md:px-12 lg:px-18`}
-    >
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-        <div
-          className="flex items-center gap-1 sm:gap-2 cursor-pointer mr-2 sm:mr-4 md:mr-8 text-center scale-100 sm:scale-105 md:scale-110 shrink-0"
-          onClick={() => {
-            setSearchTerm("");
-            navigate("/");
-          }}
-        >
-          <img
-            src={logoImg}
-            alt="Perfect Partners Logo"
-            className="w-6 h-6 sm:w-8 sm:h-8"
-          />
-          <h1 className="text-base sm:text-lg leading-none hidden sm:block">
-            Perfect Partners
-          </h1>
-        </div>
-
-        <nav className=" cursor-pointer space-x-2 sm:space-x-3 text-xs sm:text-sm hidden md:flex">
+    <header className="sticky top-0 z-40 border-b border-app-border/60 bg-app-bg/95 text-app-text backdrop-blur-xl">
+      <div className="mx-auto flex min-h-18 max-w-[1800px] flex-wrap items-center gap-x-5 px-4 sm:px-6 md:px-8 lg:gap-x-10 lg:px-12">
+        <Link to="/" onClick={() => setSearchTerm("")} aria-label="Perfect Partners — Accueil" className="flex shrink-0 items-center gap-3 rounded-lg py-3 outline-none focus-visible:ring-2 focus-visible:ring-app-primary">
+          <img src={logoImg} alt="" className="h-10 w-10 object-contain sm:h-11 sm:w-11" />
+          <span className="text-sm font-extrabold uppercase leading-tight tracking-wide sm:text-base lg:text-lg">Perfect <span className="block text-app-primary sm:inline">Partners</span></span>
+        </Link>
+        <nav aria-label="Navigation principale" className="order-3 flex w-full items-stretch gap-7 md:order-none md:w-auto md:self-stretch lg:gap-9">
           {navMenu.map((item) => (
-            <span
+            <Link
               key={item.key}
-              className={`ml-2 sm:ml-4 ${navSelected === item.key ? "font-bold" : ""}`}
-              onClick={() => {
-                setSearchTerm("");
-                navigate(item.path);
-              }}
-            >
-              <span className="relative">
-                {item.name}
-                {unreadNotifications.some(
-                  (notification) => notification.category === item.key
-                  ) && (
-                  <NotificationPing className="absolute -right-2.5 -top-1" />
-                )}
-              </span>
-            </span>
-          ))}{" "}
-        </nav>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden flex flex-col gap-1 cursor-pointer shrink-0"
-          aria-label="Basculer le menu mobile"
-        >
-          <span
-            className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
-          ></span>
-          <span
-            className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? "opacity-0" : ""}`}
-          ></span>
-          <span
-            className={`w-5 h-0.5 bg-white transition-all ${isMobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
-          ></span>
-        </button>
-      </div>
-
-      {/* Mobile Menu Dropdown */}
-      {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-app-surface border-b border-app-border md:hidden">
-          <nav className="flex flex-col p-4 gap-3">
-            {navMenu.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => handleNavClick(item.path)}
-                className={`text-left px-4 py-2 rounded transition-colors ${
-                  navSelected === item.key
-                    ? "font-bold bg-gray-700"
-                    : "hover:bg-gray-800"
-                }`}
-              >
-                <span className="flex items-center justify-between">
-                  {item.name}
-                  {unreadNotifications.some(
-                    (notification) => notification.category === item.key
-                  ) && <NotificationPing />}
-                </span>
-              </button>
-            ))}
-          </nav>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        <div className="relative flex-1 sm:flex-auto max-w-md">
-          <input
-            type="text"
-            placeholder={(() => {
-              switch (navSelected) {
-                case "movies":
-                  return "Rechercher des films, séries...";
-                case "games":
-                  return "Rechercher des jeux...";
-                case "legos":
-                  return "Rechercher des legos...";
-                default:
-                  return "Rechercher...";
-              }
-            })()}
-            className="p-2 pr-8 w-full box-border text-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") setSearchTerm("");
-            }}
-          />
-
-          {searchTerm.length > 0 && (
-            <span
+              to={item.path}
               onClick={() => setSearchTerm("")}
-              className="absolute right-2 top-2 cursor-pointer text-gray-600 select-none"
+              aria-current={navSelected === item.key ? "page" : undefined}
+              className={`relative flex min-h-12 items-center gap-2 border-b-2 px-1 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-primary md:min-h-18 lg:text-base ${navSelected === item.key ? "border-app-primary text-app-text" : "border-transparent text-app-muted hover:border-app-primary/40 hover:text-app-text"}`}
             >
-              ✕
-            </span>
-          )}
+              {item.name}
+              {unreadNotifications.some((notification) => notification.category === item.key) && <NotificationPing />}
+            </Link>
+          ))}
+        </nav>
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <div className="hidden w-72 xl:block">{searchField}</div>
+          <div className="rounded-full border border-app-border bg-app-surface/60"><NotificationMenu /></div>
+          <ProfileMenu />
         </div>
-        <NotificationMenu />
-        <ProfileMenu />
       </div>
+      <div className="mx-auto max-w-[1800px] px-4 pb-3 sm:px-6 md:px-8 lg:px-12 xl:hidden">{searchField}</div>
     </header>
   );
 };
