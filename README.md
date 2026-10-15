@@ -34,7 +34,27 @@ VITE_TMDB_API_KEY=
 VITE_TMDB_URL=https://api.themoviedb.org/3
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_DB_URL=
+VITE_SPOTIFY_CLIENT_ID=
+VITE_SPOTIFY_BLEND_PLAYLIST_ID=
 ```
+
+Pour Songless, créer une application dans le Spotify Developer Dashboard,
+ajouter les deux comptes Premium aux utilisateurs autorisés et enregistrer les
+URI de redirection exactes :
+
+```text
+http://127.0.0.1:5173/Perfect-Partners/songless
+https://<compte>.github.io/Perfect-Partners/songless
+```
+
+Ajouter également `VITE_SPOTIFY_CLIENT_ID` et, si souhaité,
+`VITE_SPOTIFY_BLEND_PLAYLIST_ID` aux secrets GitHub Actions. L'identifiant du
+Blend est la partie située après `/playlist/` dans son URL Spotify.
+
+La source automatique « Pour moi » utilise les tops d'écoute à court, moyen et
+long terme, les écoutes récentes et jusqu'à 100 titres likés. Elle ne dépend pas
+des playlists algorithmiques « Made for You », que Spotify ne rend plus
+accessibles aux nouvelles applications Web API.
 
 Lancer ensuite le serveur de développement :
 

@@ -10,12 +10,14 @@ const navMenu = [
   { name: "Cinéma", path: "/movies", key: "movies" },
   { name: "Jeux", path: "/games", key: "games" },
   { name: "Lego", path: "/legos", key: "legos" },
+  { name: "Songless", path: "/songless", key: "songless" },
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {
   const { unreadNotifications } = useNotifications();
   const searchTerm = useSearchStore((state) => state.query);
   const setSearchTerm = useSearchStore((state) => state.setQuery);
+  const supportsSearch = navSelected === "movies" || navSelected === "games";
   const placeholder = navSelected === "movies"
     ? "Rechercher un film ou une série…"
     : navSelected === "games" ? "Rechercher un jeu…" : "Rechercher…";
@@ -61,12 +63,12 @@ export const Header = ({ navSelected }: { navSelected: string }) => {
           ))}
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-3">
-          <div className="hidden w-72 xl:block">{searchField}</div>
+          {supportsSearch && <div className="hidden w-72 xl:block">{searchField}</div>}
           <div className="rounded-full border border-app-border bg-app-surface/60"><NotificationMenu /></div>
           <ProfileMenu />
         </div>
       </div>
-      <div className="mx-auto max-w-[1800px] px-4 pb-3 sm:px-6 md:px-8 lg:px-12 xl:hidden">{searchField}</div>
+      {supportsSearch && <div className="mx-auto max-w-[1800px] px-4 pb-3 sm:px-6 md:px-8 lg:px-12 xl:hidden">{searchField}</div>}
     </header>
   );
 };
