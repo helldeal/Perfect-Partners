@@ -16,10 +16,12 @@ export const TVShowWatchItem = ({
   tvShow,
   inWishlist = true,
   onAdd,
+  showStatusBadge = false,
 }: {
   tvShow: TVShow;
   inWishlist?: boolean;
   onAdd?: () => void;
+  showStatusBadge?: boolean;
 }) => {
   const deleteTVShowMutation = useDeleteTVShow();
   const updateTVShowMutation = useUpdateTVShow();
@@ -122,6 +124,7 @@ export const TVShowWatchItem = ({
       payload={modalContent}
       onAdd={onAdd}
       inList={inWishlist}
+      showStatusBadge={showStatusBadge}
       specialTag={hasRecentSeason ? "Nouvelle saison" : undefined}
     />
   );

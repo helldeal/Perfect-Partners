@@ -18,11 +18,13 @@ export const MovieWatchItem = ({
   inWishlist = true,
   onAdd,
   itemSelected = false,
+  showStatusBadge = false,
 }: {
   movie: Movie;
   inWishlist?: boolean;
   onAdd?: () => void;
   itemSelected?: boolean;
+  showStatusBadge?: boolean;
 }) => {
   const deleteMovieMutation = useDeleteMovie();
   const updateMovieMutation = useUpdateMovie();
@@ -77,6 +79,7 @@ export const MovieWatchItem = ({
       onAdd={onAdd}
       inList={inWishlist}
       itemSelected={itemSelected}
+      showStatusBadge={showStatusBadge}
     />
   );
 };
