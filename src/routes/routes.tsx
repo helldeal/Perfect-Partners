@@ -9,6 +9,7 @@ import LoginPage from "../pages/Login";
 import { MoviesPage } from "../pages/Movies";
 import { GamesPage } from "../pages/Games";
 import { LegosPage } from "../pages/Legos";
+import { SonglessPage } from "../pages/Songless";
 import { useAuth } from "../contexts/authContext";
 import { LoadingScreen } from "../components/LoadingScreen";
 
@@ -40,6 +41,8 @@ const AppRoutes = () => {
         <Route path="/movies" Component={MoviesPage} />
         <Route path="/games" Component={GamesPage} />
         <Route path="/legos" Component={LegosPage} />
+        <Route path="/songless" Component={SonglessPage} />
+        <Route path="/blindtest" Component={SonglessPage} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -26,3 +26,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+functions/.env*
+!functions/.env.example
+.firebase/
+workers/**/.dev.vars*
+workers/**/.env*
+workers/**/.wrangler/

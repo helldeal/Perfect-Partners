@@ -1,3 +1,4 @@
+import { firebaseFetch } from "./rest";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { ref, onValue } from "firebase/database";
 import { useEffect } from "react";
@@ -11,7 +12,7 @@ import { notifyOtherUsers } from "./notifications";
 export const useFirebaseTVShows = () => {
   const queryClient = useQueryClient();
   const fetchStoredTVShows = async (): Promise<TVShow[]> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows.json`
     );
     if (!response.ok) throw new Error("Impossible de charger les séries");
@@ -99,7 +100,7 @@ export const useAddTVShow = () => {
     };
     // filtrer pour ne garder QUE les champs voulus
     const cleanTVShow = filterTVShowFields(enrichedTVShow);
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${cleanTVShow.id}.json`,
       {
         method: "PUT",
@@ -137,7 +138,7 @@ export const useUpdateTVShow = () => {
     tvShowId: string;
     updatedData: Partial<TVShow>;
   }): Promise<void> => {
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${tvShowId}.json`,
       {
         method: "PATCH",
@@ -170,7 +171,7 @@ export const useDeleteTVShow = () => {
     const tvShow = queryClient
       .getQueryData<TVShow[]>(["firebaseTVShows"])
       ?.find((item) => item.id.toString() === tvShowId);
-    const response = await fetch(
+    const response = await firebaseFetch(
       `${import.meta.env.VITE_FIREBASE_DB_URL}/tvshows/${tvShowId}.json`,
       {
         method: "DELETE",

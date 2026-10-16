@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNotification } from "../api/models/notifications";
 import { useNotifications } from "../contexts/notificationsContext";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 const getNotificationText = (notification: AppNotification) => {
   switch (notification.action) {
@@ -70,6 +71,7 @@ const getImageUrl = (notification: AppNotification) => {
 };
 
 export const NotificationMenu = () => {
+  const pushSettings = usePushNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadNotifications, markAsRead, markAllAsRead } =
@@ -107,6 +109,8 @@ export const NotificationMenu = () => {
             d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
           />
         </svg>
+
+
         {unreadNotifications.length > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-app-primary px-1 text-[10px] font-bold text-white ring-2 ring-app-bg">
             {unreadNotifications.length > 99
@@ -144,6 +148,24 @@ export const NotificationMenu = () => {
             ✕
           </button>
         </div>
+
+        <section className="mx-4 mt-4 rounded-xl border border-app-border bg-app-surface/60 p-3">
+          <h3 className="text-sm font-semibold">Notifications sur cet appareil</h3>
+          <p className="mt-1 text-xs leading-5 text-app-muted">
+            {pushSettings.supported === null ? "Vérification de votre navigateur…"
+              : !pushSettings.supported ? "Ce navigateur ne prend pas en charge les notifications. Sur iPhone ou iPad, ouvrez l’application depuis l’écran d’accueil."
+              : !pushSettings.configured ? "Les notifications push seront bientôt disponibles."
+              : pushSettings.permission === "denied" ? "Notifications bloquées. Autorisez-les dans les paramètres du navigateur."
+              : pushSettings.enabled ? "Vous recevez les nouvelles activités même lorsque cette page est fermée."
+              : "Recevez les nouvelles activités même lorsque cette page est fermée. Votre autorisation sera demandée."}
+          </p>
+          {pushSettings.supported && pushSettings.permission !== "denied" && (
+            <button type="button" disabled={pushSettings.busy || !pushSettings.configured} onClick={() => void pushSettings.toggle()} className="mt-3 cursor-pointer rounded-full bg-app-primary-soft px-3 py-2 text-xs font-medium text-app-primary disabled:cursor-not-allowed disabled:opacity-60">
+              {pushSettings.busy ? "En cours…" : pushSettings.enabled ? "Désactiver sur cet appareil" : "Activer sur cet appareil"}
+            </button>
+          )}
+          {pushSettings.error && <p role="alert" className="mt-2 text-xs text-app-danger">{pushSettings.error}</p>}
+        </section>
 
         {unreadNotifications.length > 0 && (
           <button
@@ -185,10 +207,10 @@ export const NotificationMenu = () => {
                       <img
                         src={imageUrl}
                         alt=""
-                        className="h-16 w-11 shrink-0 rounded object-cover"
+                        className="h-16 w-11 shrink-0 self-center rounded object-cover"
                       />
                     ) : (
-                      <div className="h-16 w-11 shrink-0 rounded bg-app-surface-elevated" />
+                      <div className="h-16 w-11 shrink-0 self-center rounded bg-app-surface-elevated" />
                     )}
                     <div className="min-w-0 pr-3">
                       <div className="mb-2 flex flex-wrap gap-1.5">

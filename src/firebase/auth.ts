@@ -1,4 +1,5 @@
 import { auth } from "./firebase";
+import { unregisterPush } from "../api/firebase/push";
 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
@@ -14,6 +15,7 @@ export const doSignInWithGoogle = async () => {
 
 export const doSignOut = async () => {
   try {
+    await unregisterPush();
     await auth.signOut();
     window.location.reload();
   } catch (error) {

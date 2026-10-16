@@ -39,7 +39,7 @@ export const ProfileMenu = () => {
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         className={`cursor-pointer rounded-full p-0.5 ring-2 transition-all duration-200 hover:ring-white/30 ${
-          isOpen ? "bg-app-primary-soft ring-app-primary" : "ring-transparent"
+          isOpen ? "bg-app-primary-soft ring-app-primary" : "bg-app-surface ring-app-primary/40"
         }`}
         aria-label={`${isOpen ? "Fermer" : "Ouvrir"} le menu du profil`}
         aria-expanded={isOpen}
