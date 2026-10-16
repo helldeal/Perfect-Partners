@@ -246,9 +246,12 @@ export const SonglessPage = () => {
             <p className="mt-2 max-w-2xl text-app-muted">Retrouvez vos titres en Blindtest ou en Songless.</p>
           </div>
           {spotifyAuth.connected && (
+            <div className="flex flex-wrap items-center gap-4">
             <button type="button" onClick={() => { void player.pause(); setShowSources((value) => !value); }} className="cursor-pointer rounded-full border border-app-border bg-app-surface px-5 py-2.5 text-sm font-semibold transition hover:border-[#1ed760]/60 hover:text-[#1ed760]">
               {tracks.length > 0 ? (showSources ? "Revenir à la partie" : "Configurer une partie") : "Choisir les playlists"}
             </button>
+              <button type="button" onClick={spotifyAuth.disconnect} className="cursor-pointer text-sm text-app-muted underline-offset-4 hover:text-app-text hover:underline">Déconnecter Spotify</button>
+            </div>
           )}
         </header>
 
@@ -306,7 +309,6 @@ export const SonglessPage = () => {
                 <h2 className="text-2xl font-bold">Sources musicales</h2>
                 <p className="mt-1 text-sm text-app-muted">Mélangez une ou plusieurs playlists. Les doublons seront retirés.</p>
               </div>
-              <button type="button" onClick={() => { spotifyAuth.disconnect(); }} className="cursor-pointer text-sm text-app-muted underline-offset-4 hover:text-app-text hover:underline">Déconnecter Spotify</button>
             </div>
 
             {loadingPlaylists ? (
@@ -350,12 +352,21 @@ export const SonglessPage = () => {
         ) : currentTrack ? (
           <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center">
             <div className="overflow-hidden rounded-3xl border border-app-border bg-app-surface shadow-2xl">
-              <div className="relative flex min-h-64 items-center justify-center overflow-hidden bg-gradient-to-br from-[#1ed760]/20 via-app-surface-elevated to-app-accent-soft p-8 sm:min-h-72">
+              <div className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#1ed760]/20 via-app-surface-elevated to-app-accent-soft ${revealed ? "px-6 pb-8 pt-7 sm:px-12 sm:pb-10 sm:pt-9" : "min-h-64 p-8 sm:min-h-72"}`}>
                 {revealed && currentTrack.album.images[0]?.url ? (
-                  <img src={currentTrack.album.images[0].url} alt={`Pochette de ${currentTrack.album.name}`} className="absolute inset-0 h-full w-full object-cover opacity-25 blur-2xl" />
+                  <img src={currentTrack.album.images[0].url} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-35 blur-3xl" />
                 ) : null}
                 {revealed ? (
-                  <div aria-label="Morceau en lecture" className="relative flex h-28 w-28 items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] sm:h-32 sm:w-32">♫</div>
+                  <div className="relative flex w-full flex-col items-center">
+                    <p role="status" className={`mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold ${result === "correct" ? "border-app-success/30 bg-app-success-soft text-app-success" : "border-app-warning/30 bg-app-warning-soft text-app-warning"}`}>
+                      <span aria-hidden="true">{result === "correct" ? "✓" : "♫"}</span>
+                      {result === "correct" ? "Bien joué, vous l'avez trouvé !" : "Le titre à retrouver"}
+                    </p>
+                    <div className="relative isolate aspect-square w-full max-w-80 overflow-hidden rounded-2xl border border-white/15 bg-app-surface-elevated shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:max-w-96">
+                      <div aria-hidden="true" className="absolute inset-0 -z-10 flex items-center justify-center bg-gradient-to-br from-app-accent-soft to-app-surface text-8xl text-app-muted">♫</div>
+                      {currentTrack.album.images[0]?.url && <img src={currentTrack.album.images[0].url} alt={`Pochette de ${currentTrack.album.name}`} onError={(event) => { event.currentTarget.style.display = "none"; }} className="h-full w-full object-cover" />}
+                    </div>
+                  </div>
                 ) : (
                   <button type="button" disabled={roundMode === "songless" ? !songlessReady || startingPlayback : !player.ready} onClick={play} aria-label={roundMode === "blindtest" ? (player.playing ? "Mettre en pause" : "Écouter le morceau") : "Écouter l'extrait"} className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] transition hover:scale-105 disabled:cursor-wait disabled:opacity-50 sm:h-32 sm:w-32">
                     {songlessLoading || startingPlayback ? <span aria-hidden="true" className="h-9 w-9 animate-spin rounded-full border-4 border-black/20 border-t-black motion-reduce:animate-none" /> : player.playing ? (roundMode === "blindtest" ? "Ⅱ" : "↻") : "▶"}
@@ -373,8 +384,8 @@ export const SonglessPage = () => {
                     </div>
                   ) : (songlessLoading || startingPlayback) ? <p role="status" className="mb-4 text-center text-sm text-app-muted">Chargement du morceau…</p> : null
                 )}
-                <p className="mb-4 text-sm font-semibold text-[#1ed760]">{roundMode === "blindtest" ? "Blindtest" : "Songless"}</p>
-                {roundMode === "songless" && (
+                {!revealed && <p className="mb-4 text-sm font-semibold text-[#1ed760]">{roundMode === "blindtest" ? "Blindtest" : "Songless"}</p>}
+                {roundMode === "songless" && !revealed && (
                   <div className="mb-7" aria-label="Progression des indices">
                     <div className="mb-3 flex items-center justify-between gap-3 text-xs">
                       <span className="font-semibold text-app-muted">{revealed ? "Réponse révélée" : `Indice ${stepIndex + 1} sur ${roundSteps.length}`}</span>
@@ -403,12 +414,19 @@ export const SonglessPage = () => {
                 )}
 
                 {revealed ? (
-                  <div className="text-center">
-                    {currentTrack.album.images[0]?.url && <img src={currentTrack.album.images[0].url} alt="" className="mx-auto mb-5 h-28 w-28 rounded-2xl object-cover shadow-xl" />}
-                    <p className={`text-sm font-bold uppercase tracking-wider ${result === "correct" ? "text-app-success" : "text-app-warning"}`}>{result === "correct" ? "Bien joué !" : "C'était…"}</p>
-                    <a href={currentTrack.external_urls?.spotify} target="_blank" rel="noreferrer" className="mt-2 block text-2xl font-black hover:text-[#1ed760]">{currentTrack.name}</a>
-                    <p className="mt-1 text-app-muted">{currentTrack.artists.map((artist) => artist.name).join(", ")} · {currentTrack.album.name}</p>
-                    <button type="button" onClick={nextTrack} className="mt-7 cursor-pointer rounded-full bg-[#1ed760] px-8 py-3 font-bold text-black transition hover:scale-[1.02] hover:bg-[#25e66a]">Musique suivante</button>
+                  <div className="mx-auto max-w-xl pb-2 text-center sm:pb-3">
+                    <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-app-muted">{roundMode === "blindtest" ? "Blindtest" : "Songless"} <span aria-hidden="true">·</span> Réponse</p>
+                    <h2 className="text-3xl font-black leading-tight tracking-tight break-words sm:text-4xl">{currentTrack.name}</h2>
+                    <p className="mt-3 text-lg font-medium text-app-text/80 sm:text-xl">{currentTrack.artists.map((artist) => artist.name).join(", ")}</p>
+                    <p className="mt-2 text-sm text-app-muted">{currentTrack.album.name}</p>
+                    <div className="mt-7 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-app-border pt-5 text-xs text-app-muted">
+                      <span className="inline-flex items-center gap-2"><span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${player.playing ? "bg-[#1ed760]" : "bg-app-muted"}`} />{player.playing ? "En lecture sur Spotify" : "Lecture Spotify"}</span>
+                      {roundMode === "songless" && <span>{result === "correct" ? "Trouvé en" : "Dernier indice :"} {(roundSteps[stepIndex] / 1000).toLocaleString("fr-FR")} s</span>}
+                    </div>
+                    <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+                      <button type="button" onClick={nextTrack} className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-3 rounded-full bg-[#1ed760] px-7 py-3 font-bold text-black transition hover:bg-[#25e66a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1ed760]">Musique suivante <span aria-hidden="true">→</span></button>
+                      {currentTrack.external_urls?.spotify && <a href={currentTrack.external_urls.spotify} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-app-border px-6 py-3 text-sm font-semibold text-app-muted transition hover:border-app-muted hover:text-app-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1ed760]">Ouvrir dans Spotify <span aria-hidden="true">↗</span></a>}
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={submitAnswer}>
