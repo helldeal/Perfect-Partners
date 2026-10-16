@@ -42,6 +42,7 @@ const AppRoutes = () => {
         <Route path="/games" Component={GamesPage} />
         <Route path="/legos" Component={LegosPage} />
         <Route path="/songless" Component={SonglessPage} />
+        <Route path="/blindtest" Component={SonglessPage} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

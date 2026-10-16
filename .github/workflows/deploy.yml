@@ -45,7 +45,6 @@ jobs:
           VITE_FIREBASE_VAPID_KEY: ${{ secrets.VITE_FIREBASE_VAPID_KEY }}
           VITE_PUSH_WORKER_URL: ${{ secrets.VITE_PUSH_WORKER_URL }}
           VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
-          VITE_SPOTIFY_BLEND_PLAYLIST_ID: ${{ secrets.VITE_SPOTIFY_BLEND_PLAYLIST_ID }}
 
       - name: Add GitHub Pages SPA fallback
         run: cp dist/index.html dist/404.html

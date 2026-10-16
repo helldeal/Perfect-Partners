@@ -21,6 +21,8 @@ declare global {
       pause(): Promise<void>;
       resume(): Promise<void>;
       seek(positionMs: number): Promise<void>;
+      getVolume(): Promise<number>;
+      setVolume(volume: number): Promise<void>;
       getCurrentState(): Promise<PlaybackState | null>;
       addListener(event: "ready" | "not_ready", callback: (value: Ready) => void): boolean;
       addListener(

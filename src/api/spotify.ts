@@ -6,6 +6,8 @@ const TOKEN_STORAGE_KEY = "perfect-partners.spotify-token";
 const VERIFIER_STORAGE_KEY = "perfect-partners.spotify-verifier";
 const STATE_STORAGE_KEY = "perfect-partners.spotify-state";
 const AUTH_VERSION = 2;
+let personalizedCache: { owner: string; expiresAt: number; tracks: SpotifyTrack[] } | null = null;
+let personalizedRequest: { owner: string; promise: Promise<SpotifyTrack[]> } | null = null;
 
 export type SpotifyToken = {
   accessToken: string;
@@ -111,7 +113,11 @@ export const readStoredSpotifyToken = (): SpotifyToken | null => {
   }
 };
 
-export const clearSpotifyToken = () => localStorage.removeItem(TOKEN_STORAGE_KEY);
+export const clearSpotifyToken = () => {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+  personalizedCache = null;
+  personalizedRequest = null;
+};
 
 export const completeSpotifyAuthorization = async (code: string, state: string) => {
   const clientId = getClientId();
@@ -204,14 +210,6 @@ export const fetchSpotifyPlaylists = async () => {
     next = page.next;
   }
 
-  const blendId = import.meta.env.VITE_SPOTIFY_BLEND_PLAYLIST_ID as string | undefined;
-  if (blendId && !playlists.some((playlist) => playlist.id === blendId)) {
-    try {
-      playlists.unshift(await spotifyFetch<SpotifyPlaylist>(`/playlists/${blendId}`));
-    } catch {
-      // Its access error will be explained when the user selects the source.
-    }
-  }
   return playlists;
 };
 
@@ -238,30 +236,46 @@ const validTracks = (items: Array<SpotifyTrack | null | undefined>) =>
     (track): track is SpotifyTrack => Boolean(track?.id && track.uri && !track.is_local)
   );
 
-export const fetchSpotifyPersonalizedTracks = async () => {
+const fetchPersonalizedPages = async <T>(path: string, maxPages: number, extract: (items: T[]) => SpotifyTrack[]) => {
+  const tracks: SpotifyTrack[] = [];
+  let next: string | null = path;
+  for (let pageIndex = 0; next && pageIndex < maxPages; pageIndex += 1) {
+    try {
+      const page: SpotifyPage<T> = await spotifyFetch(next);
+      tracks.push(...validTracks(extract(page.items)));
+      next = page.next;
+    } catch (reason) {
+      if (tracks.length === 0) throw reason;
+      break;
+    }
+  }
+  return tracks;
+};
+
+const loadSpotifyPersonalizedTracks = async () => {
   const topRanges = ["short_term", "medium_term", "long_term"];
   const requests = [
     ...topRanges.map((range) =>
-      spotifyFetch<SpotifyPage<SpotifyTrack>>(`/me/top/tracks?limit=50&time_range=${range}`)
-        .then((page) => validTracks(page.items))
+      () => fetchPersonalizedPages<SpotifyTrack>(`/me/top/tracks?limit=50&time_range=${range}`, 2, (items) => items)
     ),
-    spotifyFetch<SpotifyPage<TrackItem>>("/me/player/recently-played?limit=50")
-      .then((page) => validTracks(page.items.map((entry) => entry.track ?? entry.item))),
-    spotifyFetch<SpotifyPage<TrackItem>>("/me/tracks?limit=50")
-      .then(async (firstPage) => {
-        const items = [...firstPage.items];
-        if (firstPage.next) {
-          const secondPage = await spotifyFetch<SpotifyPage<TrackItem>>(firstPage.next);
-          items.push(...secondPage.items);
-        }
-        return validTracks(items.map((entry) => entry.track ?? entry.item));
-      }),
+    () => fetchPersonalizedPages<TrackItem>("/me/player/recently-played?limit=50", 1,
+      (items) => items.flatMap((entry) => entry.track ?? entry.item ?? [])),
+    () => fetchPersonalizedPages<TrackItem>("/me/tracks?limit=50", 10,
+      (items) => items.flatMap((entry) => entry.track ?? entry.item ?? [])),
   ];
 
-  const results = await Promise.allSettled(requests);
-  const successful = results
-    .filter((result): result is PromiseFulfilledResult<SpotifyTrack[]> => result.status === "fulfilled")
-    .flatMap((result) => result.value);
+  const successful: SpotifyTrack[] = [];
+  let nextRequest = 0;
+  await Promise.all(Array.from({ length: 2 }, async () => {
+    while (nextRequest < requests.length) {
+      const request = requests[nextRequest++];
+      try {
+        successful.push(...await request());
+      } catch {
+        // Other available sources can still supply the game.
+      }
+    }
+  }));
 
   if (successful.length === 0) {
     throw new Error(
@@ -269,6 +283,26 @@ export const fetchSpotifyPersonalizedTracks = async () => {
     );
   }
   return Array.from(new Map(successful.map((track) => [track.id, track])).values());
+};
+
+export const fetchSpotifyPersonalizedTracks = async () => {
+  const owner = readStoredSpotifyToken()?.refreshToken;
+  if (!owner) throw new Error("Spotify n'est pas connecté.");
+  if (personalizedCache?.owner === owner && personalizedCache.expiresAt > Date.now()) return personalizedCache.tracks;
+  if (personalizedRequest?.owner === owner) return personalizedRequest.promise;
+  const promise = loadSpotifyPersonalizedTracks().then((tracks) => {
+    if (readStoredSpotifyToken()?.refreshToken === owner) {
+      personalizedCache = { owner, tracks, expiresAt: Date.now() + 5 * 60_000 };
+    }
+    return tracks;
+  });
+  const request = { owner, promise };
+  personalizedRequest = request;
+  try {
+    return await promise;
+  } finally {
+    if (personalizedRequest === request) personalizedRequest = null;
+  }
 };
 
 export const startSpotifyTrack = (deviceId: string, uri: string, positionMs: number) =>

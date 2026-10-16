@@ -39,10 +39,16 @@ const playlistTrackCount = (playlist: SpotifyPlaylist) =>
 export const SonglessPage = () => {
   const spotifyAuth = useSpotifyAuth();
   const player = useSpotifyPlayer(spotifyAuth.connected);
+  const { prepareTrack, ready: spotifyReady } = player;
+  const preparationQueue = useRef<Promise<void>>(Promise.resolve());
+  const [preparedTrack, setPreparedTrack] = useState<{ uri: string } | null>(null);
+  const [preparationError, setPreparationError] = useState<string | null>(null);
+  const [preparationAttempt, setPreparationAttempt] = useState(0);
+  const [startingPlayback, setStartingPlayback] = useState(false);
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [selectedPlaylistIds, setSelectedPlaylistIds] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem(PLAYLISTS_STORAGE_KEY) ?? "[]") as string[];
+      return (JSON.parse(localStorage.getItem(PLAYLISTS_STORAGE_KEY) ?? "[]") as string[]).filter((id) => !id.startsWith("__genre__"));
     } catch {
       return [];
     }
@@ -59,7 +65,34 @@ export const SonglessPage = () => {
   const [loadingTracks, setLoadingTracks] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSources, setShowSources] = useState(false);
+  const [mode, setMode] = useState<"blindtest" | "songless">("blindtest");
+  const [enabledSteps, setEnabledSteps] = useState<number[]>([...STEPS]);
+  const [roundMode, setRoundMode] = useState<"blindtest" | "songless">("songless");
+  const [roundSteps, setRoundSteps] = useState<number[]>([...STEPS]);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!spotifyAuth.connected || roundMode !== "songless" || !currentTrack || revealed || showSources) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    setPreparedTrack(null);
+    setPreparationError(null);
+    const prepare = async () => {
+      if (signal.aborted) return;
+      if (!spotifyReady) return;
+      try {
+        await prepareTrack(currentTrack.uri, Math.min(10_000, Math.max(0, currentTrack.duration_ms - 16_000)), signal);
+        if (!signal.aborted) setPreparedTrack({ uri: currentTrack.uri });
+      } catch (reason) {
+        if (!signal.aborted) setPreparationError(reason instanceof Error ? reason.message : "Chargement impossible.");
+      }
+    };
+    preparationQueue.current = preparationQueue.current.catch(() => undefined).then(prepare);
+    return () => { controller.abort(); };
+  }, [currentTrack, roundMode, revealed, showSources, spotifyAuth.connected, spotifyReady, prepareTrack, preparationAttempt]);
+
+  const songlessReady = preparedTrack?.uri === currentTrack?.uri && preparedTrack !== null;
+  const songlessLoading = roundMode === "songless" && !songlessReady && !preparationError;
 
   useEffect(() => {
     if (!spotifyAuth.connected) return;
@@ -79,11 +112,13 @@ export const SonglessPage = () => {
       .finally(() => setLoadingPlaylists(false));
   }, [spotifyAuth.connected]);
 
+
   useEffect(() => {
     localStorage.setItem(PLAYLISTS_STORAGE_KEY, JSON.stringify(selectedPlaylistIds));
   }, [selectedPlaylistIds]);
 
   const nextTrack = useCallback(() => {
+    setError(null);
     void player.pause();
     setQueue((currentQueue) => {
       const available = currentQueue.length > 0 ? [...currentQueue] : shuffle(tracks);
@@ -100,24 +135,27 @@ export const SonglessPage = () => {
   }, [player, tracks]);
 
   const loadSelection = async () => {
-    if (selectedPlaylistIds.length === 0) return;
+    if (selectedPlaylistIds.length === 0 || !mode || (mode === "songless" && enabledSteps.length === 0)) return;
     setLoadingTracks(true);
+    void player.activate()?.catch(() => undefined);
     setError(null);
     try {
       const lists = await Promise.all(
-        selectedPlaylistIds.map((playlistId) =>
-          playlistId === PERSONALIZED_SOURCE_ID
-            ? fetchSpotifyPersonalizedTracks()
-            : fetchSpotifyPlaylistTracks(playlistId)
-        )
+        selectedPlaylistIds.map((playlistId) => {
+          if (playlistId === PERSONALIZED_SOURCE_ID) return fetchSpotifyPersonalizedTracks();
+          return fetchSpotifyPlaylistTracks(playlistId);
+        })
       );
       const uniqueTracks = Array.from(
         new Map(lists.flat().map((track) => [track.id, track])).values()
       );
       if (uniqueTracks.length === 0) throw new Error("Aucun morceau jouable dans cette sélection.");
+      await player.pause();
       const shuffled = shuffle(uniqueTracks);
       const first = shuffled.shift() ?? null;
       setTracks(uniqueTracks);
+      setRoundMode(mode);
+      setRoundSteps(STEPS.filter((duration) => enabledSteps.includes(duration)));
       setQueue(shuffled);
       setCurrentTrack(first);
       setStepIndex(0);
@@ -150,16 +188,18 @@ export const SonglessPage = () => {
     if (!currentTrack) return;
     setResult(outcome);
     setRevealed(true);
-    void player.playFullTrack(currentTrack.uri, 10_000).catch((reason: unknown) =>
+    if (roundMode === "blindtest" && player.playing) return;
+    void player.playFullTrack(currentTrack.uri, roundMode === "blindtest" ? 0 : 10_000).catch((reason: unknown) =>
       setError(reason instanceof Error ? reason.message : "Lecture impossible.")
     );
   };
 
-  const miss = () => {
-    setResult("wrong");
+  const miss = (skipped = false) => {
+    setResult(skipped ? null : "wrong");
     setSelectedAnswer(null);
     setQuery("");
-    if (stepIndex < STEPS.length - 1) setStepIndex((value) => value + 1);
+    if (roundMode === "blindtest") return;
+    if (stepIndex < roundSteps.length - 1) setStepIndex((value) => value + 1);
     else revealAndPlay("wrong");
   };
 
@@ -176,32 +216,38 @@ export const SonglessPage = () => {
     }
   };
 
-  const play = () => {
+  const play = async () => {
     if (!currentTrack) return;
     setResult(null);
+    if (roundMode === "blindtest") {
+      const action = player.playing ? player.pause() : player.playFullTrack(currentTrack.uri, 0, true);
+      void action.catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Lecture impossible."));
+      return;
+    }
+    if (!songlessReady || startingPlayback) return;
     const startPositionMs = Math.min(
       10_000,
-      Math.max(0, currentTrack.duration_ms - STEPS[stepIndex] - 1_000)
+      Math.max(0, currentTrack.duration_ms - roundSteps[stepIndex] - 1_000)
     );
-    void player.playSnippet(currentTrack.uri, STEPS[stepIndex], startPositionMs).catch((reason: unknown) =>
+    setStartingPlayback(true);
+    void player.playSnippet(currentTrack.uri, roundSteps[stepIndex], startPositionMs).catch((reason: unknown) =>
       setError(reason instanceof Error ? reason.message : "Lecture impossible.")
-    );
+    ).finally(() => setStartingPlayback(false));
   };
 
-  const blendId = import.meta.env.VITE_SPOTIFY_BLEND_PLAYLIST_ID as string | undefined;
 
   return (
-    <MainLayout navSelected="songless">
+    <MainLayout navSelected="blindtest">
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1ed760]">Blind test Spotify</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Songless</h1>
-            <p className="mt-2 max-w-2xl text-app-muted">Une fraction de seconde. Un titre à retrouver.</p>
+            <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Blindtest</h1>
+            <p className="mt-2 max-w-2xl text-app-muted">Retrouvez vos titres en Blindtest ou en Songless.</p>
           </div>
           {spotifyAuth.connected && (
-            <button type="button" onClick={() => setShowSources((value) => !value)} className="cursor-pointer rounded-full border border-app-border bg-app-surface px-5 py-2.5 text-sm font-semibold transition hover:border-[#1ed760]/60 hover:text-[#1ed760]">
-              {tracks.length > 0 ? "Changer les playlists" : "Choisir les playlists"}
+            <button type="button" onClick={() => { void player.pause(); setShowSources((value) => !value); }} className="cursor-pointer rounded-full border border-app-border bg-app-surface px-5 py-2.5 text-sm font-semibold transition hover:border-[#1ed760]/60 hover:text-[#1ed760]">
+              {tracks.length > 0 ? (showSources ? "Revenir à la partie" : "Configurer une partie") : "Choisir les playlists"}
             </button>
           )}
         </header>
@@ -226,12 +272,41 @@ export const SonglessPage = () => {
           </section>
         ) : (tracks.length === 0 || showSources) ? (
           <section className="rounded-3xl border border-app-border bg-app-surface p-5 sm:p-8">
+            <fieldset className="mb-6">
+              <legend className="text-2xl font-bold">Choisissez votre mode</legend>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {(["blindtest", "songless"] as const).map((value) => (
+                  <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-5 ${mode === value ? "border-[#1ed760] bg-[#1ed760]/10" : "border-app-border"}`}>
+                    <input type="radio" name="game-mode" value={value} checked={mode === value} onChange={() => setMode(value)} className="mt-1 accent-[#1ed760]" />
+                    <span><span className="block font-bold">{value === "blindtest" ? "Blindtest" : "Songless"}</span><span className="mt-1 block text-sm text-app-muted">{value === "blindtest" ? "Écoutez le morceau en continu et retrouvez son titre." : "Devinez le titre avec des extraits de plus en plus longs."}</span></span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {mode === "songless" && (
+              <fieldset className="mb-6 rounded-2xl border border-app-border bg-app-bg/40 p-4 sm:p-5">
+                <legend className="px-2 text-sm font-semibold">Deviner après</legend>
+                <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+                  {STEPS.map((duration) => (
+                    <label key={duration} className="relative cursor-pointer">
+                      <input type="checkbox" checked={enabledSteps.includes(duration)} disabled={enabledSteps.length === 1 && enabledSteps.includes(duration)} onChange={() => setEnabledSteps((current) => current.includes(duration) ? current.filter((item) => item !== duration) : [...current, duration])} className="peer sr-only" />
+                      <span className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg border border-app-border bg-app-surface text-xs font-bold tabular-nums text-app-muted transition-colors peer-checked:border-[#1ed760] peer-checked:bg-[#1ed760]/15 peer-checked:text-[#1ed760] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#1ed760] peer-disabled:cursor-not-allowed sm:text-sm">
+                        <span>{(duration / 1000).toLocaleString("fr-FR")} s</span>
+                        <span aria-hidden="true" className="text-[10px] leading-none">{enabledSteps.includes(duration) ? "✓" : "−"}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-app-muted">Activez les paliers souhaités. Au moins un indice doit rester actif.</p>
+              </fieldset>
+            )}
+            {mode && <>
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-app-border pb-6">
               <div>
                 <h2 className="text-2xl font-bold">Sources musicales</h2>
                 <p className="mt-1 text-sm text-app-muted">Mélangez une ou plusieurs playlists. Les doublons seront retirés.</p>
               </div>
-              <button type="button" onClick={spotifyAuth.disconnect} className="cursor-pointer text-sm text-app-muted underline-offset-4 hover:text-app-text hover:underline">Déconnecter Spotify</button>
+              <button type="button" onClick={() => { spotifyAuth.disconnect(); }} className="cursor-pointer text-sm text-app-muted underline-offset-4 hover:text-app-text hover:underline">Déconnecter Spotify</button>
             </div>
 
             {loadingPlaylists ? (
@@ -249,13 +324,12 @@ export const SonglessPage = () => {
                 </label>
                 {playlists.map((playlist) => {
                   const selected = selectedPlaylistIds.includes(playlist.id);
-                  const isBlend = playlist.id === blendId;
                   return (
                     <label key={playlist.id} className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-3 transition ${selected ? "border-[#1ed760] bg-[#1ed760]/10" : "border-app-border bg-app-bg/40 hover:border-app-muted"}`}>
                       <input type="checkbox" checked={selected} onChange={() => setSelectedPlaylistIds((current) => selected ? current.filter((id) => id !== playlist.id) : [...current, playlist.id])} className="sr-only" />
                       {playlist.images[0]?.url ? <img src={playlist.images[0].url} alt="" className="h-14 w-14 rounded-xl object-cover" /> : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-app-surface-elevated text-xl">♫</div>}
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2 truncate font-semibold">{playlist.name}{isBlend && <span className="rounded-full bg-[#1ed760] px-2 py-0.5 text-[10px] font-bold uppercase text-black">Blend</span>}</span>
+                        <span className="flex items-center gap-2 truncate font-semibold">{playlist.name}</span>
                         <span className="block truncate text-xs text-app-muted">{playlist.owner.display_name ?? "Spotify"} · {playlistTrackCount(playlist)} titres</span>
                       </span>
                       <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${selected ? "border-[#1ed760] bg-[#1ed760] text-black" : "border-app-muted"}`}>{selected ? "✓" : ""}</span>
@@ -267,10 +341,11 @@ export const SonglessPage = () => {
 
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-app-border pt-6">
               <p className="text-sm text-app-muted">{selectedPlaylistIds.length} source{selectedPlaylistIds.length > 1 ? "s" : ""} sélectionnée{selectedPlaylistIds.length > 1 ? "s" : ""}</p>
-              <button type="button" disabled={selectedPlaylistIds.length === 0 || loadingTracks} onClick={() => void loadSelection()} className="cursor-pointer rounded-full bg-[#1ed760] px-7 py-3 font-bold text-black transition hover:bg-[#25e66a] disabled:cursor-not-allowed disabled:opacity-40">
+              <button type="button" disabled={selectedPlaylistIds.length === 0 || loadingTracks || (mode === "songless" && enabledSteps.length === 0)} onClick={() => void loadSelection()} className="cursor-pointer rounded-full bg-[#1ed760] px-7 py-3 font-bold text-black transition hover:bg-[#25e66a] disabled:cursor-not-allowed disabled:opacity-40">
                 {loadingTracks ? "Préparation…" : tracks.length > 0 ? "Relancer avec cette sélection" : "Commencer"}
               </button>
             </div>
+            </>}
           </section>
         ) : currentTrack ? (
           <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center">
@@ -282,17 +357,50 @@ export const SonglessPage = () => {
                 {revealed ? (
                   <div aria-label="Morceau en lecture" className="relative flex h-28 w-28 items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] sm:h-32 sm:w-32">♫</div>
                 ) : (
-                  <button type="button" disabled={!player.ready} onClick={play} aria-label="Écouter l'extrait" className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] transition hover:scale-105 disabled:cursor-wait disabled:opacity-50 sm:h-32 sm:w-32">
-                    {player.playing ? "↻" : "▶"}
+                  <button type="button" disabled={roundMode === "songless" ? !songlessReady || startingPlayback : !player.ready} onClick={play} aria-label={roundMode === "blindtest" ? (player.playing ? "Mettre en pause" : "Écouter le morceau") : "Écouter l'extrait"} className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] transition hover:scale-105 disabled:cursor-wait disabled:opacity-50 sm:h-32 sm:w-32">
+                    {songlessLoading || startingPlayback ? <span aria-hidden="true" className="h-9 w-9 animate-spin rounded-full border-4 border-black/20 border-t-black motion-reduce:animate-none" /> : player.playing ? (roundMode === "blindtest" ? "Ⅱ" : "↻") : "▶"}
                   </button>
                 )}
-                {!revealed && <span className="absolute bottom-5 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-sm font-bold backdrop-blur">{STEPS[stepIndex] < 1000 ? `${STEPS[stepIndex]} ms` : `${STEPS[stepIndex] / 1000} s`}</span>}
+                {!revealed && <span className="absolute bottom-5 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-sm font-bold backdrop-blur">{roundMode === "blindtest" ? "Lecture continue" : `${(roundSteps[stepIndex] / 1000).toLocaleString("fr-FR")} s`}</span>}
               </div>
 
               <div className="p-5 sm:p-8">
-                <div aria-label="Progression des indices" className="mb-7 grid grid-cols-5 gap-2">
-                  {STEPS.map((duration, index) => <div key={duration} className={`h-1.5 rounded-full ${index <= stepIndex ? "bg-[#1ed760]" : "bg-app-border"}`} />)}
-                </div>
+                {roundMode === "songless" && !revealed && (
+                  preparationError ? (
+                    <div role="alert" className="mb-4 text-sm text-app-warning">
+                      {preparationError}
+                      <button type="button" onClick={() => { void player.activate()?.catch(() => undefined); setPreparationAttempt((value) => value + 1); }} className="ml-3 cursor-pointer underline">Réessayer le chargement</button>
+                    </div>
+                  ) : (songlessLoading || startingPlayback) ? <p role="status" className="mb-4 text-center text-sm text-app-muted">Chargement du morceau…</p> : null
+                )}
+                <p className="mb-4 text-sm font-semibold text-[#1ed760]">{roundMode === "blindtest" ? "Blindtest" : "Songless"}</p>
+                {roundMode === "songless" && (
+                  <div className="mb-7" aria-label="Progression des indices">
+                    <div className="mb-3 flex items-center justify-between gap-3 text-xs">
+                      <span className="font-semibold text-app-muted">{revealed ? "Réponse révélée" : `Indice ${stepIndex + 1} sur ${roundSteps.length}`}</span>
+                      <span className="font-bold tabular-nums text-[#1ed760]">{(roundSteps[stepIndex] / 1000).toLocaleString("fr-FR")} s</span>
+                    </div>
+                    <div className="relative h-20">
+                      <div role="meter" aria-label="Durée de l'indice débloqué" aria-valuemin={0} aria-valuemax={15} aria-valuenow={roundSteps[stepIndex] / 1000} aria-valuetext={`${(roundSteps[stepIndex] / 1000).toLocaleString("fr-FR")} secondes sur 15`} className="absolute inset-x-0 top-8 h-3 overflow-hidden rounded-full border border-app-border bg-app-surface-elevated">
+                        <div className="h-full bg-[#1ed760] transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${roundSteps[stepIndex] / 15000 * 100}%` }} />
+                      </div>
+                    <ol>
+                      {STEPS.map((duration, position) => {
+                        const index = roundSteps.indexOf(duration);
+                        const enabled = index !== -1;
+                        const current = enabled && index === stepIndex;
+                        const reached = enabled && index <= stepIndex;
+                        return (
+                          <li key={duration} style={{ left: `${duration / 15000 * 100}%` }} className="absolute top-8" aria-current={current ? "step" : undefined} aria-label={`${(duration / 1000).toLocaleString("fr-FR")} seconde${duration >= 2000 ? "s" : ""} : ${!enabled ? "désactivé" : current ? "indice actuel" : reached ? "débloqué" : "à venir"}`}>
+                            <div className={`absolute -left-px -top-1 h-5 border-l-2 ${current ? "border-[#1ed760]" : reached ? "border-app-success" : enabled ? "border-app-muted" : "border-dashed border-app-muted/40"}`} />
+                            <span aria-hidden="true" className={`absolute whitespace-nowrap text-[10px] font-semibold tabular-nums sm:text-xs ${position % 2 === 1 ? "-top-7" : "top-6"} ${position < 2 ? "left-0" : position === STEPS.length - 1 ? "right-0" : "-translate-x-1/2"} ${current ? "text-[#1ed760]" : enabled ? "text-app-muted" : "text-app-muted/40 line-through"}`}>{(duration / 1000).toLocaleString("fr-FR")} s</span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                    </div>
+                  </div>
+                )}
 
                 {revealed ? (
                   <div className="text-center">
@@ -314,9 +422,9 @@ export const SonglessPage = () => {
                         </ul>
                       )}
                     </div>
-                    {result === "wrong" && <p role="status" className="mt-3 text-sm text-app-warning">Pas encore — un extrait plus long est maintenant disponible.</p>}
+                    {result === "wrong" && <p role="status" className="mt-3 text-sm text-app-warning">{roundMode === "blindtest" ? "Ce n'est pas ce titre. Réessayez !" : "Pas encore — un extrait plus long est maintenant disponible."}</p>}
                     <div className="mt-5 flex items-center justify-between gap-4">
-                      <button type="button" onClick={() => { if (stepIndex === STEPS.length - 1) revealAndPlay("wrong"); else miss(); }} className="cursor-pointer text-sm font-semibold text-app-muted underline-offset-4 hover:text-app-text hover:underline">{stepIndex === STEPS.length - 1 ? "Révéler" : "Passer"}</button>
+                      <button type="button" onClick={() => { if (roundMode === "blindtest" || stepIndex === roundSteps.length - 1) revealAndPlay("wrong"); else miss(true); }} className="cursor-pointer text-sm font-semibold text-app-muted underline-offset-4 hover:text-app-text hover:underline">{roundMode === "blindtest" || stepIndex === roundSteps.length - 1 ? "Révéler" : "Passer"}</button>
                       <p className="text-xs text-app-muted">{tracks.length - queue.length} / {tracks.length} avant remélange</p>
                     </div>
                   </form>
@@ -330,4 +438,3 @@ export const SonglessPage = () => {
     </MainLayout>
   );
 };
-

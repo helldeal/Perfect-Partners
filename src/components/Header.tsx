@@ -10,7 +10,7 @@ const navMenu = [
   { name: "Cinéma", path: "/movies", key: "movies" },
   { name: "Jeux", path: "/games", key: "games" },
   { name: "Lego", path: "/legos", key: "legos" },
-  { name: "Songless", path: "/songless", key: "songless" },
+  { name: "Blindtest", path: "/blindtest", key: "blindtest" },
 ];
 
 export const Header = ({ navSelected }: { navSelected: string }) => {

@@ -34,9 +34,23 @@ export const useSpotifyPlayer = (enabled: boolean) => {
     positionMs: number;
   } | null>(null);
   const loadedTrackUriRef = useRef<string | null>(null);
+  const activationRef = useRef<Promise<void> | null>(null);
+  const preparationRef = useRef<{ playbackError: string | null } | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+
+  const activate = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return undefined;
+    if (!activationRef.current) {
+      activationRef.current = player.activateElement().catch((reason: unknown) => {
+        activationRef.current = null;
+        throw reason;
+      });
+    }
+    return activationRef.current;
+  }, []);
 
   const clearPlaybackTimers = useCallback(() => {
     if (pauseTimerRef.current) window.clearTimeout(pauseTimerRef.current);
@@ -91,7 +105,7 @@ export const useSpotifyPlayer = (enabled: boolean) => {
     void loadSpotifySdk().then(async () => {
       if (disposed || playerRef.current) return;
       const player = new window.Spotify.Player({
-        name: "Perfect Partners — Songless",
+        name: "Perfect Partners — Blindtest",
         getOAuthToken: (callback) => {
           void getSpotifyAccessToken()
             .then(callback)
@@ -105,7 +119,13 @@ export const useSpotifyPlayer = (enabled: boolean) => {
       player.addListener("account_error", () =>
         setError("Spotify Premium est nécessaire pour lancer la lecture.")
       );
-      player.addListener("playback_error", ({ message }) => setError(message));
+      player.addListener("playback_error", ({ message }) => {
+        if (preparationRef.current) {
+          preparationRef.current.playbackError = message;
+        } else {
+          setError(message);
+        }
+      });
       player.addListener("player_state_changed", (state) => {
         armSnippetPause(player, state);
       });
@@ -119,6 +139,7 @@ export const useSpotifyPlayer = (enabled: boolean) => {
       clearPlaybackTimers();
       playerRef.current?.disconnect();
       playerRef.current = null;
+      activationRef.current = null;
     };
   }, [armSnippetPause, clearPlaybackTimers, enabled]);
 
@@ -128,7 +149,7 @@ export const useSpotifyPlayer = (enabled: boolean) => {
       if (!player || !deviceId) throw new Error("Le lecteur Spotify n'est pas encore prêt.");
       setError(null);
       clearPlaybackTimers();
-      await player.activateElement();
+      await activate();
       const replayingLoadedTrack = loadedTrackUriRef.current === uri;
       if (replayingLoadedTrack) await player.pause();
       pendingSnippetRef.current = { uri, durationMs, positionMs };
@@ -160,19 +181,19 @@ export const useSpotifyPlayer = (enabled: boolean) => {
         throw reason;
       }
     },
-    [armSnippetPause, clearPlaybackTimers, deviceId]
+    [activate, armSnippetPause, clearPlaybackTimers, deviceId]
   );
 
   const playFullTrack = useCallback(
-    async (uri: string, positionMs = 10_000) => {
+    async (uri: string, positionMs = 10_000, resume = false) => {
       const player = playerRef.current;
       if (!player || !deviceId) throw new Error("Le lecteur Spotify n'est pas encore prêt.");
       clearPlaybackTimers();
       pendingSnippetRef.current = null;
       setError(null);
-      await player.activateElement();
+      await activate();
       if (loadedTrackUriRef.current === uri) {
-        await player.seek(positionMs);
+        if (!resume) await player.seek(positionMs);
         await player.resume();
       } else {
         await startSpotifyTrack(deviceId, uri, positionMs);
@@ -180,16 +201,78 @@ export const useSpotifyPlayer = (enabled: boolean) => {
       }
       setPlaying(true);
     },
-    [clearPlaybackTimers, deviceId]
+    [activate, clearPlaybackTimers, deviceId]
   );
 
   const pause = useCallback(async () => {
     clearPlaybackTimers();
     pendingSnippetRef.current = null;
-    await playerRef.current?.pause();
+    const player = playerRef.current;
+    const state = await player?.getCurrentState();
+    if (state && !state.paused) await player?.pause();
     setPlaying(false);
   }, [clearPlaybackTimers]);
 
-  return { ready: Boolean(deviceId), playing, error, playSnippet, playFullTrack, pause };
+  const prepareTrack = useCallback(async (uri: string, positionMs: number, signal: AbortSignal) => {
+    const player = playerRef.current;
+    if (!player || !deviceId) throw new Error("Le lecteur Spotify n'est pas encore prêt.");
+    const checkCancelled = () => {
+      if (signal.aborted) throw new DOMException("Chargement annulé.", "AbortError");
+    };
+    checkCancelled();
+    if (loadedTrackUriRef.current === uri) {
+      const state = await player.getCurrentState();
+      if (state?.track_window.current_track.uri === uri && state.paused) return;
+    }
+    const volume = await player.getVolume();
+    const preparation = { playbackError: null as string | null };
+    preparationRef.current = preparation;
+    try {
+      await player.setVolume(0);
+      checkCancelled();
+      // Do not start preparation on devices that cannot mute the SDK.
+      if (await player.getVolume() !== 0) throw new Error("Ce navigateur ne permet pas le préchargement silencieux Spotify.");
+      checkCancelled();
+      await startSpotifyTrack(deviceId, uri, positionMs);
+      const startedAt = Date.now();
+      while (Date.now() - startedAt < 10_000) {
+        checkCancelled();
+        const state = await player.getCurrentState();
+        if (state?.track_window.current_track.uri === uri) {
+          await player.pause();
+          await player.seek(positionMs);
+          const pausedState = await player.getCurrentState();
+          if (pausedState?.paused && pausedState.track_window.current_track.uri === uri) {
+            checkCancelled();
+            loadedTrackUriRef.current = uri;
+            setPlaying(false);
+            setError(null);
+            return;
+          }
+        }
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 100));
+      }
+      throw new Error("Spotify n'a pas confirmé le chargement du morceau. Réessayez.");
+    } catch (reason) {
+      if (signal.aborted) throw new DOMException("Chargement annulé.", "AbortError");
+      if (preparation.playbackError) {
+        throw new Error(`Le chargement Spotify a échoué : ${preparation.playbackError}`);
+      }
+      throw reason;
+    } finally {
+      try {
+        try {
+          const state = await player.getCurrentState();
+          if (state && !state.paused) await player.pause();
+        } finally {
+          await player.setVolume(volume);
+        }
+      } finally {
+        if (preparationRef.current === preparation) preparationRef.current = null;
+      }
+    }
+  }, [deviceId]);
+
+  return { ready: Boolean(deviceId), playing, error, playSnippet, playFullTrack, pause, activate, prepareTrack };
 };
 
