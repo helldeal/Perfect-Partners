@@ -146,12 +146,21 @@ export const SonglessPage = () => {
       .slice(0, 6);
   }, [query, tracks]);
 
+  const revealAndPlay = (outcome: "correct" | "wrong") => {
+    if (!currentTrack) return;
+    setResult(outcome);
+    setRevealed(true);
+    void player.playFullTrack(currentTrack.uri, 10_000).catch((reason: unknown) =>
+      setError(reason instanceof Error ? reason.message : "Lecture impossible.")
+    );
+  };
+
   const miss = () => {
     setResult("wrong");
     setSelectedAnswer(null);
     setQuery("");
     if (stepIndex < STEPS.length - 1) setStepIndex((value) => value + 1);
-    else setRevealed(true);
+    else revealAndPlay("wrong");
   };
 
   const submitAnswer = (event: FormEvent) => {
@@ -161,9 +170,7 @@ export const SonglessPage = () => {
       ? selectedAnswer.id === currentTrack.id
       : normalizeTitle(query) === normalizeTitle(currentTrack.name);
     if (answerIsCorrect) {
-      void player.pause();
-      setResult("correct");
-      setRevealed(true);
+      revealAndPlay("correct");
     } else {
       miss();
     }
@@ -190,7 +197,7 @@ export const SonglessPage = () => {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1ed760]">Blind test Spotify</p>
             <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Songless</h1>
-            <p className="mt-2 max-w-2xl text-app-muted">Reconnaissez le titre avec le moins de musique possible.</p>
+            <p className="mt-2 max-w-2xl text-app-muted">Une fraction de seconde. Un titre à retrouver.</p>
           </div>
           {spotifyAuth.connected && (
             <button type="button" onClick={() => setShowSources((value) => !value)} className="cursor-pointer rounded-full border border-app-border bg-app-surface px-5 py-2.5 text-sm font-semibold transition hover:border-[#1ed760]/60 hover:text-[#1ed760]">
@@ -272,10 +279,14 @@ export const SonglessPage = () => {
                 {revealed && currentTrack.album.images[0]?.url ? (
                   <img src={currentTrack.album.images[0].url} alt={`Pochette de ${currentTrack.album.name}`} className="absolute inset-0 h-full w-full object-cover opacity-25 blur-2xl" />
                 ) : null}
-                <button type="button" disabled={!player.ready} onClick={play} aria-label={player.playing ? "Relire l'extrait" : "Écouter l'extrait"} className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] transition hover:scale-105 disabled:cursor-wait disabled:opacity-50 sm:h-32 sm:w-32">
-                  {player.playing ? "↻" : "▶"}
-                </button>
-                <span className="absolute bottom-5 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-sm font-bold backdrop-blur">{STEPS[stepIndex] < 1000 ? `${STEPS[stepIndex]} ms` : `${STEPS[stepIndex] / 1000} s`}</span>
+                {revealed ? (
+                  <div aria-label="Morceau en lecture" className="relative flex h-28 w-28 items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] sm:h-32 sm:w-32">♫</div>
+                ) : (
+                  <button type="button" disabled={!player.ready} onClick={play} aria-label="Écouter l'extrait" className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full border-8 border-white/10 bg-[#1ed760] text-4xl text-black shadow-[0_0_60px_rgba(30,215,96,0.25)] transition hover:scale-105 disabled:cursor-wait disabled:opacity-50 sm:h-32 sm:w-32">
+                    {player.playing ? "↻" : "▶"}
+                  </button>
+                )}
+                {!revealed && <span className="absolute bottom-5 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-sm font-bold backdrop-blur">{STEPS[stepIndex] < 1000 ? `${STEPS[stepIndex]} ms` : `${STEPS[stepIndex] / 1000} s`}</span>}
               </div>
 
               <div className="p-5 sm:p-8">
@@ -305,7 +316,7 @@ export const SonglessPage = () => {
                     </div>
                     {result === "wrong" && <p role="status" className="mt-3 text-sm text-app-warning">Pas encore — un extrait plus long est maintenant disponible.</p>}
                     <div className="mt-5 flex items-center justify-between gap-4">
-                      <button type="button" onClick={() => { if (stepIndex === STEPS.length - 1) setRevealed(true); else miss(); }} className="cursor-pointer text-sm font-semibold text-app-muted underline-offset-4 hover:text-app-text hover:underline">{stepIndex === STEPS.length - 1 ? "Révéler" : "Passer"}</button>
+                      <button type="button" onClick={() => { if (stepIndex === STEPS.length - 1) revealAndPlay("wrong"); else miss(); }} className="cursor-pointer text-sm font-semibold text-app-muted underline-offset-4 hover:text-app-text hover:underline">{stepIndex === STEPS.length - 1 ? "Révéler" : "Passer"}</button>
                       <p className="text-xs text-app-muted">{tracks.length - queue.length} / {tracks.length} avant remélange</p>
                     </div>
                   </form>

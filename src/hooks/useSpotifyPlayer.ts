@@ -27,6 +27,7 @@ export const useSpotifyPlayer = (enabled: boolean) => {
   const playerRef = useRef<Spotify.Player | null>(null);
   const pauseTimerRef = useRef<number | null>(null);
   const playbackPollRef = useRef<number | null>(null);
+  const pauseGuardPollRef = useRef<number | null>(null);
   const pendingSnippetRef = useRef<{
     uri: string;
     durationMs: number;
@@ -36,6 +37,33 @@ export const useSpotifyPlayer = (enabled: boolean) => {
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+
+  const clearPlaybackTimers = useCallback(() => {
+    if (pauseTimerRef.current) window.clearTimeout(pauseTimerRef.current);
+    if (playbackPollRef.current) window.clearInterval(playbackPollRef.current);
+    if (pauseGuardPollRef.current) window.clearInterval(pauseGuardPollRef.current);
+    pauseTimerRef.current = null;
+    playbackPollRef.current = null;
+    pauseGuardPollRef.current = null;
+  }, []);
+
+  const enforceSnippetPause = useCallback((player: Spotify.Player, uri: string) => {
+    void player.pause().finally(() => setPlaying(false));
+    const guardStartedAt = Date.now();
+    if (pauseGuardPollRef.current) window.clearInterval(pauseGuardPollRef.current);
+    pauseGuardPollRef.current = window.setInterval(() => {
+      if (Date.now() - guardStartedAt > 3_000) {
+        if (pauseGuardPollRef.current) window.clearInterval(pauseGuardPollRef.current);
+        pauseGuardPollRef.current = null;
+        return;
+      }
+      void player.getCurrentState().then((state) => {
+        if (state && !state.paused && state.track_window.current_track.uri === uri) {
+          void player.pause().finally(() => setPlaying(false));
+        }
+      });
+    }, 60);
+  }, []);
 
   const armSnippetPause = useCallback(
     (player: Spotify.Player, state: Spotify.PlaybackState | null) => {
@@ -51,10 +79,10 @@ export const useSpotifyPlayer = (enabled: boolean) => {
       const elapsed = Math.max(0, state.position - pending.positionMs);
       const remaining = Math.max(0, pending.durationMs - elapsed);
       pauseTimerRef.current = window.setTimeout(() => {
-        void player.pause().finally(() => setPlaying(false));
+        enforceSnippetPause(player, pending.uri);
       }, remaining);
     },
-    []
+    [enforceSnippetPause]
   );
 
   useEffect(() => {
@@ -88,20 +116,18 @@ export const useSpotifyPlayer = (enabled: boolean) => {
 
     return () => {
       disposed = true;
-      if (pauseTimerRef.current) window.clearTimeout(pauseTimerRef.current);
-      if (playbackPollRef.current) window.clearInterval(playbackPollRef.current);
+      clearPlaybackTimers();
       playerRef.current?.disconnect();
       playerRef.current = null;
     };
-  }, [armSnippetPause, enabled]);
+  }, [armSnippetPause, clearPlaybackTimers, enabled]);
 
   const playSnippet = useCallback(
     async (uri: string, durationMs: number, positionMs = 10_000) => {
       const player = playerRef.current;
       if (!player || !deviceId) throw new Error("Le lecteur Spotify n'est pas encore prêt.");
       setError(null);
-      if (pauseTimerRef.current) window.clearTimeout(pauseTimerRef.current);
-      if (playbackPollRef.current) window.clearInterval(playbackPollRef.current);
+      clearPlaybackTimers();
       await player.activateElement();
       const replayingLoadedTrack = loadedTrackUriRef.current === uri;
       if (replayingLoadedTrack) await player.pause();
@@ -134,18 +160,36 @@ export const useSpotifyPlayer = (enabled: boolean) => {
         throw reason;
       }
     },
-    [armSnippetPause, deviceId]
+    [armSnippetPause, clearPlaybackTimers, deviceId]
+  );
+
+  const playFullTrack = useCallback(
+    async (uri: string, positionMs = 10_000) => {
+      const player = playerRef.current;
+      if (!player || !deviceId) throw new Error("Le lecteur Spotify n'est pas encore prêt.");
+      clearPlaybackTimers();
+      pendingSnippetRef.current = null;
+      setError(null);
+      await player.activateElement();
+      if (loadedTrackUriRef.current === uri) {
+        await player.seek(positionMs);
+        await player.resume();
+      } else {
+        await startSpotifyTrack(deviceId, uri, positionMs);
+        loadedTrackUriRef.current = uri;
+      }
+      setPlaying(true);
+    },
+    [clearPlaybackTimers, deviceId]
   );
 
   const pause = useCallback(async () => {
-    if (pauseTimerRef.current) window.clearTimeout(pauseTimerRef.current);
-    if (playbackPollRef.current) window.clearInterval(playbackPollRef.current);
-    playbackPollRef.current = null;
+    clearPlaybackTimers();
     pendingSnippetRef.current = null;
     await playerRef.current?.pause();
     setPlaying(false);
-  }, []);
+  }, [clearPlaybackTimers]);
 
-  return { ready: Boolean(deviceId), playing, error, playSnippet, pause };
+  return { ready: Boolean(deviceId), playing, error, playSnippet, playFullTrack, pause };
 };
 
