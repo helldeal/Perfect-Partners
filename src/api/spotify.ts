@@ -1,4 +1,5 @@
 import { SpotifyPlaylist, SpotifyTrack } from "./models/spotify";
+import { deduplicateSpotifyTracks } from "../utils/spotify";
 
 const ACCOUNTS_URL = "https://accounts.spotify.com";
 const API_URL = "https://api.spotify.com/v1";
@@ -282,7 +283,7 @@ const loadSpotifyPersonalizedTracks = async () => {
       "Spotify n'a pas permis de charger vos goûts. Déconnectez puis reconnectez votre compte."
     );
   }
-  return Array.from(new Map(successful.map((track) => [track.id, track])).values());
+  return deduplicateSpotifyTracks(successful);
 };
 
 export const fetchSpotifyPersonalizedTracks = async () => {

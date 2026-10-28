@@ -8,21 +8,11 @@ import {
 } from "../api/spotify";
 import { useSpotifyAuth } from "../hooks/useSpotifyAuth";
 import { useSpotifyPlayer } from "../hooks/useSpotifyPlayer";
+import { deduplicateSpotifyTracks, normalizeSpotifyText } from "../utils/spotify";
 
 const STEPS = [100, 500, 2_000, 8_000, 15_000] as const;
 const PLAYLISTS_STORAGE_KEY = "perfect-partners.songless-playlists";
 const PERSONALIZED_SOURCE_ID = "__personalized__";
-
-const normalizeTitle = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase()
-    .replace(/\([^)]*(remaster|radio edit|version|deluxe|feat\.?)[^)]*\)/gi, "")
-    .replace(/\[[^\]]*(remaster|radio edit|version|deluxe|feat\.?)[^\]]*\]/gi, "")
-    .replace(/\s[-–—]\s.*\b(remaster|radio edit|version|deluxe)\b.*$/gi, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
 
 const shuffle = <T,>(items: T[]) => {
   const result = [...items];
@@ -146,9 +136,7 @@ export const SonglessPage = () => {
           return fetchSpotifyPlaylistTracks(playlistId);
         })
       );
-      const uniqueTracks = Array.from(
-        new Map(lists.flat().map((track) => [track.id, track])).values()
-      );
+      const uniqueTracks = deduplicateSpotifyTracks(lists.flat());
       if (uniqueTracks.length === 0) throw new Error("Aucun morceau jouable dans cette sélection.");
       await player.pause();
       const shuffled = shuffle(uniqueTracks);
@@ -172,11 +160,11 @@ export const SonglessPage = () => {
   };
 
   const suggestions = useMemo(() => {
-    const normalizedQuery = normalizeTitle(query);
+    const normalizedQuery = normalizeSpotifyText(query);
     if (normalizedQuery.length < 2) return [];
     return tracks
       .filter((track) => {
-        const haystack = normalizeTitle(
+        const haystack = normalizeSpotifyText(
           `${track.name} ${track.artists.map((artist) => artist.name).join(" ")}`
         );
         return haystack.includes(normalizedQuery);
@@ -208,7 +196,7 @@ export const SonglessPage = () => {
     if (!currentTrack || revealed) return;
     const answerIsCorrect = selectedAnswer
       ? selectedAnswer.id === currentTrack.id
-      : normalizeTitle(query) === normalizeTitle(currentTrack.name);
+      : normalizeSpotifyText(query) === normalizeSpotifyText(currentTrack.name);
     if (answerIsCorrect) {
       revealAndPlay("correct");
     } else {
