@@ -20,6 +20,10 @@ const categoryStyles: Record<
     label: "Cinéma",
     className: "bg-app-primary-soft text-app-primary",
   },
+  music: {
+    label: "Musique",
+    className: "bg-app-accent-soft text-app-accent",
+  },
   security: {
     label: "Sécurité",
     className: "bg-app-success-soft text-app-success",

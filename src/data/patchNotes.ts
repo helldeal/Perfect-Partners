@@ -2,6 +2,7 @@ export type PatchNoteCategory =
   | "interface"
   | "games"
   | "cinema"
+  | "music"
   | "security"
   | "infrastructure";
 
@@ -22,6 +23,46 @@ export type PatchNote = {
 
 // Une entrée par livraison ; l'identifiant reprend le SHA du changement associé.
 export const patchNotes: PatchNote[] = [
+  {
+    id: "6244e1d",
+    date: "28 octobre 2026",
+    title: "Le Blindtest entre en scène",
+    categories: ["music", "interface", "cinema", "infrastructure"],
+    changes: [
+      {
+        type: "feature",
+        text: "Un Blindtest Spotify rejoint Perfect Partners avec une lecture continue des morceaux.",
+      },
+      {
+        type: "feature",
+        text: "Le mode Songless permet de reconnaître un titre grâce à des extraits de plus en plus longs.",
+      },
+      {
+        type: "improvement",
+        text: "Les paliers du Songless sont personnalisables de 0,1 à 15 secondes.",
+      },
+      {
+        type: "improvement",
+        text: "Vos playlists et la sélection « Pour moi » alimentent désormais vos parties.",
+      },
+      {
+        type: "fix",
+        text: "Les différentes éditions d'un même morceau ne se répètent plus dans le mix.",
+      },
+      {
+        type: "improvement",
+        text: "La réponse met davantage en valeur la pochette, le titre et l'artiste.",
+      },
+      {
+        type: "feature",
+        text: "Les notifications push vous préviennent même lorsque l'application est fermée.",
+      },
+      {
+        type: "improvement",
+        text: "Les fiches de séries affichent plus clairement les saisons, les statuts et les crédits.",
+      },
+    ],
+  },
   {
     id: "a58b249",
     date: "14 octobre 2026",
