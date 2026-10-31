@@ -53,14 +53,14 @@ export const ItemLayout = ({
   };
   return (
     <div className="w-full h-full " onClick={openModalHandler}>
-      <div className="w-full h-full relative">
-        {imageLoading && <Skeleton className="absolute inset-0 aspect-[2/3] w-full" />}
+      <div className="relative aspect-[2/3] w-full overflow-hidden">
+        {imageLoading && <Skeleton className="absolute inset-0" />}
         <img
           src={image ? `${image}` : "/placeholder.png"}
           alt={name}
           onLoad={() => setSettledImage(image)}
           onError={() => setSettledImage(image)}
-          className={`w-full h-full rounded object-cover transition-opacity ${imageLoading ? "opacity-0" : "opacity-100"}`}
+          className={`absolute inset-0 h-full w-full rounded object-cover transition-opacity ${imageLoading ? "opacity-0" : "opacity-100"}`}
         />
         <div
           className={`absolute w-full h-full rounded top-0 left-0 ${
